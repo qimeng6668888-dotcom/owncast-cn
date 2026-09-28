@@ -465,6 +465,7 @@
 			"learnMore": "Learn more."
 		},
 		"Nav": {
+			"aboutOwncast": "About Owncast v{{version}}",
 			"accessTokens": "Access Tokens",
 			"adminTitle": "Owncast Admin",
 			"chat": "Chat",
@@ -526,6 +527,7 @@
 			"mainDescription": "Get notified right in the browser each time this stream goes live.",
 			"permissionWantsTo": "{{hostname}} wants to",
 			"showNotifications": "Show notifications",
+			"title": "Browser Notifications",
 			"unsupported": "Browser notifications are not supported in your browser.",
 			"unsupportedLocal": "Browser notifications are not supported for local servers."
 		},

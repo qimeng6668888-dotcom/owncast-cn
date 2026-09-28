@@ -74,6 +74,7 @@ export const Localization = {
       learnMoreAboutNotifications: 'Frontend.BrowserNotifyModal.learnMoreAboutNotifications',
       errorTitle: 'Frontend.BrowserNotifyModal.errorTitle',
       errorMessage: 'Frontend.BrowserNotifyModal.errorMessage',
+      title: 'Frontend.BrowserNotifyModal.title',
     },
 
     // Name change modal - organized by component
@@ -272,6 +273,7 @@ export const Localization = {
       socialActions: 'Admin.Nav.socialActions',
       integrations: 'Admin.Nav.integrations',
       webhooks: 'Admin.Nav.webhooks',
+      aboutOwncast: 'Admin.Nav.aboutOwncast',
       accessTokens: 'Admin.Nav.accessTokens',
       externalActions: 'Admin.Nav.externalActions',
       help: 'Admin.Nav.help',

@@ -1,6 +1,9 @@
 package config
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestDefaultStreamIsSingle720p(t *testing.T) {
 	variants := GetDefaults().StreamVariants
@@ -29,5 +32,13 @@ func TestDefaultStreamIsSingle720p(t *testing.T) {
 	}
 	if variant.VideoBitrate == 0 {
 		t.Error("video bitrate must be set for the H.264 encode")
+	}
+
+	defaults := GetDefaults()
+	if !strings.Contains(defaults.PageBodyContent, "欢迎使用 Owncast") {
+		t.Error("default visitor page should be Simplified Chinese")
+	}
+	if !strings.Contains(defaults.Summary, "直播服务器") {
+		t.Error("default summary should be Simplified Chinese")
 	}
 }

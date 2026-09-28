@@ -13,6 +13,7 @@ import styles from './BrowserNotifyModal.module.scss';
 import { ComponentError } from '../../ui/ComponentError/ComponentError';
 import { Translation } from '../../ui/Translation/Translation';
 import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 
 import { isMobileSafariHomeScreenApp, isMobileSafariIos } from '../../../utils/helpers';
 import { arePushNotificationSupported } from '../../../utils/browserPushNotifications';
@@ -320,17 +321,20 @@ export type BrowserNotifyModalProps = {
   handleClose: () => void;
 };
 
-export const BrowserNotifyModal: FC<BrowserNotifyModalProps> = ({ open, handleClose }) => (
-  <Modal
-    title="Browser Notifications"
-    open={open}
-    onCancel={handleClose}
-    zIndex={999}
-    footer={null}
-    centered
-  >
-    <div id="modal-container">
-      <NotifyModalContent />
-    </div>
-  </Modal>
-);
+export const BrowserNotifyModal: FC<BrowserNotifyModalProps> = ({ open, handleClose }) => {
+  const { t } = useTranslation();
+  return (
+    <Modal
+      title={translated(t, Localization.Frontend.BrowserNotifyModal.title, '浏览器通知')}
+      open={open}
+      onCancel={handleClose}
+      zIndex={999}
+      footer={null}
+      centered
+    >
+      <div id="modal-container">
+        <NotifyModalContent />
+      </div>
+    </Modal>
+  );
+};

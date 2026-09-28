@@ -164,7 +164,7 @@ func TestMakeServiceForAccount(t *testing.T) {
 		t.Errorf("actor.Avatar = %v, want %v", person.GetActivityStreamsIcon().At(0).GetActivityStreamsImage().GetActivityStreamsUrl().Begin().GetIRI().String(), expectedAvatar)
 	}
 
-	expectedSummary := "This is a new live video streaming server powered by Owncast."
+	expectedSummary := "这是一台由 Owncast 驱动的新直播服务器。"
 	if person.GetActivityStreamsSummary().At(0).GetXMLSchemaString() != expectedSummary {
 		t.Errorf("actor.Summary = %v, want %v", person.GetActivityStreamsSummary().At(0).GetXMLSchemaString(), expectedSummary)
 	}

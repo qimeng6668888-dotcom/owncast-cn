@@ -529,7 +529,10 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
 
         <Footer className="footer-container">
           <a href="https://owncast.online/?source=admin" target="_blank" rel="noopener noreferrer">
-            About Owncast v{versionNumber}
+            {nav(Localization.Admin.Nav.aboutOwncast, '关于 Owncast v{{version}}').replace(
+              '{{version}}',
+              versionNumber || '',
+            )}
           </a>
         </Footer>
       </Layout>

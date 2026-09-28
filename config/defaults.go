@@ -48,7 +48,7 @@ func GetDefaults() Defaults {
 	defaultStreamKeyComment := "Default stream key"
 	return Defaults{
 		Name:                 "New Owncast Server",
-		Summary:              "This is a new live video streaming server powered by Owncast.",
+		Summary:              "这是一台由 Owncast 驱动的新直播服务器。",
 		ServerWelcomeMessage: "",
 		Logo:                 "logo.svg",
 		AdminPassword:        "abc123",
@@ -61,13 +61,13 @@ func GetDefaults() Defaults {
 		},
 
 		PageBodyContent: `
-# Welcome to Owncast!
+# 欢迎使用 Owncast！
 
-- This is a live stream powered by [Owncast](https://owncast.online), a free and open source live streaming server.
+- 这是由 [Owncast](https://owncast.online) 驱动的直播。Owncast 是自由开源的直播服务器。
 
-- To discover more examples of streams, visit [Owncast's directory](https://owncast.directory).
+- 想看更多直播示例，请访问 [Owncast 目录](https://owncast.directory)。
 
-- If you're the owner of this server you should visit the admin and customize the content on this page.
+- 如果你是这台服务器的管理员，请打开管理后台，自定义本页内容。
 
 <hr/>
 
