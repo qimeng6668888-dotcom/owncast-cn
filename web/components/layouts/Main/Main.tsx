@@ -8,6 +8,7 @@ import { Layout } from 'antd';
 import dynamic from 'next/dynamic';
 import Script from 'next/script';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useTranslation } from 'next-export-i18n';
 import {
   ClientConfigStore,
   isChatAvailableSelector,
@@ -25,6 +26,8 @@ import { Theme } from '../../theme/Theme';
 import styles from './Main.module.scss';
 import { PushNotificationServiceWorker } from '../../workers/PushNotificationServiceWorker/PushNotificationServiceWorker';
 import { Noscript } from '../../ui/Noscript/Noscript';
+import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 
 // Lazy loaded components
 
@@ -39,9 +42,10 @@ const FatalErrorStateModal = dynamic(
 );
 
 export const Main: FC = () => {
+  const { t } = useTranslation();
   const clientConfig = useAtomValue(clientConfigStateAtom);
   const clientStatus = useAtomValue(serverStatusState);
-  const { name } = clientConfig;
+  const { name, summary } = clientConfig;
   const isChatAvailable = useAtomValue(isChatAvailableSelector);
   const fatalError = useAtomValue(fatalErrorStateAtom);
   const appState = useAtomValue(appStateAtom);
@@ -70,6 +74,12 @@ export const Main: FC = () => {
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="description" content={summary || name} />
+        <meta property="og:locale" content="zh_CN" />
+        <meta property="og:title" content={headerText || name} />
+        <meta property="og:site_name" content={name} />
+        <meta property="og:description" content={summary || name} />
+        <meta property="og:type" content="video.other" />
 
         <base target="_blank" />
       </Head>
@@ -85,8 +95,12 @@ export const Main: FC = () => {
         // eslint-disable-next-line react/no-unstable-nested-components
         fallbackRender={({ error }) => (
           <FatalErrorStateModal
-            title="Error"
-            message={`There was an unexpected error. Please refresh the page to retry. If this error continues please file a bug with the Owncast project: ${error}`}
+            title={translated(t, Localization.Frontend.Errors.title, '错误')}
+            message={translated(
+              t,
+              Localization.Frontend.Errors.unexpected,
+              '出现了意外错误。请刷新页面重试。如果问题仍然存在，请向 Owncast 项目反馈：{{message}}',
+            ).replace('{{message}}', String(error))}
           />
         )}
       >

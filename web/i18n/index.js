@@ -1,19 +1,40 @@
-// Only English ships in the main javascript bundle. Every other locale is
-// fetched on demand by utils/localeLoader, which webpack splits into one
-// small chunk per language, patched into `translations` at runtime. This
-// keeps ~500KB of catalogs out of the code that has to download and parse
-// before the page becomes interactive.
+/* eslint-disable @typescript-eslint/no-require-imports */
+// English stays in the bundle as the fallback catalog. zh-CN is the product
+// default and is bundled too, so the first paint is Simplified Chinese
+// without waiting on a locale chunk. Every other locale, including the
+// existing Traditional Chinese catalog at zh, is fetched on demand by
+// utils/localeLoader.
 const en = require('./en/translation.json');
+const zhCN = require('./zh-CN/translation.json');
+
+// Fill any blank zh-CN string from English so a missing translation cannot
+// render as an empty label. Translated values are left alone.
+const withFallback = (catalog, fallback) => {
+  const merged = { ...catalog };
+  Object.entries(fallback).forEach(([key, fallbackValue]) => {
+    const value = merged[key];
+    if (typeof fallbackValue === 'string') {
+      if (typeof value !== 'string' || value.trim() === '') {
+        merged[key] = fallbackValue;
+      }
+      return;
+    }
+    merged[key] = withFallback(typeof value === 'object' && value ? value : {}, fallbackValue);
+  });
+  return merged;
+};
 
 const i18n = {
   translations: {
     en,
+    'zh-CN': withFallback(zhCN, en),
   },
-  defaultLang: 'en',
-  // Browser-language detection is handled by utils/localeLoader so the
-  // catalog can be fetched first. The library's own detection only ever
-  // sees English until that catalog arrives.
-  useBrowserDefault: true,
+  defaultLang: 'zh-CN',
+  // Browser-language detection for non-default locales is handled by
+  // utils/localeLoader, which fetches the catalog before switching. The
+  // library's own detector is off so an English browser does not override
+  // the Simplified Chinese default before that loader runs.
+  useBrowserDefault: false,
   languageDataStore: 'query',
 };
 

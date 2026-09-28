@@ -15,6 +15,7 @@ import (
 	"github.com/teris-io/shortid"
 
 	"github.com/owncast/owncast/models"
+	"github.com/owncast/owncast/static"
 	"github.com/owncast/owncast/utils"
 	"github.com/owncast/owncast/webserver/handlers/generated"
 	webutils "github.com/owncast/owncast/webserver/utils"
@@ -246,36 +247,50 @@ func (a *Admin) SetLogo(w http.ResponseWriter, r *http.Request) {
 		webutils.WriteSimpleResponse(w, false, "unable to find image data")
 		return
 	}
-	bytes, extension, err := utils.DecodeBase64Image(value)
-	if err != nil {
+
+	if err := a.saveLogo(value); err != nil {
 		webutils.WriteSimpleResponse(w, false, err.Error())
 		return
+	}
+
+	if err := a.configRepository.SetLogoUniquenessString(shortid.MustGenerate()); err != nil {
+		log.Error("Error saving logo uniqueness string: ", err)
+	}
+
+	// Update Fediverse followers about this change. Nil in unit tests that
+	// only exercise the logo file.
+	if a.activitypub != nil {
+		if err := a.activitypub.UpdateFollowersWithAccountUpdates(); err != nil {
+			webutils.WriteSimpleResponse(w, false, err.Error())
+			return
+		}
+	}
+
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+// saveLogo writes an uploaded logo, or restores the built-in logo when value
+// is empty (the admin "delete logo" action).
+func (a *Admin) saveLogo(value string) error {
+	if strings.TrimSpace(value) == "" {
+		logo := static.GetLogo()
+		if err := os.WriteFile(filepath.Join("data", "logo.png"), logo, 0o600); err != nil {
+			return err
+		}
+		return a.configRepository.SetLogoPath("logo.png")
+	}
+
+	bytes, extension, err := utils.DecodeBase64Image(value)
+	if err != nil {
+		return err
 	}
 
 	imgPath := filepath.Join("data", "logo"+extension)
 	if err := os.WriteFile(imgPath, bytes, 0o600); err != nil {
-		webutils.WriteSimpleResponse(w, false, err.Error())
-		return
+		return err
 	}
 
-	configRepository := a.configRepository
-
-	if err := configRepository.SetLogoPath("logo" + extension); err != nil {
-		webutils.WriteSimpleResponse(w, false, err.Error())
-		return
-	}
-
-	if err := configRepository.SetLogoUniquenessString(shortid.MustGenerate()); err != nil {
-		log.Error("Error saving logo uniqueness string: ", err)
-	}
-
-	// Update Fediverse followers about this change.
-	if err := a.activitypub.UpdateFollowersWithAccountUpdates(); err != nil {
-		webutils.WriteSimpleResponse(w, false, err.Error())
-		return
-	}
-
-	webutils.WriteSimpleResponse(w, true, "changed")
+	return a.configRepository.SetLogoPath("logo" + extension)
 }
 
 // SetFavicon will handle a new favicon image being set via base64 data.

@@ -6,7 +6,11 @@ import Graphemer from 'graphemer';
 
 import dynamic from 'next/dynamic';
 import classNames from 'classnames';
+import { useTranslation } from 'next-export-i18n';
+
 import ContentEditable from './ContentEditable';
+import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 import { websocketServiceAtom, chatInputDraftAtom } from '../../stores/ClientConfigStore';
 import { MessageType } from '../../../interfaces/socket-events';
 import styles from './ChatTextField.module.scss';
@@ -125,6 +129,7 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
   focusInput,
   disabledPlaceholder,
 }) => {
+  const { t } = useTranslation();
   const [inputDraft, setInputDraft] = useAtom(chatInputDraftAtom);
   const [characterCount, setCharacterCount] = useState(defaultText?.length);
   const websocketService = useAtomValue(websocketServiceAtom);
@@ -282,7 +287,10 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
           id="chat-input-content-editable"
           html={defaultText || ''}
           placeholder={
-            enabled ? 'Send a message to chat' : disabledPlaceholder || 'Chat is disabled'
+            enabled
+              ? translated(t, Localization.Frontend.Chat.sendPlaceholder, '发送一条聊天消息')
+              : disabledPlaceholder ||
+                translated(t, Localization.Frontend.chatDisabled, '聊天已关闭')
           }
           disabled={!enabled}
           onKeyDown={onKeyDown}
@@ -291,7 +299,7 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
           onRootRef={onRootRef}
           style={{ whiteSpace: 'pre-wrap', width: '100%' }}
           role="textbox"
-          aria-label="Chat text input"
+          aria-label={translated(t, Localization.Frontend.Chat.inputLabel, '聊天输入框')}
         />
         {enabled && (
           <div style={{ display: 'flex', paddingLeft: '5px' }}>

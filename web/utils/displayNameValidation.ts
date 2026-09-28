@@ -5,9 +5,12 @@
  * @param characterLimit Maximum allowed character count
  * @returns Object with validation result and error message if invalid
  */
+export type DisplayNameErrorCode = 'required' | 'whitespace' | 'unchanged' | 'tooLong';
+
 export interface DisplayNameValidationResult {
   isValid: boolean;
   errorMessage?: string;
+  errorCode?: DisplayNameErrorCode;
   trimmedName?: string;
 }
 
@@ -57,6 +60,7 @@ export function validateDisplayName(
   if (name === undefined) {
     return {
       isValid: false,
+      errorCode: 'required',
       errorMessage: 'Display name is required',
     };
   }
@@ -68,6 +72,7 @@ export function validateDisplayName(
   if (trimmedName.length === 0) {
     return {
       isValid: false,
+      errorCode: 'whitespace',
       errorMessage: 'Display name cannot be empty or contain only whitespace',
     };
   }
@@ -76,6 +81,7 @@ export function validateDisplayName(
   if (trimmedName === currentName) {
     return {
       isValid: false,
+      errorCode: 'unchanged',
       errorMessage: 'New name must be different from current name',
     };
   }
@@ -85,6 +91,7 @@ export function validateDisplayName(
   if (characterCount > characterLimit) {
     return {
       isValid: false,
+      errorCode: 'tooLong',
       errorMessage: `Display name cannot exceed ${characterLimit} characters`,
     };
   }

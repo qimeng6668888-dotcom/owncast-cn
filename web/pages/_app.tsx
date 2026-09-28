@@ -45,6 +45,7 @@ function LocaleSync() {
   const router = useRouter();
   const { lang } = useSelectedLanguage();
   useEffect(() => {
+    document.documentElement.lang = lang || 'zh-CN';
     if (shouldCleanUrlAfterFlip(lang)) {
       const rest = { ...router.query };
       delete rest.lang;
@@ -57,8 +58,8 @@ function LocaleSync() {
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
   const layout = Component.getLayout ?? (page => page);
 
-  // Fetch the viewer's locale catalog (one small chunk) once the router can
-  // report ?lang=. Everything renders in English until it lands.
+  // Fetch a non-default locale catalog once the router can report ?lang=.
+  // zh-CN is bundled, so the page renders in Simplified Chinese immediately.
   const router = useRouter();
   useEffect(() => {
     if (router.isReady) {

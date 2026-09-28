@@ -12,6 +12,7 @@ import { upgradeVersionAvailable } from '../../utils/apis';
 import { PluginsContext } from '../../utils/plugins-context';
 import { PluginIcon } from './plugins/PluginIcon';
 import { Localization } from '../../types/localization';
+import { translated } from '../../utils/playerLanguage';
 import { parseSecondsToDurationString } from '../../utils/format';
 
 import { OwncastLogo } from '../common/OwncastLogo/OwncastLogo';
@@ -93,6 +94,7 @@ export type MainLayoutProps = {
 
 export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
+  const nav = (key: string, fallback: string) => translated(t, key, fallback);
   const context = useContext(ServerStatusContext);
   const { serverConfig, online, broadcaster, versionNumber, error: serverError } = context || {};
   const { instanceDetails, chatDisabled, federation } = serverConfig;
@@ -152,7 +154,10 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
   });
 
   const upgradeVersionString = `${upgradeVersion}` || '';
-  const upgradeMessage = `Upgrade to v${upgradeVersionString}`;
+  const upgradeMessage = nav(Localization.Admin.Nav.upgradeTo, '升级到 v{{version}}').replace(
+    '{{version}}',
+    upgradeVersionString,
+  );
   const openMenuItems = upgradeVersion ? ['utilities-menu'] : [];
 
   const clearAlertMessage = () => {
@@ -169,7 +174,9 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
     : '';
 
   const statusIcon = online ? <PlayCircleFilled /> : <MinusSquareFilled />;
-  const statusMessage = online ? `Online ${streamDurationString}` : 'Offline';
+  const statusMessage = online
+    ? `${nav(Localization.Admin.Nav.online, '在线')} ${streamDurationString}`
+    : nav(Localization.Admin.Nav.offline, '离线');
 
   const statusIndicator = (
     <div className="online-status-indicator">
@@ -180,47 +187,65 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
 
   const integrationsMenu = [
     {
-      label: <Link href="/admin/webhooks">Webhooks</Link>,
+      label: <Link href="/admin/webhooks">{nav(Localization.Admin.Nav.webhooks, 'Webhooks')}</Link>,
       key: '/admin/webhooks',
     },
     {
-      label: <Link href="/admin/access-tokens">Access Tokens</Link>,
+      label: (
+        <Link href="/admin/access-tokens">
+          {nav(Localization.Admin.Nav.accessTokens, '访问令牌')}
+        </Link>
+      ),
       key: '/admin/access-tokens',
     },
     {
-      label: <Link href="/admin/actions">External Actions</Link>,
+      label: (
+        <Link href="/admin/actions">{nav(Localization.Admin.Nav.externalActions, '外部操作')}</Link>
+      ),
       key: '/admin/actions',
     },
   ];
 
   const chatMenu = [
     {
-      label: <Link href="/admin/chat/messages">Messages</Link>,
+      label: (
+        <Link href="/admin/chat/messages">{nav(Localization.Admin.Nav.messages, '消息')}</Link>
+      ),
       key: '/admin/chat/messages',
     },
     {
-      label: <Link href="/admin/chat/emojis">Emojis</Link>,
+      label: <Link href="/admin/chat/emojis">{nav(Localization.Admin.Nav.emojis, '表情')}</Link>,
       key: '/admin/chat/emojis',
     },
   ];
 
   const utilitiesMenu = [
     {
-      label: <Link href="/admin/hardware-info">Hardware</Link>,
+      label: (
+        <Link href="/admin/hardware-info">{nav(Localization.Admin.Nav.hardware, '硬件')}</Link>
+      ),
       key: '/admin/hardware-info',
     },
     {
-      label: <Link href="/admin/stream-health">Stream Health</Link>,
+      label: (
+        <Link href="/admin/stream-health">
+          {nav(Localization.Admin.Nav.streamHealth, '直播健康')}
+        </Link>
+      ),
       key: '/admin/stream-health',
     },
     {
-      label: <Link href="/admin/logs">Logs</Link>,
+      label: <Link href="/admin/logs">{nav(Localization.Admin.Nav.logs, '日志')}</Link>,
       key: '/admin/logs',
     },
     ...(federationEnabled
       ? [
           {
-            label: <Link href="/admin/federation/actions">Social Actions</Link>,
+            label: (
+              <Link href="/admin/federation/actions">
+                {nav(Localization.Admin.Nav.socialActions, '社交动态')}
+              </Link>
+            ),
             key: '/admin/federation/actions',
           },
         ]
@@ -229,47 +254,63 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
 
   const configurationMenu = [
     {
-      label: <Link href="/admin/config/general">General</Link>,
+      label: (
+        <Link href="/admin/config/general">{nav(Localization.Admin.Nav.general, '常规')}</Link>
+      ),
       key: '/admin/config/general',
     },
     {
-      label: <Link href="/admin/config/server">Server Setup</Link>,
+      label: (
+        <Link href="/admin/config/server">
+          {nav(Localization.Admin.Nav.serverSetup, '服务器设置')}
+        </Link>
+      ),
       key: '/admin/config/server',
     },
     {
-      label: <Link href="/admin/config-video">Video</Link>,
+      label: <Link href="/admin/config-video">{nav(Localization.Admin.Nav.video, '视频')}</Link>,
       key: '/admin/config-video',
     },
     {
-      label: <Link href="/admin/config-chat">Chat</Link>,
+      label: (
+        <Link href="/admin/config-chat">{nav(Localization.Admin.Nav.chatSettings, '聊天')}</Link>
+      ),
       key: '/admin/config-chat',
     },
     {
-      label: <Link href="/admin/config-federation">Social</Link>,
+      label: (
+        <Link href="/admin/config-federation">{nav(Localization.Admin.Nav.social, '社交')}</Link>
+      ),
       key: '/admin/config-federation',
     },
     {
-      label: <Link href="/admin/config-notify">Notifications</Link>,
+      label: (
+        <Link href="/admin/config-notify">{nav(Localization.Admin.Nav.notifications, '通知')}</Link>
+      ),
       key: '/admin/config-notify',
     },
   ];
 
   const menuItems = [
-    { label: <Link href="/admin">Home</Link>, icon: <HomeOutlined />, key: '/admin' },
     {
-      label: <Link href="/admin/viewer-info">Viewers</Link>,
+      label: <Link href="/admin">{nav(Localization.Admin.Nav.home, '首页')}</Link>,
+      icon: <HomeOutlined />,
+      key: '/admin',
+    },
+    {
+      label: <Link href="/admin/viewer-info">{nav(Localization.Admin.Nav.viewers, '观众')}</Link>,
       icon: <LineChartOutlined />,
       key: '/admin/viewer-info',
     },
     {
-      label: <Link href="/admin/users">Users</Link>,
+      label: <Link href="/admin/users">{nav(Localization.Admin.Nav.users, '用户')}</Link>,
       icon: <TeamOutlined />,
       key: '/admin/users',
     },
     ...(!chatDisabled
       ? [
           {
-            label: <span>Chat</span>,
+            label: <span>{nav(Localization.Admin.Nav.chat, '聊天')}</span>,
             icon: <MessageOutlined />,
             children: chatMenu,
             key: 'chat',
@@ -280,7 +321,11 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
       ? [
           {
             key: '/admin/federation/followers',
-            label: <Link href="/admin/federation/followers">Followers</Link>,
+            label: (
+              <Link href="/admin/federation/followers">
+                {nav(Localization.Admin.Nav.followers, '关注者')}
+              </Link>
+            ),
             icon: (
               <span
                 role="img"
@@ -301,7 +346,7 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
             key: '/admin/config-featured',
             label: (
               <Link href="/admin/config-featured">
-                Featured Streams
+                {nav(Localization.Admin.Nav.featuredStreams, '精选直播')}
                 {pendingFeatureRequestCount > 0 && (
                   <Badge
                     count={pendingFeatureRequestCount}
@@ -317,19 +362,19 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
       : []),
     {
       key: 'configuration',
-      label: 'Configuration',
+      label: nav(Localization.Admin.Nav.configuration, '配置'),
       icon: <SettingOutlined />,
       children: configurationMenu,
     },
     {
       key: 'utilities',
-      label: 'Utilities',
+      label: nav(Localization.Admin.Nav.utilities, '工具'),
       icon: <ToolOutlined />,
       children: utilitiesMenu,
     },
     {
       key: 'integrations',
-      label: 'Integrations',
+      label: nav(Localization.Admin.Nav.integrations, '集成'),
       icon: <ExperimentOutlined />,
       children: integrationsMenu,
     },
@@ -386,7 +431,7 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
       : []),
     {
       key: '/admin/help',
-      label: <Link href="/admin/help">Help</Link>,
+      label: <Link href="/admin/help">{nav(Localization.Admin.Nav.help, '帮助')}</Link>,
       icon: <QuestionCircleOutlined />,
     },
   ];
@@ -418,12 +463,15 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
   return (
     <Layout id="admin-page" className={appClass}>
       <Head>
-        <title>Owncast Admin</title>
+        <title>{nav(Localization.Admin.Nav.adminTitle, '管理后台')}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       {serverError?.type === 'OWNCAST_SERVICE_UNREACHABLE' && (
-        <FatalErrorStateModal title="Server Unreachable" message={serverError.msg} />
+        <FatalErrorStateModal
+          title={nav(Localization.Admin.Nav.serverUnreachable, '无法连接服务器')}
+          message={serverError.msg}
+        />
       )}
 
       <Sider width={240} className="side-nav">
@@ -431,7 +479,7 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
           <span className="logo-container">
             <OwncastLogo variant="simple" />
           </span>
-          <span className="title-label">Owncast Admin</span>
+          <span className="title-label">{nav(Localization.Admin.Nav.adminTitle, '管理后台')}</span>
         </h1>
         <Menu
           mode="inline"
@@ -447,7 +495,7 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
       <Layout className="layout-main">
         <Header className="layout-header">
           <Space orientation="horizontal">
-            <Tooltip title="Compose post to your social followers">
+            <Tooltip title={nav(Localization.Admin.Nav.composePostTooltip, '向社交关注者发布帖子')}>
               <Button
                 type="link"
                 icon={<EditOutlined />}
@@ -455,7 +503,7 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
                 onClick={handleCreatePostButtonPressed}
                 style={{ display: federationEnabled ? 'block' : 'none', margin: '10px' }}
               >
-                Compose Post
+                {nav(Localization.Admin.Nav.composePost, '发布帖子')}
               </Button>
             </Tooltip>
           </Space>
@@ -463,7 +511,10 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
             <TextFieldWithSubmit
               fieldName="streamTitle"
               {...TEXTFIELD_PROPS_STREAM_TITLE}
-              placeholder="What are you streaming now? (Stream title)"
+              placeholder={nav(
+                Localization.Admin.Nav.streamTitlePlaceholder,
+                '你正在直播什么？（直播标题）',
+              )}
               value={currentStreamTitle}
               initialValue={instanceDetails.streamTitle}
               onChange={handleStreamTitleChanged}

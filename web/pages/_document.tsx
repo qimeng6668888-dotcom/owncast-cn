@@ -40,7 +40,7 @@ class InlineStylesHead extends Head {
 
 export default function Document() {
   return (
-    <Html>
+    <Html lang="zh-CN">
       <InlineStylesHead />
       <body>
         <Main />

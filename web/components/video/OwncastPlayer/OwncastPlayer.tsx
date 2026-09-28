@@ -2,13 +2,14 @@
 import React, { FC, useContext, useEffect } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useTranslation } from 'next-export-i18n';
+import { useSelectedLanguage, useTranslation } from 'next-export-i18n';
 import classNames from 'classnames';
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary';
 import { VideoJS } from '../VideoJS/VideoJS';
 import ViewerPing from '../viewer-ping';
 import { VideoPoster } from '../VideoPoster/VideoPoster';
 import { getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
+import { translated } from '../../../utils/playerLanguage';
 import { AutoplaySetting, autoplayModeForSetting } from '../../../utils/autoplay';
 import { Localization } from '../../../types/localization';
 import { isVideoPlayingAtom, clockSkewAtom } from '../../stores/ClientConfigStore';
@@ -48,6 +49,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
   const [videoPlaying, setVideoPlaying] = useAtom(isVideoPlayingAtom);
   const clockSkew = useAtomValue(clockSkewAtom);
   const { t } = useTranslation();
+  const { lang } = useSelectedLanguage();
+  const playerLang = lang || 'zh-CN';
 
   // A persisted volume of 0 is a mute the viewer chose on a previous visit
   // (handleVolume stores muted as 0). Restoring it is a manual mute, not an
@@ -149,6 +152,18 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       videojs,
       videoQualities,
       toggleLatencyCompensator,
+      {
+        auto: translated(t, Localization.Frontend.Player.Auto, '自动'),
+        settings: translated(t, Localization.Frontend.Player.Settings, '设置'),
+        minimizeLatency: translated(t, Localization.Frontend.Player.MinimizeLatency, '降低延迟'),
+        minimizeLatencyHelp: translated(
+          t,
+          Localization.Frontend.Player.MinimizeLatencyHelp,
+          '实验功能：略微加快播放，让你更接近直播进度',
+        ),
+        on: translated(t, Localization.Frontend.Player.On, '开'),
+        off: translated(t, Localization.Frontend.Player.Off, '关'),
+      },
     );
     player.controlBar.addChild(
       menuButton,
@@ -304,6 +319,7 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
 
   const videoJsOptions = {
     autoplay: autoplayMode,
+    language: playerLang,
     controls: true,
     responsive: true,
     fluid: false,

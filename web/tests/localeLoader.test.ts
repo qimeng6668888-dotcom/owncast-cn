@@ -24,7 +24,7 @@ const freshModules = (): {
   let shouldClean!: ShouldCleanUrlAfterFlip;
   let i18n!: I18nShape;
   jest.isolateModules(() => {
-    /* eslint-disable global-require, @typescript-eslint/no-var-requires */
+    /* eslint-disable global-require, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
     load = require('../utils/localeLoader').loadViewerLocale;
     shouldClean = require('../utils/localeLoader').shouldCleanUrlAfterFlip;
     i18n = require('../i18n');
@@ -61,7 +61,19 @@ describe('pickLocale', () => {
     ['browser tag is case-insensitive', undefined, 'DE-at', 'de'],
     ['query is exact-match only, no case folding', 'DE', 'zz-ZZ', null],
     ['english from the query needs no catalog', 'en', 'de-DE', null],
-    ['english from the browser needs no catalog', undefined, 'en-US', null],
+    ['english from the browser stays on the bundled default', undefined, 'en-US', null],
+    ['simplified Chinese browser stays on the bundled default', undefined, 'zh-CN', null],
+    [
+      'generic zh browser uses simplified Chinese, not the traditional catalog',
+      undefined,
+      'zh',
+      null,
+    ],
+    ['zh-Hans browser uses simplified Chinese', undefined, 'zh-Hans', null],
+    ['traditional Chinese browser loads the existing zh catalog', undefined, 'zh-TW', 'zh'],
+    ['zh-HK browser loads the existing zh catalog', undefined, 'zh-HK', 'zh'],
+    ['explicit zh query is not remapped onto zh-CN', 'zh', 'zh-CN', 'zh'],
+    ['explicit zh-CN query needs no fetch', 'zh-CN', 'de-DE', null],
     ['unknown query and unknown browser yield nothing', 'xx', 'zz-ZZ', null],
     ['both inputs missing yields nothing', undefined, undefined, null],
   ])('%s', (_name, queryLang, browserLanguage, expected) => {
@@ -98,6 +110,8 @@ describe('AVAILABLE_LOCALES', () => {
   test('offers en and de but deliberately not eu', () => {
     expect(AVAILABLE_LOCALES).toContain('en');
     expect(AVAILABLE_LOCALES).toContain('de');
+    expect(AVAILABLE_LOCALES).toContain('zh');
+    expect(AVAILABLE_LOCALES).toContain('zh-CN');
     expect(AVAILABLE_LOCALES).not.toContain('eu');
   });
 
@@ -176,7 +190,7 @@ describe('loadViewerLocale', () => {
     await load(router);
 
     expect(replace).not.toHaveBeenCalled();
-    expect(Object.keys(i18n.translations)).toEqual(['en']);
+    expect(Object.keys(i18n.translations)).toEqual(['en', 'zh-CN']);
   });
 
   test('second call is a no-op even with different inputs', async () => {
@@ -206,7 +220,7 @@ describe('loadViewerLocale', () => {
     await load(first.router);
 
     expect(first.replace).not.toHaveBeenCalled();
-    expect(Object.keys(i18n.translations)).toEqual(['en']);
+    expect(Object.keys(i18n.translations)).toEqual(['en', 'zh-CN']);
 
     // Same module instance, now with a loadable browser locale.
     setBrowserLanguage('de-DE');

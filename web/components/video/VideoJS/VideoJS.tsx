@@ -4,17 +4,7 @@ import type VideoJsPlayer from 'video.js/dist/types/player';
 import { useTranslation } from 'next-export-i18n';
 
 import styles from './VideoJS.module.scss';
-
-const SHORTCUT_SUFFIXES: Record<string, string> = {
-  Play: ' (Space)',
-  Pause: ' (Space)',
-  Mute: ' (m)',
-  Unmute: ' (m)',
-  Fullscreen: ' (f)',
-  'Non-Fullscreen': ' (f)',
-  'Picture-in-Picture': ' (i)',
-  'Exit Picture-in-Picture': ' (i)',
-};
+import { playerLanguagePack } from '../../../utils/playerLanguage';
 
 export type VideoJSProps = {
   options: any;
@@ -26,24 +16,16 @@ export const VideoJS: FC<VideoJSProps> = ({ options, onReady }) => {
   const playerRef = React.useRef<VideoJsPlayer | null>(null);
   const { t } = useTranslation();
 
-  const addShortcutsToLanguage = (vjs: typeof videojs, langCode: string) => {
-    const updates: Record<string, string> = {};
-    Object.keys(SHORTCUT_SUFFIXES).forEach(key => {
-      const currentLabel = key;
-      const suffix = SHORTCUT_SUFFIXES[key];
-      updates[key] = t(`${currentLabel}${suffix}`);
-    });
-    vjs.addLanguage(langCode, updates);
-  };
-
   React.useEffect(() => {
     // Make sure Video.js player is only initialized once
     if (!playerRef.current) {
       const videoElement = videoRef.current;
+      const langCode = options.language || 'zh-CN';
 
-      addShortcutsToLanguage(videojs, 'en');
+      videojs.addLanguage(langCode, playerLanguagePack(t));
       const finalOptions = {
         ...options,
+        language: langCode,
         noUITitleAttributes: true, // Prevents videojs from adding a title attribute to UI elements, thus preventing "double tooltips".
       };
       // eslint-disable-next-line no-multi-assign

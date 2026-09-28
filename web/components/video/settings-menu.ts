@@ -11,12 +11,32 @@ const toggleBadgeStyle = (enabled: boolean): string =>
       : 'background: transparent; color: #999; border: 1px solid #777;'
   }`;
 
+export type VideoSettingsMenuLabels = {
+  auto: string;
+  settings: string;
+  minimizeLatency: string;
+  minimizeLatencyHelp: string;
+  on: string;
+  off: string;
+};
+
+const DEFAULT_MENU_LABELS: VideoSettingsMenuLabels = {
+  auto: 'Auto',
+  settings: 'Settings',
+  minimizeLatency: 'Minimize latency',
+  minimizeLatencyHelp: 'Experimental: slightly speeds up playback to keep you closer to live',
+  on: 'ON',
+  off: 'OFF',
+};
+
 export function createVideoSettingsMenuButton(
   player,
   videojs,
   qualities,
   latencyItemPressed: () => boolean,
+  labels: Partial<VideoSettingsMenuLabels> = {},
 ): unknown {
+  const text = { ...DEFAULT_MENU_LABELS, ...labels };
   const VjsMenuItem = videojs.getComponent('MenuItem');
   const MenuItem = videojs.getComponent('MenuItem');
   const MenuButtonClass = videojs.getComponent('MenuButton');
@@ -45,14 +65,11 @@ export function createVideoSettingsMenuButton(
 
     createEl(tag = 'button', props = {}, attributes = {}) {
       const el = super.createEl(tag, props, attributes);
-      el.setAttribute(
-        'title',
-        'Experimental: slightly speeds up playback to keep you closer to live',
-      );
+      el.setAttribute('title', text.minimizeLatencyHelp);
       el.innerHTML =
         '<span style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 10px;">' +
-        '<span>Minimize latency</span>' +
-        `<span class="latency-toggle-state" style="${toggleBadgeStyle(false)}">OFF</span>` +
+        `<span>${text.minimizeLatency}</span>` +
+        `<span class="latency-toggle-state" style="${toggleBadgeStyle(false)}">${text.off}</span>` +
         '</span>';
       return el;
     }
@@ -61,7 +78,7 @@ export function createVideoSettingsMenuButton(
       this.selected(enabled);
       const badge = this.el().querySelector('.latency-toggle-state') as HTMLElement | null;
       if (badge) {
-        badge.textContent = enabled ? 'ON' : 'OFF';
+        badge.textContent = enabled ? text.on : text.off;
         badge.setAttribute('style', toggleBadgeStyle(enabled));
       }
     }
@@ -69,7 +86,7 @@ export function createVideoSettingsMenuButton(
 
   const lowLatencyItem = new LowLatencyMenuItem(player, {
     selectable: true,
-    label: 'Minimize latency',
+    label: text.minimizeLatency,
   });
   // Reflect the saved preference: the player auto-starts the compensator
   // from local storage, and the menu item should agree with it on load.
@@ -95,7 +112,7 @@ export function createVideoSettingsMenuButton(
       const defaultAutoItem = new MenuItem(player, {
         selectable: true,
         selected: true,
-        label: 'Auto',
+        label: text.auto,
       });
 
       const items = Array(qualities.length);
@@ -161,7 +178,7 @@ export function createVideoSettingsMenuButton(
   }
 
   const menuButton = new MenuButton();
-  menuButton.el().setAttribute('aria-label', 'Settings');
+  menuButton.el().setAttribute('aria-label', text.settings);
 
   menuButton.addClass('vjs-quality-selector');
   videojs.registerComponent('MenuButton', MenuButton);
