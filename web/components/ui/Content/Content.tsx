@@ -9,6 +9,7 @@ import ActionButtons from './ActionButtons';
 import { LOCAL_STORAGE_KEYS, getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
 import { canPushNotificationsBeSupported } from '../../../utils/browserPushNotifications';
 import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 
 import {
   clientConfigStateAtom,
@@ -399,7 +400,7 @@ export const Content: FC = () => {
           onClick={() => setShowChatModal(true)}
           className={styles.floatingMobileChatModalButton}
         >
-          Chat <MessageFilled />
+          {translated(t, Localization.Frontend.openChat, '聊天')} <MessageFilled />
         </Button>
       )}
     </div>

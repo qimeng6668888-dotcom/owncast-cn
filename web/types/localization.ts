@@ -16,6 +16,10 @@ export const Localization = {
 
     // Stream information and statistics
     lastLiveAgo: 'Last live {{timeAgo}} ago',
+    liveFor: 'Frontend.liveFor',
+    streamOffline: 'Frontend.streamOffline',
+    openChat: 'Frontend.openChat',
+    noWorkingPlaylist: 'Frontend.noWorkingPlaylist',
     currentViewers: 'Current viewers',
     maxViewers: 'Max viewers this stream',
     noStreamActive: 'No stream is active',

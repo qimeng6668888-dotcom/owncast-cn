@@ -388,6 +388,46 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       setVideoPlaying(false);
     });
 
+    // Android rejects a single non-aligned rendition and video.js leaves this
+    // message up even after frames are already playing. Clear it once playback
+    // has data; otherwise show the Chinese wording.
+    const playlistError = 'No available working or supported playlists';
+    const playlistErrorMessage = translated(
+      t,
+      Localization.Frontend.noWorkingPlaylist,
+      '无法继续播放，没有可用的播放列表。',
+    );
+    const dismissRecoveredPlaylistError = () => {
+      const err = player.error();
+      if (!err) {
+        return;
+      }
+      const message = String(err.message || '');
+      if (!message.includes(playlistError) && message !== playlistErrorMessage) {
+        return;
+      }
+      if (player.readyState() >= 2 || player.currentTime() > 0) {
+        player.error(null);
+      }
+    };
+    player.on('error', () => {
+      const err = player.error();
+      if (!err) {
+        return;
+      }
+      const message = String(err.message || '');
+      if (!message.includes(playlistError)) {
+        return;
+      }
+      if (player.readyState() >= 2 || player.currentTime() > 0) {
+        player.error(null);
+        return;
+      }
+      player.error({ code: err.code || 4, message: playlistErrorMessage });
+    });
+    player.on('playing', dismissRecoveredPlaylistError);
+    player.on('loadeddata', dismissRecoveredPlaylistError);
+
     videojs.hookOnce();
 
     player.on('volumechange', handleVolume);
