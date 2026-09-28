@@ -51,6 +51,12 @@ Do not test against `http://localhost:8080`. That serves the web bundle embedded
 
 `./test/ocTestStream.sh` starts a real stream against the local server when live-stream state is needed. Admin dev credentials are `admin` / `abc123` over HTTP Basic Auth; the admin UI is at `/admin`.
 
+## Cursor Cloud specific instructions
+
+- Backend builds need `libsqlite3-dev`, `pkg-config`, `ffmpeg`, and a C compiler. CI uses Node.js 24.12.0. Put `$HOME/.nvm/versions/node/v24.12.0/bin` first on `PATH`, because this environment can expose an older `node` earlier in `PATH`.
+- Install frontend packages with `cd web && npm install`, which is what CI runs. `npm ci` fails on the current lockfile under npm 11. `npm install` may rewrite `web/package-lock.json`; leave that file uncommitted.
+- A tmux session can set `LD_LIBRARY_PATH` to a libncurses that makes `/usr/bin/ffmpeg` print `no version information available`. Start Owncast with `env -u LD_LIBRARY_PATH` so transcoding still resolves system libraries cleanly.
+
 ## Repository Structure
 
 - Root of the repo: Go source for the backend.
