@@ -5,6 +5,7 @@ import { ServerStatusContext } from '../../../../utils/server-status-context';
 
 import { fetchData, UPDATE_STREAM_KEYS } from '../../../../utils/apis';
 import { STREAM_KEY_COMPLEXITY_RULES, REGEX_STREAM_KEY } from '../../../../utils/config-constants';
+import { useAdminText } from '../../../../utils/adminText';
 
 const { Paragraph } = Typography;
 
@@ -52,6 +53,7 @@ export const generateRndKey = () => {
 };
 
 const AddKeyForm = ({ setShowAddKeyForm, setFieldInConfigState, streamKeys, setError }) => {
+  const tx = useAdminText();
   const [hasChanged, setHasChanged] = useState(true);
   const [form] = Form.useForm();
   const { Item } = Form;
@@ -88,11 +90,11 @@ const AddKeyForm = ({ setShowAddKeyForm, setFieldInConfigState, streamKeys, setE
       onFinish={handleAddKey}
       form={form}
       style={{ display: 'flex', flexDirection: 'row' }}
-      initialValues={{ key: defaultKey, comment: 'My new key' }}
+      initialValues={{ key: defaultKey, comment: tx('My new key') }}
     >
       <Item
         style={{ width: '60%', marginRight: '5px' }}
-        label="Key"
+        label={tx('Key')}
         name="key"
         tooltip={
           <p>
@@ -103,18 +105,18 @@ const AddKeyForm = ({ setShowAddKeyForm, setFieldInConfigState, streamKeys, setE
         }
         rules={STREAM_KEY_COMPLEXITY_RULES}
       >
-        <Input placeholder="your key" onChange={handleInputChange} />
+        <Input placeholder={tx('your key')} onChange={handleInputChange} />
       </Item>
       <Item
         style={{ width: '60%', marginRight: '5px' }}
-        label="Comment"
+        label={tx('Comment')}
         name="comment"
         tooltip="For remembering why you added this key"
       >
-        <Input placeholder="My OBS Key" />
+        <Input placeholder={tx('My OBS Key')} />
       </Item>
       <Button type="primary" htmlType="submit" disabled={!hasChanged}>
-        Add
+        {tx('Add')}
       </Button>
     </Form>
   );
@@ -130,6 +132,7 @@ const StreamKeys = () => {
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig, setFieldInConfigState } = serverStatusData || {};
   const { streamKeys } = serverConfig;
+  const tx = useAdminText();
   const [showAddKeyForm, setShowAddKeyForm] = useState(false);
   const [showKeyMap, setShowKeyMap] = useState({});
   const [error, setError] = useState(null);
@@ -152,7 +155,7 @@ const StreamKeys = () => {
 
   const columns = [
     {
-      title: 'Key',
+      title: tx('Key'),
       dataIndex: 'key',
       key: 'key',
       render: key => (
@@ -160,7 +163,7 @@ const StreamKeys = () => {
           <Paragraph
             copyable={{
               text: key,
-              onCopy: () => message.success('Copied to clipboard'),
+              onCopy: () => message.success(tx('Copied to clipboard')),
             }}
           >
             {showKeyMap[key] ? key : '**********'}
@@ -176,7 +179,7 @@ const StreamKeys = () => {
       ),
     },
     {
-      title: 'Comment',
+      title: tx('Comment'),
       dataIndex: 'comment',
       key: 'comment',
     },
@@ -196,9 +199,9 @@ const StreamKeys = () => {
   return (
     <div>
       <Paragraph>
-        A streaming key is used with your broadcasting software to authenticate itself to Owncast.
-        Most people will only need one. However, if you share a server with others or you want
-        different keys for different broadcasting sources you can add more here.
+        {tx(
+          'A streaming key is used with your broadcasting software to authenticate itself to Owncast. Most people will only need one. However, if you share a server with others or you want different keys for different broadcasting sources you can add more here.',
+        )}
       </Paragraph>
       <Paragraph>
         These keys are unrelated to the admin password and will not grant you access to make changes
@@ -217,12 +220,14 @@ const StreamKeys = () => {
       </Paragraph>
 
       <Space direction="vertical" style={{ width: '70%' }}>
-        {error && <Alert type="error" message="Saving Keys Error" description={error} />}
+        {error && <Alert type="error" message={tx('Saving Keys Error')} description={error} />}
 
         {streamKeys.length === 0 && (
           <Alert
-            message="No stream keys!"
-            description="You will not be able to stream until you create at least one stream key and add it to your broadcasting software."
+            message={tx('No stream keys!')}
+            description={tx(
+              'You will not be able to stream until you create at least one stream key and add it to your broadcasting software.',
+            )}
             type="error"
           />
         )}

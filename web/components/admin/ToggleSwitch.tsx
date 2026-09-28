@@ -17,6 +17,7 @@ import { FormStatusIndicator } from './FormStatusIndicator';
 
 import { RESET_TIMEOUT, postConfigUpdateToAPI } from '../../utils/config-constants';
 import { ServerStatusContext } from '../../utils/server-status-context';
+import { useAdminText } from '../../utils/adminText';
 
 export type ToggleSwitchProps = {
   fieldName: string;
@@ -45,6 +46,7 @@ export const ToggleSwitch: FC<ToggleSwitchProps> = ({
   onChange = null,
 }) => {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const [submitStatus, setSubmitStatus] = useState<StatusState>(null);
 
   let resetTimer = null;
@@ -91,7 +93,7 @@ export const ToggleSwitch: FC<ToggleSwitchProps> = ({
     <div className="formfield-container toggleswitch-container">
       {label && (
         <div className="label-side">
-          <span className="formfield-label">{label}</span>
+          <span className="formfield-label">{tx(label)}</span>
         </div>
       )}
 
@@ -103,13 +105,13 @@ export const ToggleSwitch: FC<ToggleSwitchProps> = ({
             onChange={handleChange}
             defaultChecked={checked}
             checked={checked}
-            checkedChildren="ON"
-            unCheckedChildren="OFF"
+            checkedChildren={tx('ON')}
+            unCheckedChildren={tx('OFF')}
             disabled={disabled}
           />
           <FormStatusIndicator status={submitStatus} />
         </div>
-        <p className="field-tip">{tip}</p>
+        <p className="field-tip">{tx(tip)}</p>
       </div>
     </div>
   );
