@@ -127,6 +127,7 @@ export const Localization = {
       authenticateToChat: 'Frontend.Chat.authenticateToChat',
       sendPlaceholder: 'Frontend.Chat.sendPlaceholder',
       inputLabel: 'Frontend.Chat.inputLabel',
+      streamEnding: 'Frontend.Chat.streamEnding',
     },
 
     Auth: {

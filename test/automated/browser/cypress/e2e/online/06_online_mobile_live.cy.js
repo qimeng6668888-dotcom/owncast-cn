@@ -9,16 +9,16 @@ filterTests(['mobile'], () => {
 			cy.visit('http://localhost:8080');
 		});
 
-		it('Mobile chat button should be visible', () => {
-			cy.get('#mobile-chat-button').should('be.visible');
+		it('Mobile chat should be visible in the page flow', () => {
+			cy.get('#mobile-inline-chat #chat-container').should('be.visible');
 		});
 
-		it('Click mobile chat button', () => {
-			cy.get('#mobile-chat-button').click();
+		it('Mobile chat button should not exist', () => {
+			cy.get('#mobile-chat-button').should('not.exist');
 		});
 
-		it('Mobile chat modal should be visible', () => {
-			cy.get('.ant-modal').should('be.visible');
+		it('Mobile chat modal should not exist', () => {
+			cy.get('.ant-modal').should('not.exist');
 		});
 
 		it('Chat container should be visible', () => {
@@ -29,7 +29,7 @@ filterTests(['mobile'], () => {
 			cy.get('#chat-input').should('be.visible');
 		});
 
-		it('Can send a chat message from the mobile chat modal', () => {
+		it('Can send a chat message from the inline mobile chat', () => {
 			cy.get('#chat-input-content-editable').type('mobile e2e message{enter}');
 			cy.contains('.chat-message_user', 'mobile e2e message').should(
 				'be.visible',
@@ -37,11 +37,11 @@ filterTests(['mobile'], () => {
 		});
 
 		it('Chat user menu should be visible', () => {
-			cy.get('#chat-modal-user-menu').should('be.visible');
+			cy.get('#user-menu').should('be.visible');
 		});
 
 		it('Click on user menu', () => {
-			cy.get('#chat-modal-user-menu').click();
+			cy.get('#user-menu').click();
 		});
 
 		it('Show change name modal', () => {

@@ -538,7 +538,8 @@
 			"userJoined": "已加入聊天室。",
 			"userLeft": "已离开聊天室。",
 			"inputLabel": "聊天输入框",
-			"sendPlaceholder": "发送一条聊天消息"
+			"sendPlaceholder": "发送一条聊天消息",
+			"streamEnding": "直播即将结束。"
 		},
 		"FollowModal": {
 			"description": "透过跟随这个串流，您将会在 Fediverse 上收到其开始直播的通知。现在是个了解的好时机",

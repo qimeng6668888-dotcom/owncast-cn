@@ -1,6 +1,5 @@
 import { useAtom, useAtomValue } from 'jotai';
-import { Skeleton, Row, Button, Spin } from 'antd';
-import MessageFilled from '@ant-design/icons/MessageFilled';
+import { Skeleton, Row, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import classnames from 'classnames';
@@ -9,7 +8,6 @@ import ActionButtons from './ActionButtons';
 import { LOCAL_STORAGE_KEYS, getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
 import { canPushNotificationsBeSupported } from '../../../utils/browserPushNotifications';
 import { Localization } from '../../../types/localization';
-import { translated } from '../../../utils/playerLanguage';
 
 import {
   clientConfigStateAtom,
@@ -71,13 +69,6 @@ const OwncastPlayer = dynamic(
   {
     ssr: false,
     loading: () => <Skeleton loading active paragraph={{ rows: 12 }} />,
-  },
-);
-
-const ChatModal = dynamic(
-  () => import('../../modals/ChatModal/ChatModal').then(mod => mod.ChatModal),
-  {
-    ssr: false,
   },
 );
 
@@ -153,8 +144,6 @@ export const Content: FC = () => {
   // engagement) but the public followers list is not shown.
   const showFollowersTab = fediverseEnabled && !hideFollowersTab;
   const { servers: federatedServers } = useFederatedServers();
-
-  const [showChatModal, setShowChatModal] = useState(false);
 
   const externalActionSelected = (action: ExternalAction) => {
     const { openExternally, url } = action;
@@ -304,6 +293,25 @@ export const Content: FC = () => {
             />
           )}
         </Row>
+        {showChat && isMobile && currentUser && (
+          <section
+            id="mobile-inline-chat"
+            className={styles.mobileInlineChat}
+            aria-label={t(Localization.Frontend.openChat)}
+          >
+            <ChatContainer
+              messages={messages}
+              usernameToHighlight={currentUser.displayName}
+              chatUserId={currentUser.id}
+              isModerator={currentUser.isModerator}
+              chatAvailable={isChatAvailable}
+              showInput
+              inputEnabled={chatInputEnabled}
+              inputDisabledPlaceholder={chatInputDisabledMessage}
+              focusInput={false}
+            />
+          </section>
+        )}
         <Row>
           <ActionButtons
             supportFediverseFeatures={supportFediverseFeatures}
@@ -383,25 +391,6 @@ export const Content: FC = () => {
           name={name}
           handleClose={() => setShowFollowModal(false)}
         />
-      )}
-      {isMobile && showChatModal && chatState === ChatState.VISIBLE && (
-        <ChatModal
-          messages={messages}
-          currentUser={currentUser}
-          handleClose={() => setShowChatModal(false)}
-          inputEnabled={chatInputEnabled}
-          inputDisabledPlaceholder={chatInputDisabledMessage}
-        />
-      )}
-      {isMobile && isChatAvailable && !chatDisabled && (
-        <Button
-          id="mobile-chat-button"
-          type="primary"
-          onClick={() => setShowChatModal(true)}
-          className={styles.floatingMobileChatModalButton}
-        >
-          {translated(t, Localization.Frontend.openChat, '聊天')} <MessageFilled />
-        </Button>
       )}
     </div>
   );

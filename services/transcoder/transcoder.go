@@ -468,6 +468,14 @@ func (v *HLSVariant) getVideoQualityString(t *Transcoder) []string {
 		fmt.Sprintf("-r:v:%d", v.index), fmt.Sprintf("%d", v.framerate),
 	)
 	cmd = append(cmd, t.codec.VariantFlags(v)...)
+	// -g is only a hint. x264 clamps the minimum keyframe distance, so the
+	// HLS muxer was waiting for the following keyframe and emitting segments
+	// about twice the configured duration. Force one at each segment boundary.
+	cmd = append(
+		cmd,
+		fmt.Sprintf("-force_key_frames:v:%d", v.index),
+		fmt.Sprintf("expr:gte(t,n_forced*%d)", t.currentLatencyLevel.SecondsPerSegment),
+	)
 
 	return cmd
 }

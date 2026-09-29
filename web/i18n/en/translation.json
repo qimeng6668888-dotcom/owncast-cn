@@ -538,7 +538,8 @@
 			"userJoined": "joined the chat.",
 			"userLeft": "left the chat.",
 			"inputLabel": "Chat text input",
-			"sendPlaceholder": "Send a message to chat"
+			"sendPlaceholder": "Send a message to chat",
+			"streamEnding": "The stream is ending."
 		},
 		"FollowModal": {
 			"description": "By following this stream you'll get notified on the Fediverse when it goes live. Now is a great time to",
