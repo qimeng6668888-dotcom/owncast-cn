@@ -36,7 +36,7 @@
 		},
 		"Autoplay": {
 			"description": "选择是否当观众打开你的页面时，流媒体自动开始播放。",
-			"optionAlwaysDescription": "当有人打开页面时，流媒体总是自动开始播放。它在浏览器允许的地方有声音，并在其余地方静音开始播放。",
+			"optionAlwaysDescription": "加载完成后自动开始播放，并打开声音。如果浏览器拦截了带声音的自动播放，观众点一下播放即可。不会静音开播。",
 			"optionAlwaysLabel": "始终",
 			"optionOffDescription": "观众需要按下播放以开始观看。",
 			"optionOffLabel": "从不",
@@ -589,6 +589,7 @@
 		"streamOffline": "离线",
 		"openChat": "聊天",
 		"noWorkingPlaylist": "无法继续播放，没有可用的播放列表。",
+		"liveInterrupted": "直播中断了，请点播放继续。",
 		"offlineBasic": "此串流已离线。请稍后再回来查看！",
 		"offlineFediverseOnly": "此串流已离线。请在 Fediverse<span class='follow-link'>上追</span>踪 {{fediverseAccount}} ，以查看 {{streamer}} 的下次直播时间。",
 		"offlineNotifyAndFediverse": "此串流已离线。您可以在 {{streamer}} 上线时<span class='notify-link'>收到通知，</span>或在 Fediverse<span class='follow-link'>上追踪</span> {{fediverseAccount}}。",

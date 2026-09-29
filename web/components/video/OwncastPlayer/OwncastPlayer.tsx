@@ -11,6 +11,7 @@ import { VideoPoster } from '../VideoPoster/VideoPoster';
 import { getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
 import { translated } from '../../../utils/playerLanguage';
 import { AutoplaySetting, autoplayModeForSetting } from '../../../utils/autoplay';
+import { attachLivePlayback, type LivePlaybackPlayer } from '../livePlayback';
 import { Localization } from '../../../types/localization';
 import { isVideoPlayingAtom, clockSkewAtom } from '../../stores/ClientConfigStore';
 import PlaybackMetrics from '../metrics/playback';
@@ -46,6 +47,7 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
 }) => {
   const VideoSettingsService = useContext(VideoSettingsServiceContext);
   const playerRef = React.useRef(null);
+  const detachLivePlaybackRef = React.useRef<(() => void) | null>(null);
   const [videoPlaying, setVideoPlaying] = useAtom(isVideoPlayingAtom);
   const clockSkew = useAtomValue(clockSkewAtom);
   const { t } = useTranslation();
@@ -368,6 +370,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     player.on('dispose', () => {
       console.debug('player will dispose');
       ping.stop();
+      detachLivePlaybackRef.current?.();
+      detachLivePlaybackRef.current = null;
     });
 
     player.on('playing', () => {
@@ -388,45 +392,24 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       setVideoPlaying(false);
     });
 
-    // Android rejects a single non-aligned rendition and video.js leaves this
-    // message up even after frames are already playing. Clear it once playback
-    // has data; otherwise show the Chinese wording.
-    const playlistError = 'No available working or supported playlists';
-    const playlistErrorMessage = translated(
-      t,
-      Localization.Frontend.noWorkingPlaylist,
-      '无法继续播放，没有可用的播放列表。',
-    );
-    const dismissRecoveredPlaylistError = () => {
-      const err = player.error();
-      if (!err) {
-        return;
-      }
-      const message = String(err.message || '');
-      if (!message.includes(playlistError) && message !== playlistErrorMessage) {
-        return;
-      }
-      if (player.readyState() >= 2 || player.currentTime() > 0) {
-        player.error(null);
-      }
-    };
-    player.on('error', () => {
-      const err = player.error();
-      if (!err) {
-        return;
-      }
-      const message = String(err.message || '');
-      if (!message.includes(playlistError)) {
-        return;
-      }
-      if (player.readyState() >= 2 || player.currentTime() > 0) {
-        player.error(null);
-        return;
-      }
-      player.error({ code: err.code || 4, message: playlistErrorMessage });
+    // A fatal load leaves the English video.js overlay up and never resumes.
+    // Reload the live playlist instead, and once it can play, start with sound.
+    detachLivePlaybackRef.current?.();
+    detachLivePlaybackRef.current = attachLivePlayback(player as LivePlaybackPlayer, {
+      source,
+      autoplayMode,
+      initiallyMuted,
+      interruptedMessage: translated(
+        t,
+        Localization.Frontend.liveInterrupted,
+        '直播中断了，请点播放继续。',
+      ),
+      playlistMessage: translated(
+        t,
+        Localization.Frontend.noWorkingPlaylist,
+        '无法继续播放，没有可用的播放列表。',
+      ),
     });
-    player.on('playing', dismissRecoveredPlaylistError);
-    player.on('loadeddata', dismissRecoveredPlaylistError);
 
     videojs.hookOnce();
 
@@ -448,6 +431,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     () => () => {
       stopLatencyCompensator();
       playbackMetrics?.stop();
+      detachLivePlaybackRef.current?.();
+      detachLivePlaybackRef.current = null;
     },
     [],
   );

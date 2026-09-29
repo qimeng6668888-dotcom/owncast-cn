@@ -28,7 +28,9 @@ export function autoplayModeForSetting(
     return false;
   }
   if (setting === AutoplaySetting.Always) {
-    return 'any';
+    // Play with sound once the media can start. Do not fall back to a muted
+    // start; a browser that blocks audible autoplay leaves the play button.
+    return 'play';
   }
   if (setting === AutoplaySetting.SoundOnly) {
     // "Only with sound" must never start silently. If the player would begin

@@ -36,7 +36,7 @@
 		},
 		"Autoplay": {
 			"description": "Choose whether the stream starts playing on its own when a viewer opens your page.",
-			"optionAlwaysDescription": "The stream always starts on its own the moment someone opens the page. It plays with sound where the browser allows it, and starts muted everywhere else.",
+			"optionAlwaysDescription": "The stream starts on its own after it has loaded, with sound on. If the browser blocks that, the viewer presses play. It does not start muted.",
 			"optionAlwaysLabel": "Always",
 			"optionOffDescription": "Viewers will press play to start watching.",
 			"optionOffLabel": "Never",
@@ -589,6 +589,7 @@
 		"streamOffline": "Offline",
 		"openChat": "Chat",
 		"noWorkingPlaylist": "Playback cannot continue. No available working or supported playlists.",
+		"liveInterrupted": "The live stream was interrupted. Press play to continue.",
 		"offlineBasic": "This stream is offline. Check back soon!",
 		"offlineFediverseOnly": "This stream is offline. <span class='follow-link'>Follow</span> {{fediverseAccount}} on the Fediverse to see the next time {{streamer}} goes live.",
 		"offlineNotifyAndFediverse": "This stream is offline. You can <span class='notify-link'>be notified</span> the next time {{streamer}} goes live or <span class='follow-link'>follow</span> {{fediverseAccount}} on the Fediverse.",
