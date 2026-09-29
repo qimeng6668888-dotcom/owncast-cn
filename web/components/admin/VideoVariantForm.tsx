@@ -20,6 +20,7 @@ import {
   FRAMERATE_TOOLTIPS,
 } from '../../utils/config-constants';
 import { ToggleSwitch } from './ToggleSwitch';
+import { useAdminText } from '../../utils/adminText';
 
 const { Panel } = Collapse;
 
@@ -39,6 +40,7 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
   onUpdateField,
 }) => {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const videoPassthroughEnabled = dataState.videoPassthrough;
 
   const handleFramerateChange = (value: number) => {
@@ -122,15 +124,15 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
   };
   const selectedFramerateNote = () => {
     if (videoPassthroughEnabled) {
-      return 'Framerate selection is disabled when Video Passthrough is enabled.';
+      return tx('Framerate selection is disabled when Video Passthrough is enabled.');
     }
-    return FRAMERATE_TOOLTIPS[dataState.framerate] || '';
+    return tx(FRAMERATE_TOOLTIPS[dataState.framerate] || '');
   };
   const cpuUsageNote = () => {
     if (videoPassthroughEnabled) {
-      return 'CPU usage selection is disabled when Video Passthrough is enabled.';
+      return tx('CPU usage selection is disabled when Video Passthrough is enabled.');
     }
-    return ENCODER_PRESET_TOOLTIPS[dataState.cpuUsageLevel] || '';
+    return tx(ENCODER_PRESET_TOOLTIPS[dataState.cpuUsageLevel] || '');
   };
 
   const classes = classNames({
@@ -176,13 +178,13 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
         </Col>
         <Col sm={24} md={12}>
           <div className="form-module cpu-usage-container">
-            <Typography.Title level={3}>CPU or GPU Utilization</Typography.Title>
+            <Typography.Title level={3}>{tx('CPU or GPU Utilization')}</Typography.Title>
             <p className="description">
-              Reduce to improve server performance, or increase it to improve video quality.
+              {tx('Reduce to improve server performance, or increase it to improve video quality.')}
             </p>
             <div className="segment-slider-container">
               <Slider
-                tooltip={{ formatter: value => ENCODER_PRESET_TOOLTIPS[value] }}
+                tooltip={{ formatter: value => tx(ENCODER_PRESET_TOOLTIPS[value]) }}
                 onChange={handleVideoCpuUsageLevelChange}
                 min={0}
                 max={Object.keys(ENCODER_PRESET_SLIDER_MARKS).length - 1}
@@ -194,7 +196,7 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
               <p className="selected-value-note">{cpuUsageNote()}</p>
             </div>
             <p className="read-more-subtext">
-              This could mean GPU or CPU usage depending on your server environment.
+              {tx('This could mean GPU or CPU usage depending on your server environment.')}
               <br />
               <br />
               <a
@@ -202,7 +204,7 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Read more about hardware performance.
+                {tx('Read more about hardware performance.')}
               </a>
             </p>
           </div>
@@ -214,8 +216,8 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
               dataState.videoPassthrough ? 'disabled' : ''
             }`}
           >
-            <Typography.Title level={3}>Video Bitrate</Typography.Title>
-            <p className="description">{VIDEO_BITRATE_DEFAULTS.tip}</p>
+            <Typography.Title level={3}>{tx('Video Bitrate')}</Typography.Title>
+            <p className="description">{tx(VIDEO_BITRATE_DEFAULTS.tip)}</p>
             <div className="segment-slider-container">
               <Slider
                 tooltip={{ formatter: value => `${value} ${VIDEO_BITRATE_DEFAULTS.unit}` }}
@@ -236,18 +238,18 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Read more about bitrates.
+                {tx('Read more about bitrates.')}
               </a>
             </p>
           </div>
         </Col>
       </Row>
       <Collapse className="advanced-settings">
-        <Panel header="Advanced Settings" key="1">
+        <Panel header={tx('Advanced Settings')} key="1">
           <Row gutter={16}>
             <Col sm={24} md={12}>
               <div className="form-module resolution-module">
-                <Typography.Title level={3}>Resolution</Typography.Title>
+                <Typography.Title level={3}>{tx('Resolution')}</Typography.Title>
                 <p className="description">
                   Resizing your content will take additional resources on your server. If you wish
                   to optionally resize your content for this stream output then you should either
@@ -258,7 +260,7 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Read more about resolutions.
+                    {tx('Read more about resolutions.')}
                   </a>
                 </p>
                 <br />
@@ -281,7 +283,7 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
             <Col sm={24} md={12}>
               {/* VIDEO PASSTHROUGH FIELD */}
               <div className="form-module video-passthrough-module">
-                <Typography.Title level={3}>Video Passthrough</Typography.Title>
+                <Typography.Title level={3}>{tx('Video Passthrough')}</Typography.Title>
                 <div className="description">
                   <p>
                     Enabling video passthrough may allow for less hardware utilization, but may also
@@ -307,8 +309,8 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
                     title="Did you read the documentation about video passthrough and understand the risks involved with enabling it?"
                     icon={<ExclamationCircleFilled />}
                     onConfirm={handleVideoPassConfirm}
-                    okText="Yes"
-                    cancelText="No"
+                    okText={tx('Yes')}
+                    cancelText={tx('No')}
                     getPopupContainer={triggerNode => triggerNode}
                     placement="topLeft"
                   >
@@ -317,7 +319,7 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
                     <a href="#">
                       <div className="advanced-description-switch-container">
                         <div className="advanced-description-wrapper">
-                          <p>Use Video Passthrough?</p>
+                          <p>{tx('Use Video Passthrough?')}</p>
                         </div>
                         <ToggleSwitch
                           label=""
@@ -336,8 +338,8 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
 
           {/* FRAME RATE FIELD */}
           <div className="form-module frame-rate-module">
-            <Typography.Title level={3}>Frame rate</Typography.Title>
-            <p className="description">{FRAMERATE_DEFAULTS.tip}</p>
+            <Typography.Title level={3}>{tx('Frame rate')}</Typography.Title>
+            <p className="description">{tx(FRAMERATE_DEFAULTS.tip)}</p>
             <div className="segment-slider-container">
               <Slider
                 tooltip={{ formatter: value => `${value} ${FRAMERATE_DEFAULTS.unit}` }}

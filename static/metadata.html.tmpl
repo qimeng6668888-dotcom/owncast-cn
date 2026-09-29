@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<meta charset="utf-8">
 
@@ -11,6 +11,7 @@
 		<meta property="og:site_name" content="{{.Name}}">
 		<meta property="og:url" content="{{.RequestedURL}}">
 		<meta property="og:description" content="{{.Summary}}">
+		<meta property="og:locale" content="zh_CN">
 		<meta property="og:type" content="video.other">
 		<meta property="video:tag" content="{{.TagsString}}">
 
@@ -64,7 +65,7 @@
 		<h1>{{.Name}}</h1>
 
 		<center>
-			<img src="{{.Thumbnail}}" width=10% alt="Live stream logo or thumbnail"/>
+			<img src="{{.Thumbnail}}" width=10% alt="直播 Logo 或封面"/>
 		</center>
 
 		<h3>{{.Summary}}</h3>
@@ -77,7 +78,7 @@
 
 		<br/>
 
-		<h3>Links for {{.Name}}:</h3>
+		<h3>{{.Name}} 的链接</h3>
 
 		<ul>
 		{{range .SocialHandles}}

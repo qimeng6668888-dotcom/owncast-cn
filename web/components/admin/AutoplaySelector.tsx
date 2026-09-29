@@ -16,7 +16,7 @@ import { FormStatusIndicator } from './FormStatusIndicator';
 import { AutoplaySetting } from '../../utils/autoplay';
 // The three viewer-facing autoplay behaviors. `value` is what's persisted and
 // what the player maps to a video.js autoplay option (off -> false,
-// always -> 'any', sound-only -> 'play'). The description is shown live under
+// always -> 'play', sound-only -> 'play'). The description is shown live under
 // the dropdown and updates as the selection changes.
 const AUTOPLAY_OPTIONS = [
   {
@@ -32,7 +32,7 @@ const AUTOPLAY_OPTIONS = [
     labelDefault: 'Always',
     descriptionKey: Localization.Admin.Autoplay.optionAlwaysDescription,
     descriptionDefault:
-      'The stream always starts on its own the moment someone opens the page. It plays with sound where the browser allows it, and starts muted everywhere else.',
+      'The stream starts on its own after it has loaded, with sound on. If the browser blocks that, the viewer presses play. It does not start muted.',
   },
   {
     value: AutoplaySetting.SoundOnly,

@@ -2,14 +2,16 @@
 import React, { FC, useContext, useEffect } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useTranslation } from 'next-export-i18n';
+import { useSelectedLanguage, useTranslation } from 'next-export-i18n';
 import classNames from 'classnames';
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary';
 import { VideoJS } from '../VideoJS/VideoJS';
 import ViewerPing from '../viewer-ping';
 import { VideoPoster } from '../VideoPoster/VideoPoster';
 import { getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
+import { translated } from '../../../utils/playerLanguage';
 import { AutoplaySetting, autoplayModeForSetting } from '../../../utils/autoplay';
+import { attachLivePlayback, type LivePlaybackPlayer } from '../livePlayback';
 import { Localization } from '../../../types/localization';
 import { isVideoPlayingAtom, clockSkewAtom } from '../../stores/ClientConfigStore';
 import PlaybackMetrics from '../metrics/playback';
@@ -45,9 +47,12 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
 }) => {
   const VideoSettingsService = useContext(VideoSettingsServiceContext);
   const playerRef = React.useRef(null);
+  const detachLivePlaybackRef = React.useRef<(() => void) | null>(null);
   const [videoPlaying, setVideoPlaying] = useAtom(isVideoPlayingAtom);
   const clockSkew = useAtomValue(clockSkewAtom);
   const { t } = useTranslation();
+  const { lang } = useSelectedLanguage();
+  const playerLang = lang || 'zh-CN';
 
   // A persisted volume of 0 is a mute the viewer chose on a previous visit
   // (handleVolume stores muted as 0). Restoring it is a manual mute, not an
@@ -149,6 +154,18 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       videojs,
       videoQualities,
       toggleLatencyCompensator,
+      {
+        auto: translated(t, Localization.Frontend.Player.Auto, '自动'),
+        settings: translated(t, Localization.Frontend.Player.Settings, '设置'),
+        minimizeLatency: translated(t, Localization.Frontend.Player.MinimizeLatency, '降低延迟'),
+        minimizeLatencyHelp: translated(
+          t,
+          Localization.Frontend.Player.MinimizeLatencyHelp,
+          '实验功能：略微加快播放，让你更接近直播进度',
+        ),
+        on: translated(t, Localization.Frontend.Player.On, '开'),
+        off: translated(t, Localization.Frontend.Player.Off, '关'),
+      },
     );
     player.controlBar.addChild(
       menuButton,
@@ -304,6 +321,7 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
 
   const videoJsOptions = {
     autoplay: autoplayMode,
+    language: playerLang,
     controls: true,
     responsive: true,
     fluid: false,
@@ -352,6 +370,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     player.on('dispose', () => {
       console.debug('player will dispose');
       ping.stop();
+      detachLivePlaybackRef.current?.();
+      detachLivePlaybackRef.current = null;
     });
 
     player.on('playing', () => {
@@ -370,6 +390,25 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       console.debug('player is ended');
       ping.stop();
       setVideoPlaying(false);
+    });
+
+    // A fatal load leaves the English video.js overlay up and never resumes.
+    // Reload the live playlist instead, and once it can play, start with sound.
+    detachLivePlaybackRef.current?.();
+    detachLivePlaybackRef.current = attachLivePlayback(player as LivePlaybackPlayer, {
+      source,
+      autoplayMode,
+      initiallyMuted,
+      interruptedMessage: translated(
+        t,
+        Localization.Frontend.liveInterrupted,
+        '直播中断了，请点播放继续。',
+      ),
+      playlistMessage: translated(
+        t,
+        Localization.Frontend.noWorkingPlaylist,
+        '无法继续播放，没有可用的播放列表。',
+      ),
     });
 
     videojs.hookOnce();
@@ -392,6 +431,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     () => () => {
       stopLatencyCompensator();
       playbackMetrics?.stop();
+      detachLivePlaybackRef.current?.();
+      detachLivePlaybackRef.current = null;
     },
     [],
   );

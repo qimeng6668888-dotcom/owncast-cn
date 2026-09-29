@@ -2,6 +2,7 @@ import { Button, Typography } from 'antd';
 import { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'next-export-i18n';
 import { ServerStatusContext } from '../../../utils/server-status-context';
+import { useAdminText } from '../../../utils/adminText';
 import { TextField, TEXTFIELD_TYPE_TEXTAREA } from '../TextField';
 import {
   postConfigUpdateToAPI,
@@ -23,6 +24,7 @@ const { Title } = Typography;
 
 export const BrowserNotify = () => {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig, setFieldInConfigState } = serverStatusData || {};
   const { notifications } = serverConfig || {};
@@ -94,7 +96,7 @@ export const BrowserNotify = () => {
 
   return (
     <>
-      <Title>Browser Alerts</Title>
+      <Title>{tx('Browser Alerts')}</Title>
       <p className="description reduced-margins">
         Viewers can opt into being notified when you go live with their browser.
       </p>

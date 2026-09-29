@@ -2,6 +2,7 @@ import { Button, Typography } from 'antd';
 import { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'next-export-i18n';
 import { ServerStatusContext } from '../../../utils/server-status-context';
+import { useAdminText } from '../../../utils/adminText';
 import { TextField } from '../TextField';
 import { FormStatusIndicator } from '../FormStatusIndicator';
 import {
@@ -23,6 +24,7 @@ const { Title } = Typography;
 
 export const DiscordNotify = () => {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig, setFieldInConfigState } = serverStatusData || {};
   const { notifications } = serverConfig || {};
@@ -100,7 +102,7 @@ export const DiscordNotify = () => {
 
   return (
     <>
-      <Title>Discord</Title>
+      <Title>{tx('Discord')}</Title>
       <p className="description reduced-margins">
         Let your Discord channel know each time you go live.
       </p>

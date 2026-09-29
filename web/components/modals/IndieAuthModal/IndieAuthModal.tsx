@@ -1,7 +1,11 @@
 import { Alert, Input, Space, Spin, Collapse, Typography, Button } from 'antd';
 import dynamic from 'next/dynamic';
 import React, { FC, useState } from 'react';
+import { useTranslation } from 'next-export-i18n';
 import { isValidUrl } from '../../../utils/validators';
+import { Localization } from '../../../types/localization';
+import { Translation } from '../../ui/Translation/Translation';
+import { translated } from '../../../utils/playerLanguage';
 
 const { Link } = Typography;
 
@@ -22,27 +26,33 @@ export const IndieAuthModal: FC<IndieAuthModalProps> = ({
   displayName: username,
   accessToken,
 }) => {
+  const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [valid, setValid] = useState(false);
   const [host, setHost] = useState('');
 
   const message = !authenticated ? (
-    <span>
-      Use your own domain to authenticate <span>{username}</span> or login as a previously{' '}
-      authenticated chat user using IndieAuth.
-    </span>
+    <Translation
+      translationKey={Localization.Frontend.Auth.indieIntro}
+      vars={{ username }}
+      defaultText="使用你自己的域名验证 {{username}}，或通过 IndieAuth 登录以前验证过的聊天用户。"
+    />
   ) : (
-    <span>
-      <b>You are already authenticated</b>. However, you can add other domains or log in as a
-      different user.
-    </span>
+    <Translation
+      translationKey={Localization.Frontend.Auth.alreadyAuthenticated}
+      defaultText="<b>你已经登录</b>。你仍然可以添加其他域名，或换一个用户登录。"
+    />
   );
 
   let errorMessageText = errorMessage;
   if (errorMessageText) {
     if (errorMessageText.includes('url does not support indieauth')) {
-      errorMessageText = 'The provided URL is either invalid or does not support IndieAuth.';
+      errorMessageText = translated(
+        t,
+        Localization.Frontend.Auth.indieAuthUnsupported,
+        '提供的网址无效，或不支持 IndieAuth。',
+      );
     }
   }
 
@@ -99,7 +109,9 @@ export const IndieAuthModal: FC<IndieAuthModalProps> = ({
         return;
       }
       if (!content.redirect) {
-        setErrorMessage('Auth provider did not return a redirect URL.');
+        setErrorMessage(
+          translated(t, Localization.Frontend.Auth.redirectMissing, '认证服务没有返回跳转地址。'),
+        );
         setLoading(false);
         return;
       }
@@ -120,9 +132,14 @@ export const IndieAuthModal: FC<IndieAuthModalProps> = ({
       <Space orientation="vertical">
         {message}
         {errorMessageText && (
-          <Alert message="Error" description={errorMessageText} type="error" showIcon />
+          <Alert
+            message={translated(t, Localization.Frontend.Auth.errorTitle, '错误')}
+            description={errorMessageText}
+            type="error"
+            showIcon
+          />
         )}
-        <div>Your domain</div>
+        <div>{translated(t, Localization.Frontend.Auth.yourDomain, '你的域名')}</div>
         <Input.Search
           addonBefore="https://"
           onInput={onInput}
@@ -143,19 +160,25 @@ export const IndieAuthModal: FC<IndieAuthModalProps> = ({
           items={[
             {
               key: 'header',
-              label: 'Learn more about using IndieAuth to authenticate with chat.',
+              label: translated(
+                t,
+                Localization.Frontend.Auth.learnIndieAuth,
+                '了解如何用 IndieAuth 登录聊天。',
+              ),
               children: (
                 <>
                   <p>
-                    IndieAuth allows for a completely independent and decentralized way of
-                    identifying yourself using your own domain.
+                    <Translation
+                      translationKey={Localization.Frontend.Auth.indieAuthBody1}
+                      defaultText="IndieAuth 让你用自己的域名，以完全独立、去中心化的方式证明身份。"
+                    />
                   </p>
                   <p>
-                    If you run an Owncast instance, you can use that domain here. Otherwise,{' '}
-                    <Link href="https://indieauth.net/#providers">
-                      learn more about how you can support IndieAuth
-                    </Link>
-                    .
+                    <Translation
+                      translationKey={Localization.Frontend.Auth.indieAuthBody2}
+                      defaultText="如果你自己运行 Owncast，可以直接使用那个域名。否则可以了解如何支持 IndieAuth。"
+                    />{' '}
+                    <Link href="https://indieauth.net/#providers">IndieAuth</Link>
                   </p>
                 </>
               ),
@@ -163,8 +186,10 @@ export const IndieAuthModal: FC<IndieAuthModalProps> = ({
           ]}
         />
         <div>
-          <strong>Note</strong>: This is for authentication purposes only, and no personal
-          information will be accessed or stored.
+          <Translation
+            translationKey={Localization.Frontend.Auth.note}
+            defaultText="<strong>说明</strong>：这只用于身份验证，不会读取或保存个人资料。"
+          />
         </div>
       </Space>
     </Spin>

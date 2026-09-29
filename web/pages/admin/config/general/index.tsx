@@ -1,32 +1,44 @@
 import { ReactElement } from 'react';
 import { Tabs } from 'antd';
+import { useTranslation } from 'next-export-i18n';
 
 import GeneralConfig from '../../../../components/admin/config/general/GeneralConfig';
 import AppearanceConfig from '../../../../components/admin/config/general/AppearanceConfig';
+import BrandingConfig from '../../../../components/admin/config/general/BrandingConfig';
 
 import { AdminLayout } from '../../../../components/layouts/AdminLayout';
 import { EditCustomJavascript } from '../../../../components/admin/EditCustomJavascript';
+import { Localization } from '../../../../types/localization';
+import { translated } from '../../../../utils/playerLanguage';
 
 export default function PublicFacingDetails() {
+  const { t } = useTranslation();
+  const label = (key: string, fallback: string) => translated(t, key, fallback);
+
   return (
     <div className="config-public-details-page">
       <Tabs
-        defaultActiveKey="1"
+        defaultActiveKey="brand"
         centered
         items={[
           {
-            label: `General`,
-            key: '1',
+            label: label(Localization.Admin.General.brandingTab, '品牌'),
+            key: 'brand',
+            children: <BrandingConfig />,
+          },
+          {
+            label: label(Localization.Admin.General.generalTab, '常规'),
+            key: 'general',
             children: <GeneralConfig />,
           },
           {
-            label: `Appearance`,
-            key: '2',
+            label: label(Localization.Admin.General.appearanceTab, '外观'),
+            key: 'appearance',
             children: <AppearanceConfig />,
           },
           {
-            label: `Custom Scripting`,
-            key: '3',
+            label: label(Localization.Admin.General.customScriptingTab, '自定义脚本'),
+            key: 'scripting',
             children: <EditCustomJavascript />,
           },
         ]}

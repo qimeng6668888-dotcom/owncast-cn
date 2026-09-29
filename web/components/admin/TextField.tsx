@@ -5,6 +5,7 @@ import { FieldUpdaterFunc } from '../../types/config-section';
 import { StatusState } from '../../utils/input-statuses';
 import { FormStatusIndicator } from './FormStatusIndicator';
 import { PASSWORD_COMPLEXITY_RULES, REGEX_PASSWORD } from '../../utils/config-constants';
+import { useAdminText } from '../../utils/adminText';
 
 export const TEXTFIELD_TYPE_TEXT = 'default';
 export const TEXTFIELD_TYPE_PASSWORD = 'password'; // Input.Password
@@ -56,6 +57,7 @@ export const TextField: FC<TextFieldProps> = ({
   value = '',
   hasComplexityRequirements = false,
 }) => {
+  const tx = useAdminText();
   const [hasPwdChanged, setHasPwdChanged] = useState(false);
   const [showPwdButton, setShowPwdButton] = useState(false);
   const [form] = Form.useForm();
@@ -141,7 +143,7 @@ export const TextField: FC<TextFieldProps> = ({
       {label ? (
         <div className="label-side">
           <label htmlFor={fieldId} className="formfield-label">
-            {label}
+            {tx(label)}
           </label>
         </div>
       ) : null}
@@ -154,7 +156,7 @@ export const TextField: FC<TextFieldProps> = ({
               className={`field ${className} ${fieldId}`}
               {...fieldProps}
               {...(type !== TEXTFIELD_TYPE_NUMBER && { allowClear: true })}
-              placeholder={placeholder}
+              placeholder={tx(placeholder)}
               maxLength={maxLength}
               onChange={handleChange}
               onBlur={handleBlur}
@@ -164,7 +166,7 @@ export const TextField: FC<TextFieldProps> = ({
             />
           </div>
           <FormStatusIndicator status={status} />
-          <p className="field-tip">{tip}</p>
+          <p className="field-tip">{tx(tip)}</p>
         </div>
       ) : (
         <div className="input-side">
@@ -181,7 +183,7 @@ export const TextField: FC<TextFieldProps> = ({
                   className={`field ${className} ${fieldId}`}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  placeholder={placeholder}
+                  placeholder={tx(placeholder)}
                   onPressEnter={handlePressEnter}
                   disabled={disabled}
                   value={value as number | (readonly string[] & number)}
@@ -196,7 +198,7 @@ export const TextField: FC<TextFieldProps> = ({
                     onClick={onHandleSubmit}
                     disabled={!hasPwdChanged}
                   >
-                    Update
+                    {tx('Update')}
                   </Button>
                 </div>
               )}

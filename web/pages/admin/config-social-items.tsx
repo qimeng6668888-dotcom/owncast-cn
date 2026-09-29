@@ -1,4 +1,5 @@
 import { ReactElement } from 'react';
+import { useAdminText } from '../../utils/adminText';
 import { Typography } from 'antd';
 import EditSocialLinks from '../../components/admin/config/general/EditSocialLinks';
 
@@ -7,9 +8,10 @@ import { AdminLayout } from '../../components/layouts/AdminLayout';
 const { Title } = Typography;
 
 export default function ConfigSocialThings() {
+  const tx = useAdminText();
   return (
     <div className="config-social-items">
-      <Title>Social Items</Title>
+      <Title>{tx('Social Items')}</Title>
 
       <EditSocialLinks />
     </div>

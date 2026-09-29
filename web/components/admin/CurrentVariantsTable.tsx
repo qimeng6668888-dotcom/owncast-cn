@@ -26,6 +26,7 @@ import {
   STATUS_SUCCESS,
 } from '../../utils/input-statuses';
 import { Localization } from '../../types/localization';
+import { useAdminText } from '../../utils/adminText';
 import { FormStatusIndicator } from './FormStatusIndicator';
 
 const { Title } = Typography;
@@ -39,6 +40,7 @@ const DeleteOutlined = dynamic(() => import('@ant-design/icons/DeleteOutlined'),
 // eslint-disable-next-line import/prefer-default-export
 export const CurrentVariantsTable: FC = () => {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const [displayModal, setDisplayModal] = useState(false);
   const [modalProcessing, setModalProcessing] = useState(false);
   const [editId, setEditId] = useState(0);
@@ -97,7 +99,9 @@ export const CurrentVariantsTable: FC = () => {
 
         if (serverStatusData.online) {
           setMessage(
-            'Updating your video configuration will take effect the next time you begin a new stream.',
+            tx(
+              'Updating your video configuration will take effect the next time you begin a new stream.',
+            ),
           );
         }
       },
@@ -139,20 +143,20 @@ export const CurrentVariantsTable: FC = () => {
 
   const videoQualityColumns: ColumnsType<VideoVariant> = [
     {
-      title: 'Name',
+      title: tx('Name'),
       dataIndex: 'name',
-      render: (name: string) => (!name ? 'No name' : name),
+      render: (name: string) => (!name ? tx('No name') : name),
     },
     {
-      title: 'Video bitrate',
+      title: tx('Video bitrate'),
       dataIndex: 'videoBitrate',
       key: 'videoBitrate',
       render: (bitrate: number, variant: VideoVariant) =>
-        !bitrate || variant.videoPassthrough ? 'Same as source' : `${bitrate} kbps`,
+        !bitrate || variant.videoPassthrough ? tx('Same as source') : `${bitrate} kbps`,
     },
 
     {
-      title: 'CPU Usage',
+      title: tx('CPU Usage'),
       dataIndex: 'cpuUsageLevel',
       key: 'cpuUsageLevel',
       render: (level: string, variant: VideoVariant) =>
@@ -176,7 +180,7 @@ export const CurrentVariantsTable: FC = () => {
                 setDisplayModal(true);
               }}
             >
-              Edit
+              {tx('Edit')}
             </Button>
             <Button
               className="delete-button"
@@ -214,11 +218,11 @@ export const CurrentVariantsTable: FC = () => {
   return (
     <>
       <Title level={3} className="section-title">
-        Stream output
+        {tx('Stream output')}
       </Title>
 
       {showSecondVariantRecommendation() && (
-        <Alert message={ENCODER_RECOMMENDATION_THRESHOLD.HELP_TEXT} type="info" closable />
+        <Alert message={tx(ENCODER_RECOMMENDATION_THRESHOLD.HELP_TEXT)} type="info" closable />
       )}
 
       <FormStatusIndicator status={submitStatus} />
@@ -232,7 +236,7 @@ export const CurrentVariantsTable: FC = () => {
       />
 
       <Modal
-        title="Edit Video Variant Details"
+        title={tx('Edit Video Variant Details')}
         open={displayModal}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
@@ -252,7 +256,7 @@ export const CurrentVariantsTable: FC = () => {
           setDisplayModal(true);
         }}
       >
-        Add a new variant
+        {tx('Add a new variant')}
       </Button>
     </>
   );

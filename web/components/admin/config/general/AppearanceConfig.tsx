@@ -13,6 +13,7 @@ import {
 } from '../../../../utils/input-statuses';
 import { Localization } from '../../../../types/localization';
 import { ServerStatusContext } from '../../../../utils/server-status-context';
+import { useAdminText } from '../../../../utils/adminText';
 import { FormStatusIndicator } from '../../FormStatusIndicator';
 
 const { Panel } = Collapse;
@@ -145,6 +146,7 @@ const ColorCollection: FC<ColorCollectionProps> = ({ variables, overrides, updat
 // eslint-disable-next-line react/function-component-definition
 export default function Appearance() {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig, setFieldInConfigState } = serverStatusData;
   const { instanceDetails, styleContributors = [] } = serverConfig;
@@ -280,8 +282,8 @@ export default function Appearance() {
   return (
     <>
       <Space direction="vertical">
-        <Title>Customize Appearance</Title>
-        <Paragraph>The following colors are used across the user interface.</Paragraph>
+        <Title>{tx('Customize Appearance')}</Title>
+        <Paragraph>{tx('The following colors are used across the user interface.')}</Paragraph>
         {styleContributors.length > 0 && (
           <Alert
             type="info"
@@ -294,7 +296,7 @@ export default function Appearance() {
         )}
         <div>
           <Collapse defaultActiveKey={['1']}>
-            <Panel header={<strong>Section Colors</strong>} key="1">
+            <Panel header={<strong>{tx('Section Colors')}</strong>} key="1">
               <p>
                 Certain sections of the interface can be customized by selecting new colors for
                 them.
@@ -307,7 +309,7 @@ export default function Appearance() {
                 />
               </Row>
             </Panel>
-            <Panel header={<strong>Chat User Colors</strong>} key="2">
+            <Panel header={<strong>{tx('Chat User Colors')}</strong>} key="2">
               <Row gutter={[16, 16]}>
                 <ColorCollection
                   variables={transformToColorMap(chatColorVariables)}
@@ -316,7 +318,7 @@ export default function Appearance() {
                 />
               </Row>
             </Panel>
-            <Panel header={<strong>Other Settings</strong>} key="4">
+            <Panel header={<strong>{tx('Other Settings')}</strong>} key="4">
               How rounded should corners be?
               <Row gutter={[16, 16]}>
                 <Col span={12}>

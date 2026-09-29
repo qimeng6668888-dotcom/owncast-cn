@@ -265,15 +265,15 @@ export const FIELD_PROPS_DISABLE_SEARCH_INDEXING = {
 };
 
 export const DEFAULT_VARIANT_STATE: VideoVariant = {
-  framerate: 24,
+  name: '720p',
+  framerate: 30,
   videoPassthrough: false,
-  videoBitrate: 1200,
-  audioPassthrough: true, // if false, then CAN set audiobitrate
-  audioBitrate: 0,
+  videoBitrate: 1600,
+  audioPassthrough: false,
+  audioBitrate: 128,
   cpuUsageLevel: 2,
-  scaledHeight: null,
+  scaledHeight: 720,
   scaledWidth: null,
-  name: '',
 };
 
 export const FIELD_PROPS_DISABLE_CHAT = {
