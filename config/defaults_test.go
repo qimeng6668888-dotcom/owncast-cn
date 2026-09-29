@@ -5,33 +5,42 @@ import (
 	"testing"
 )
 
-func TestDefaultStreamIsSingle720p(t *testing.T) {
+func TestDefaultStreamIs720pAnd480p(t *testing.T) {
 	variants := GetDefaults().StreamVariants
-	if len(variants) != 1 {
-		t.Fatalf("expected a single default rendition, got %d", len(variants))
+	if len(variants) != 2 {
+		t.Fatalf("expected 720p and 480p renditions, got %d", len(variants))
 	}
 
-	variant := variants[0]
-	if variant.Name != "720p" {
-		t.Errorf("name = %q, want 720p", variant.Name)
+	want := []struct {
+		name    string
+		height  int
+		bitrate int
+	}{
+		{name: "720p", height: 720, bitrate: 1600},
+		{name: "480p", height: 480, bitrate: 800},
 	}
-	if variant.ScaledHeight != 720 {
-		t.Errorf("scaled height = %d, want 720", variant.ScaledHeight)
-	}
-	if variant.ScaledWidth != 0 {
-		t.Errorf("scaled width = %d, want 0 so the aspect ratio is preserved", variant.ScaledWidth)
-	}
-	if variant.IsVideoPassthrough {
-		t.Error("default video should be transcoded, not passed through")
-	}
-	if variant.GetIsAudioPassthrough() {
-		t.Error("default audio should be re-encoded to AAC, not passed through")
-	}
-	if variant.AudioBitrate != 128 {
-		t.Errorf("audio bitrate = %d, want 128 kbps AAC", variant.AudioBitrate)
-	}
-	if variant.VideoBitrate == 0 {
-		t.Error("video bitrate must be set for the H.264 encode")
+	for i, variant := range variants {
+		if variant.Name != want[i].name {
+			t.Errorf("variant %d name = %q, want %s", i, variant.Name, want[i].name)
+		}
+		if variant.ScaledHeight != want[i].height {
+			t.Errorf("variant %d scaled height = %d, want %d", i, variant.ScaledHeight, want[i].height)
+		}
+		if variant.VideoBitrate != want[i].bitrate {
+			t.Errorf("variant %d video bitrate = %d, want %d", i, variant.VideoBitrate, want[i].bitrate)
+		}
+		if variant.ScaledWidth != 0 {
+			t.Errorf("variant %d scaled width = %d, want 0 so the aspect ratio is preserved", i, variant.ScaledWidth)
+		}
+		if variant.IsVideoPassthrough {
+			t.Errorf("variant %d video should be transcoded, not passed through", i)
+		}
+		if variant.GetIsAudioPassthrough() {
+			t.Errorf("variant %d audio should be re-encoded to AAC, not passed through", i)
+		}
+		if variant.AudioBitrate != 128 {
+			t.Errorf("variant %d audio bitrate = %d, want 128 kbps AAC", i, variant.AudioBitrate)
+		}
 	}
 
 	defaults := GetDefaults()

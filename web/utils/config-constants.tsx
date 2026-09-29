@@ -268,7 +268,7 @@ export const DEFAULT_VARIANT_STATE: VideoVariant = {
   name: '720p',
   framerate: 30,
   videoPassthrough: false,
-  videoBitrate: 2500,
+  videoBitrate: 1600,
   audioPassthrough: false,
   audioBitrate: 128,
   cpuUsageLevel: 2,

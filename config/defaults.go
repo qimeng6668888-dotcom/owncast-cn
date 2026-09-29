@@ -87,17 +87,27 @@ func GetDefaults() Defaults {
 
 		ChatEstablishedUserModeTimeDuration: time.Minute * 15,
 
-		// One 720p H.264 rendition. Audio is re-encoded to AAC (not copied)
-		// because AudioBitrate is set and passthrough is off. The video codec
-		// itself defaults to libx264 in the config repository.
+		// 720p for normal connections and 480p so players can downshift.
+		// Audio is re-encoded to AAC (not copied) because AudioBitrate is set
+		// and passthrough is off. The video codec defaults to libx264.
 		StreamVariants: []models.StreamOutputVariant{
 			{
 				Name:               "720p",
 				IsVideoPassthrough: false,
 				IsAudioPassthrough: false,
-				VideoBitrate:       2500,
+				VideoBitrate:       1600,
 				AudioBitrate:       128,
 				ScaledHeight:       720,
+				Framerate:          30,
+				CPUUsageLevel:      2,
+			},
+			{
+				Name:               "480p",
+				IsVideoPassthrough: false,
+				IsAudioPassthrough: false,
+				VideoBitrate:       800,
+				AudioBitrate:       128,
+				ScaledHeight:       480,
 				Framerate:          30,
 				CPUUsageLevel:      2,
 			},
