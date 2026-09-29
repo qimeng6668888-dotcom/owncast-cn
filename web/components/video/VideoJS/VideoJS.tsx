@@ -39,29 +39,9 @@ export const VideoJS: FC<VideoJSProps> = ({ options, onReady }) => {
     }
   }, [options, videoRef]);
 
-  React.useEffect(() => {
-    videojs.getPlayer(videoRef.current).on('xhr-hooks-ready', () => {
-      const cachebusterRequestHook = o => {
-        const { uri } = o;
-        let updatedURI = uri;
-        if (o.uri.match('m3u8')) {
-          const u = uri.startsWith('http')
-            ? new URL(uri)
-            : new URL(uri, window.location.protocol + window.location.host);
-          const cachebuster = Math.random().toString(16).slice(2, 8);
-          u.searchParams.append('cachebust', cachebuster);
-          updatedURI = u.toString();
-        }
-        return {
-          ...o,
-          uri: updatedURI,
-        };
-      };
-      (
-        videojs.getPlayer(videoRef.current).tech({ IWillNotUseThisInPlugins: true }) as any
-      )?.vhs.xhr.onRequest(cachebusterRequestHook);
-    });
-  }, []);
+  // Playlists already use Cache-Control: no-store. Do not append a random
+  // cachebust query: it makes every viewer's playlist URL unique, so the CDN
+  // cannot coalesce those origin fetches.
 
   return (
     <div data-vjs-player>
