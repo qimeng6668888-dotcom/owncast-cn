@@ -130,6 +130,14 @@ When a service publishes events to multiple listeners, model the listeners as in
 - Take screenshots from Storybook for standalone components (hide unrelated controls), or from the dev server at `http://localhost:3000` for anything that isn't in Storybook, which is most of the admin. Embed them inline in the PR, not as attachments.
 - Keep screenshot scripts and images in `/tmp`. Never commit them.
 
+## Cursor Cloud specific instructions
+
+- Go 1.26.6 and Node 24.12.0 are installed on `PATH` ahead of the image defaults (`~/.local/bin` and `/usr/local/cargo/bin`). The backend also needs `ffmpeg` and `gcc` (CGO SQLite and transcoding).
+- On boot, the environment start script launches the API with `go run main.go` (port 8080, tmux session `owncast-backend`, log `/tmp/owncast-backend.log`) and the Next.js dev server with `npm run dev` in `web/` (port 3000, tmux session `owncast-frontend`, log `/tmp/owncast-frontend.log`). Check those before starting a second copy.
+- Use `http://localhost:3000` for the viewer and admin. The dev server proxies `/api` to port 8080. Admin credentials for local development are `admin` / `abc123` (`web/.env.development`).
+- Install frontend dependencies with `npm install` in `web/`. `npm ci` fails on Node 24 because `web/package-lock.json` is not fully in sync; CI uses `npm install` too.
+- tmux injects `LD_LIBRARY_PATH=/exec-daemon/tmux-root/lib`. Unset it before starting the backend, or ffmpeg logs a libncurses warning and can pick up the wrong libraries. The start script already does this.
+
 ## References
 
 - Operator documentation: https://owncast.online/docs/
