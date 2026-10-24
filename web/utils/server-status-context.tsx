@@ -15,6 +15,7 @@ const initialServerConfigState: ConfigDetails = {
     customJavascript: '',
     extraPageContent: '',
     logo: '',
+    sharePreview: '',
     name: '',
     nsfw: false,
     autoplay: AutoplaySetting.Off,
