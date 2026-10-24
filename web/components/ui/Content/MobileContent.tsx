@@ -5,7 +5,6 @@ import type { TabsProps } from 'antd';
 import { useTranslation } from 'next-export-i18n';
 import { ErrorBoundary } from 'react-error-boundary';
 import classNames from 'classnames';
-import { SocialLink } from '../../../interfaces/social-link.model';
 import { PluginTab } from '../../../interfaces/client-config.model';
 import { Localization } from '../../../types/localization';
 import styles from './Content.module.scss';
@@ -17,8 +16,6 @@ import { ComponentError } from '../ComponentError/ComponentError';
 export type MobileContentProps = {
   name: string;
   summary: string;
-  tags: string[];
-  socialHandles: SocialLink[];
   extraPageContent: string;
   pluginTabs: PluginTab[];
   setShowFollowModal: (show: boolean) => void;
@@ -63,8 +60,6 @@ const ComponentErrorFallback = ({ error, resetErrorBoundary }) => (
 export const MobileContent: FC<MobileContentProps> = ({
   name,
   summary,
-  tags,
-  socialHandles,
   extraPageContent,
   pluginTabs,
   setShowFollowModal,
@@ -78,7 +73,7 @@ export const MobileContent: FC<MobileContentProps> = ({
 
   const aboutTabContent = (
     <>
-      <ContentHeader name={name} summary={summary} tags={tags} links={socialHandles} logo={logo} />
+      <ContentHeader name={name} summary={summary} logo={logo} />
       {!!extraPageContent && (
         <div className={styles.bottomPageContentContainer}>
           <CustomPageContent content={extraPageContent} />

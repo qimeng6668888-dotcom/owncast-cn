@@ -2,7 +2,6 @@ import { ComponentType, FC } from 'react';
 import dynamic from 'next/dynamic';
 import { TabsProps } from 'antd';
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary';
-import { SocialLink } from '../../../interfaces/social-link.model';
 import { PluginTab } from '../../../interfaces/client-config.model';
 import styles from './Content.module.scss';
 import { CustomPageContent } from '../CustomPageContent/CustomPageContent';
@@ -13,8 +12,6 @@ import { ComponentError } from '../ComponentError/ComponentError';
 export type DesktopContentProps = {
   name: string;
   summary: string;
-  tags: string[];
-  socialHandles: SocialLink[];
   extraPageContent: string;
   pluginTabs: PluginTab[];
   setShowFollowModal: (show: boolean) => void;
@@ -46,8 +43,6 @@ const StreamsTab = dynamic(() => import('../StreamsTab/StreamsTab').then(mod => 
 export const DesktopContent: FC<DesktopContentProps> = ({
   name,
   summary,
-  tags,
-  socialHandles,
   extraPageContent,
   pluginTabs,
   setShowFollowModal,
@@ -119,13 +114,7 @@ export const DesktopContent: FC<DesktopContentProps> = ({
       )}
     >
       <div id="skip-to-content">
-        <ContentHeader
-          name={name}
-          summary={summary}
-          tags={tags}
-          links={socialHandles}
-          logo={logo}
-        />
+        <ContentHeader name={name} summary={summary} logo={logo} />
       </div>
 
       <div>

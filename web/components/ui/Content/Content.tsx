@@ -121,8 +121,6 @@ export const Content: FC = () => {
     name,
     summary,
     logo,
-    socialHandles,
-    tags,
     externalActions,
     offlineMessage,
     chatDisabled,
@@ -346,8 +344,6 @@ export const Content: FC = () => {
             <MobileContent
               name={name}
               summary={summary}
-              tags={tags}
-              socialHandles={socialHandles}
               extraPageContent={extraPageContent}
               pluginTabs={pluginTabs}
               setShowFollowModal={setShowFollowModal}
@@ -361,8 +357,6 @@ export const Content: FC = () => {
               <DesktopContent
                 name={name}
                 summary={summary}
-                tags={tags}
-                socialHandles={socialHandles}
                 extraPageContent={extraPageContent}
                 pluginTabs={pluginTabs}
                 setShowFollowModal={setShowFollowModal}
