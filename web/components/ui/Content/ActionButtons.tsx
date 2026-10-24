@@ -2,7 +2,6 @@ import { Dispatch, FC, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from 'antd';
 import { ExternalAction, ExternalActionUtils } from '../../../interfaces/external-action';
-import { ActionButtonMenu } from '../../action-buttons/ActionButtonMenu/ActionButtonMenu';
 import { ActionButtonRow } from '../../action-buttons/ActionButtonRow/ActionButtonRow';
 import { FollowButton } from '../../action-buttons/FollowButton';
 import { NotifyButton } from '../../action-buttons/NotifyButton';
@@ -64,20 +63,6 @@ const ActionButtons: FC<ActionButtonProps> = ({
             </NotifyReminderPopup>
           )}
         </ActionButtonRow>
-      </div>
-      <div className={styles.mobileActionButtons}>
-        {(supportsBrowserNotifications ||
-          supportsBrowserNotifications ||
-          externalActions.length > 0) && (
-          <ActionButtonMenu
-            actions={externalActions}
-            showFollowItem={supportFediverseFeatures}
-            showNotifyItem={supportsBrowserNotifications}
-            externalActionSelected={externalActionSelected}
-            notifyItemSelected={() => setShowNotifyModal(true)}
-            followItemSelected={() => setShowFollowModal(true)}
-          />
-        )}
       </div>
     </div>
   );
