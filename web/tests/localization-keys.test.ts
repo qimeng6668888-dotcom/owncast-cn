@@ -181,6 +181,10 @@ describe('Localization Keys Cross-Language Validation', () => {
         key: Localization.Admin.Branding.extraPageLabel,
         name: 'Admin.Branding.extraPageLabel',
       },
+      {
+        key: Localization.Admin.Branding.sharePreviewLabel,
+        name: 'Admin.Branding.sharePreviewLabel',
+      },
       // EditInstanceDetails
       {
         key: Localization.Admin.EditInstanceDetails.offlineMessageDescription,

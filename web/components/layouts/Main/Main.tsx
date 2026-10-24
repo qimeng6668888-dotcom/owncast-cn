@@ -45,7 +45,7 @@ export const Main: FC = () => {
   const { t } = useTranslation();
   const clientConfig = useAtomValue(clientConfigStateAtom);
   const clientStatus = useAtomValue(serverStatusState);
-  const { name, summary, logo } = clientConfig;
+  const { name, summary, sharePreview } = clientConfig;
   const isChatAvailable = useAtomValue(isChatAvailableSelector);
   const fatalError = useAtomValue(fatalErrorStateAtom);
   const appState = useAtomValue(appStateAtom);
@@ -60,6 +60,13 @@ export const Main: FC = () => {
 
   const isProduction = process.env.NODE_ENV === 'production';
   const headerText = online ? streamTitle || name : name;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  let ogImage = `${origin}/thumbnail.jpg`;
+  if (isProduction && !name) {
+    ogImage = '{{.Thumbnail}}';
+  } else if (sharePreview) {
+    ogImage = `${origin}${sharePreview}`;
+  }
 
   return (
     <>
@@ -80,6 +87,12 @@ export const Main: FC = () => {
         <meta property="og:site_name" content={name} />
         <meta property="og:description" content={summary || name} />
         <meta property="og:type" content="video.other" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:url" content={ogImage} />
+        <meta property="og:image:secure_url" content={ogImage} />
+        <meta itemProp="image" content={ogImage} />
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:image" content={ogImage} />
 
         <base target="_blank" />
       </Head>

@@ -17,7 +17,9 @@
 
 		<meta property="og:image" content="{{.Thumbnail}}">
 		<meta property="og:image:url" content="{{.Thumbnail}}">
-		<meta property="og:image:alt" content="{{.Image}}">
+		<meta property="og:image:secure_url" content="{{.Thumbnail}}">
+		<meta property="og:image:alt" content="{{.Name}}">
+		<meta itemprop="image" content="{{.Thumbnail}}">
 
 		<meta property="og:video" content="{{.RequestedURL}}hls/stream.m3u8" />
 		<meta property="og:video:secure_url" content="{{.RequestedURL}}hls/stream.m3u8" />
@@ -33,8 +35,8 @@
 		<meta property="twitter:title" content="{{.Name}}">
 		<meta property="twitter:url" content="{{.RequestedURL}}">
 		<meta property="twitter:description" content="{{.Summary}}">
-		<meta property="twitter:image" content="{{.Image}}">
-		<meta property="twitter:card" content="player" />
+		<meta property="twitter:image" content="{{.Thumbnail}}">
+		<meta property="twitter:card" content="summary_large_image" />
 		<meta property="twitter:player" content='{{.RequestedURL}}embed/video' />
 		<meta property="twitter:player:width" content="560" />
 		<meta property="twitter:player:height" content="315" />

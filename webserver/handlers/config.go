@@ -33,6 +33,7 @@ type webConfigResponse struct {
 	StreamTitle        string                  `json:"streamTitle,omitempty"` // What's going on with the current stream
 	OfflineMessage     string                  `json:"offlineMessage"`
 	Logo               string                  `json:"logo"`
+	SharePreview       string                  `json:"sharePreview"`
 	Version            string                  `json:"version"`
 	SocketHostOverride string                  `json:"socketHostOverride,omitempty"`
 	ExtraPageContent   string                  `json:"extraPageContent"`
@@ -147,11 +148,20 @@ func (h *Handlers) getConfigResponse(r *http.Request) webConfigResponse {
 		logoPath = "/logo?hash=" + url.QueryEscape(uniqueness)
 	}
 
+	sharePreviewPath := ""
+	if configRepository.GetSharePreviewPath() != "" {
+		sharePreviewPath = "/share-preview"
+		if uniqueness := configRepository.GetSharePreviewUniquenessString(); uniqueness != "" {
+			sharePreviewPath = "/share-preview?hash=" + url.QueryEscape(uniqueness)
+		}
+	}
+
 	return webConfigResponse{
 		Name:                       configRepository.GetServerName(),
 		Summary:                    serverSummary,
 		OfflineMessage:             offlineMessage,
 		Logo:                       logoPath,
+		SharePreview:               sharePreviewPath,
 		Tags:                       configRepository.GetServerMetadataTags(),
 		Version:                    config.GetReleaseString(),
 		NSFW:                       configRepository.GetNSFW(),

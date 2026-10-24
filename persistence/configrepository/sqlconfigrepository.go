@@ -139,6 +139,38 @@ func (r *SqlConfigRepository) SetFaviconPath(favicon string) error {
 	return r.datastore.SetString(faviconPathKey, favicon)
 }
 
+// GetSharePreviewPath returns the share/OG preview image filename in the data directory.
+func (r *SqlConfigRepository) GetSharePreviewPath() string {
+	path, err := r.datastore.GetString(sharePreviewPathKey)
+	if err != nil {
+		log.Traceln(sharePreviewPathKey, err)
+		return ""
+	}
+
+	return path
+}
+
+// SetSharePreviewPath stores the share/OG preview image filename in the data directory.
+func (r *SqlConfigRepository) SetSharePreviewPath(path string) error {
+	return r.datastore.SetString(sharePreviewPathKey, path)
+}
+
+// GetSharePreviewUniquenessString returns the cache-busting string for the share preview image.
+func (r *SqlConfigRepository) GetSharePreviewUniquenessString() string {
+	uniqueness, err := r.datastore.GetString(sharePreviewUniquenessKey)
+	if err != nil {
+		log.Traceln(sharePreviewUniquenessKey, err)
+		return ""
+	}
+
+	return uniqueness
+}
+
+// SetSharePreviewUniquenessString stores the cache-busting string for the share preview image.
+func (r *SqlConfigRepository) SetSharePreviewUniquenessString(uniqueness string) error {
+	return r.datastore.SetString(sharePreviewUniquenessKey, uniqueness)
+}
+
 // GetServerSummary will return the server summary text.
 func (r *SqlConfigRepository) GetServerSummary() string {
 	summary, err := r.datastore.GetString(serverSummaryKey)

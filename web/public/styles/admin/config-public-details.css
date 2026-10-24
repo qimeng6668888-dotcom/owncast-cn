@@ -97,6 +97,14 @@
   border: 1px solid var(--theme-color-palette-5);
 }
 
+.share-preview-upload-container img.share-preview {
+  min-width: 180px;
+  min-height: 100px;
+  max-width: 360px;
+  max-height: 200px;
+  object-fit: cover;
+}
+
 @media (min-width: 1400px) {
   .instance-details-container {
     width: 65% !important;

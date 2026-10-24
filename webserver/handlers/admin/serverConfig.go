@@ -44,6 +44,7 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 			WelcomeMessage:      configRepository.GetServerWelcomeMessage(),
 			OfflineMessage:      configRepository.GetCustomOfflineMessage(),
 			Logo:                configRepository.GetLogoPath(),
+			SharePreview:        configRepository.GetSharePreviewPath(),
 			SocialHandles:       configRepository.GetSocialHandles(),
 			NSFW:                configRepository.GetNSFW(),
 			Autoplay:            configRepository.GetAutoplay(),
@@ -167,6 +168,7 @@ type webConfigResponse struct {
 	WelcomeMessage      string                `json:"welcomeMessage"`
 	OfflineMessage      string                `json:"offlineMessage"`
 	Logo                string                `json:"logo"`
+	SharePreview        string                `json:"sharePreview"`
 	Name                string                `json:"name"`
 	ExtraPageContent    string                `json:"extraPageContent"`
 	StreamTitle         string                `json:"streamTitle"` // What's going on with the current stream

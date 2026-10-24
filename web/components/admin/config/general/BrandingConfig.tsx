@@ -28,6 +28,7 @@ const { Title, Paragraph } = Typography;
 
 const NAME_ENDPOINT = '/name';
 const LOGO_ENDPOINT = '/logo';
+const SHARE_PREVIEW_ENDPOINT = '/sharepreview';
 const SUMMARY_ENDPOINT = '/serversummary';
 const PAGE_CONTENT_ENDPOINT = '/pagecontent';
 const APPEARANCE_ENDPOINT = '/appearance';
@@ -41,6 +42,7 @@ const DeleteOutlined = dynamic(() => import('@ant-design/icons/DeleteOutlined'),
 });
 
 type LogoChange = { kind: 'keep' } | { kind: 'upload'; dataUrl: string } | { kind: 'delete' };
+type SharePreviewChange = LogoChange;
 
 const postConfig = (apiPath: string, data: { value: unknown }): Promise<void> =>
   new Promise((resolve, reject) => {
@@ -71,7 +73,11 @@ export default function BrandingConfig() {
   const [accent, setAccent] = useState(savedColors.accent);
   const [dirty, setDirty] = useState(false);
   const [logoChange, setLogoChange] = useState<LogoChange>({ kind: 'keep' });
+  const [sharePreviewChange, setSharePreviewChange] = useState<SharePreviewChange>({
+    kind: 'keep',
+  });
   const [cacheBuster, setCacheBuster] = useState(0);
+  const [sharePreviewCacheBuster, setSharePreviewCacheBuster] = useState(0);
   const [submitStatus, setSubmitStatus] = useState<StatusState>(null);
   const [saving, setSaving] = useState(false);
 
@@ -111,6 +117,17 @@ export default function BrandingConfig() {
       Localization.Admin.Branding.extraPageTip,
       '显示在直播页下方「关于」区域，支持 Markdown。',
     ),
+    sharePreview: text(Localization.Admin.Branding.sharePreviewLabel, '链接预览图'),
+    sharePreviewPreview: text(Localization.Admin.Branding.sharePreviewPreview, '链接预览图'),
+    sharePreviewTip: text(
+      Localization.Admin.Branding.sharePreviewTip,
+      '微信、QQ 等转发链接时显示的封面。建议横向图片，JPEG 或 PNG，不超过 2MB。',
+    ),
+    noSharePreview: text(
+      Localization.Admin.Branding.noSharePreview,
+      '未设置预览图，分享链接时将使用直播封面或 Logo',
+    ),
+    deleteSharePreview: text(Localization.Admin.Branding.deleteSharePreview, '删除预览图'),
     logo: text(Localization.Admin.Branding.logoLabel, 'Logo'),
     preview: text(Localization.Admin.Branding.logoPreview, 'Logo 预览'),
     noLogo: text(Localization.Admin.Branding.noLogo, '未设置 Logo'),
@@ -130,7 +147,7 @@ export default function BrandingConfig() {
     setSaving(false);
   };
 
-  const beforeUpload = (file: RcFile) => {
+  const readImageFile = (file: RcFile, onRead: (url: string) => void) => {
     if (file.size > MAX_IMAGE_FILESIZE) {
       fail(
         t(Localization.Admin.StatusMessages.fileSizeTooBig, {
@@ -144,12 +161,24 @@ export default function BrandingConfig() {
       return false;
     }
     getBase64(file, (url: string) => {
+      onRead(url);
+    });
+    return false;
+  };
+
+  const beforeUpload = (file: RcFile) =>
+    readImageFile(file, (url: string) => {
       setDirty(true);
       setLogoChange({ kind: 'upload', dataUrl: url });
       setSubmitStatus(null);
     });
-    return false;
-  };
+
+  const beforeSharePreviewUpload = (file: RcFile) =>
+    readImageFile(file, (url: string) => {
+      setDirty(true);
+      setSharePreviewChange({ kind: 'upload', dataUrl: url });
+      setSubmitStatus(null);
+    });
 
   const previewSrc =
     logoChange.kind === 'upload'
@@ -157,6 +186,14 @@ export default function BrandingConfig() {
       : logoChange.kind === 'delete'
         ? ''
         : `${NEXT_PUBLIC_API_HOST || '/'}logo?random=${cacheBuster}`;
+
+  const hasSavedSharePreview = Boolean(instanceDetails?.sharePreview);
+  let sharePreviewSrc = '';
+  if (sharePreviewChange.kind === 'upload') {
+    sharePreviewSrc = sharePreviewChange.dataUrl;
+  } else if (sharePreviewChange.kind !== 'delete' && hasSavedSharePreview) {
+    sharePreviewSrc = `${NEXT_PUBLIC_API_HOST || '/'}share-preview?random=${sharePreviewCacheBuster}`;
+  }
 
   const save = async () => {
     const trimmedName = name.trim();
@@ -204,6 +241,24 @@ export default function BrandingConfig() {
         setCacheBuster(Math.floor(Math.random() * 100));
       }
 
+      if (sharePreviewChange.kind === 'upload') {
+        await postConfig(SHARE_PREVIEW_ENDPOINT, { value: sharePreviewChange.dataUrl });
+        setFieldInConfigState({
+          fieldName: 'sharePreview',
+          value: 'share-preview',
+          path: 'instanceDetails',
+        });
+        setSharePreviewCacheBuster(Math.floor(Math.random() * 100));
+      } else if (sharePreviewChange.kind === 'delete') {
+        await postConfig(SHARE_PREVIEW_ENDPOINT, { value: '' });
+        setFieldInConfigState({
+          fieldName: 'sharePreview',
+          value: '',
+          path: 'instanceDetails',
+        });
+        setSharePreviewCacheBuster(Math.floor(Math.random() * 100));
+      }
+
       const appearance = appearanceWithBrand(instanceDetails?.appearanceVariables, primary, accent);
       await postConfig(APPEARANCE_ENDPOINT, { value: appearance });
       setFieldInConfigState({
@@ -213,6 +268,7 @@ export default function BrandingConfig() {
       });
 
       setLogoChange({ kind: 'keep' });
+      setSharePreviewChange({ kind: 'keep' });
       setName(trimmedName);
       setSummary(trimmedSummary);
       setSubmitStatus(createInputStatus(STATUS_SUCCESS, label.success));
@@ -317,6 +373,44 @@ export default function BrandingConfig() {
               {label.deleteLogo}
             </Button>
           </div>
+        </div>
+      </div>
+
+      <div className="formfield-container logo-upload-container share-preview-upload-container">
+        <div className="label-side">
+          <span className="formfield-label">{label.sharePreview}</span>
+        </div>
+        <div className="input-side">
+          <div className="input-group">
+            {sharePreviewSrc ? (
+              <img
+                src={sharePreviewSrc}
+                alt={label.sharePreviewPreview}
+                className="logo-preview share-preview"
+              />
+            ) : (
+              <span>{label.noSharePreview}</span>
+            )}
+            <Upload
+              name="share-preview"
+              accept={ACCEPTED_IMAGE_TYPES.join(',')}
+              showUploadList={false}
+              beforeUpload={beforeSharePreviewUpload}
+            >
+              <Button icon={<UploadOutlined />}>{label.upload}</Button>
+            </Upload>
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                setDirty(true);
+                setSharePreviewChange({ kind: 'delete' });
+                setSubmitStatus(null);
+              }}
+            >
+              {label.deleteSharePreview}
+            </Button>
+          </div>
+          <p className="field-tip">{label.sharePreviewTip}</p>
         </div>
       </div>
 

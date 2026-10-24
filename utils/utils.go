@@ -139,6 +139,19 @@ func IsUserAgentABot(userAgent string) bool {
 		"element",
 		"rocket.chat",
 		"duckduckbot",
+		"twitterbot",
+		"facebookexternalhit",
+		"facebot",
+		"slackbot",
+		"telegrambot",
+		"discordbot",
+		"linkedinbot",
+		"wechatdevtools",
+		"bytespider",
+		"bingbot",
+		"baiduspider",
+		"sogou",
+		"yisouspider",
 	}
 
 	for _, botString := range botStrings {

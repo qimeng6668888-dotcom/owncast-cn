@@ -33,6 +33,7 @@ export interface ConfigInstanceDetailsFields {
   customJavascript: string;
   extraPageContent: string;
   logo: string;
+  sharePreview: string;
   name: string;
   nsfw: boolean;
   autoplay: AutoplaySetting;

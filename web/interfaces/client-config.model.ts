@@ -6,6 +6,7 @@ export interface ClientConfig {
   summary: string;
   offlineMessage?: string;
   logo: string;
+  sharePreview?: string;
   tags: string[];
   nsfw: boolean;
   autoplay: AutoplaySetting;
@@ -80,6 +81,7 @@ export function makeEmptyClientConfig(): ClientConfig {
     summary: '',
     offlineMessage: '',
     logo: '',
+    sharePreview: '',
     tags: [],
     nsfw: false,
     autoplay: AutoplaySetting.Off,

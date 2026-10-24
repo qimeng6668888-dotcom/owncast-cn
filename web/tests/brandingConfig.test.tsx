@@ -26,6 +26,7 @@ const renderBranding = () => {
             instanceDetails: {
               name: '旧品牌',
               logo: '/logo',
+              sharePreview: '',
               summary: '旧简介',
               extraPageContent: '旧正文',
               appearanceVariables: {},
@@ -105,5 +106,11 @@ describe('BrandingConfig', () => {
       expect(screen.getByText('更新品牌失败：请填写品牌名称。')).toBeInTheDocument();
     });
     expect(mockedPost).not.toHaveBeenCalled();
+  });
+
+  test('shows the share preview upload control', () => {
+    renderBranding();
+    expect(screen.getByText('链接预览图')).toBeInTheDocument();
+    expect(screen.getByText('删除预览图')).toBeInTheDocument();
   });
 });

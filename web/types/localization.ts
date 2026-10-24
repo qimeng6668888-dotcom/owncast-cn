@@ -251,6 +251,11 @@ export const Localization = {
       extraPageLabel: 'Admin.Branding.extraPageLabel',
       extraPagePlaceholder: 'Admin.Branding.extraPagePlaceholder',
       extraPageTip: 'Admin.Branding.extraPageTip',
+      sharePreviewLabel: 'Admin.Branding.sharePreviewLabel',
+      sharePreviewTip: 'Admin.Branding.sharePreviewTip',
+      sharePreviewPreview: 'Admin.Branding.sharePreviewPreview',
+      noSharePreview: 'Admin.Branding.noSharePreview',
+      deleteSharePreview: 'Admin.Branding.deleteSharePreview',
     },
 
     General: {

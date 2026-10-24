@@ -65,4 +65,6 @@ const (
 	disableSearchIndexingKey             = "disable_search_indexing"
 	videoServingEndpointKey              = "video_serving_endpoint"
 	faviconPathKey                       = "favicon_path"
+	sharePreviewPathKey                  = "share_preview_path"
+	sharePreviewUniquenessKey            = "share_preview_uniqueness"
 )

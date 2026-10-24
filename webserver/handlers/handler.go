@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/owncast/owncast/webserver/handlers/generated"
 	"github.com/owncast/owncast/webserver/router/middleware"
 )
@@ -27,7 +29,11 @@ func New(h *Handlers) *ServerInterfaceImpl {
 }
 
 func (s *ServerInterfaceImpl) Handler() http.Handler {
-	return generated.Handler(s)
+	r := chi.NewRouter()
+	r.Post("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.SetSharePreview))
+	r.Options("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.SetSharePreview))
+	r.Delete("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.ResetSharePreview))
+	return generated.HandlerFromMux(s, r)
 }
 
 func (s *ServerInterfaceImpl) GetStatus(w http.ResponseWriter, r *http.Request) {
