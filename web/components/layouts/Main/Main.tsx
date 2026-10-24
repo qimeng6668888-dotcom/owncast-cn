@@ -45,7 +45,7 @@ export const Main: FC = () => {
   const { t } = useTranslation();
   const clientConfig = useAtomValue(clientConfigStateAtom);
   const clientStatus = useAtomValue(serverStatusState);
-  const { name, summary, sharePreview } = clientConfig;
+  const { name, summary, logo, sharePreview } = clientConfig;
   const isChatAvailable = useAtomValue(isChatAvailableSelector);
   const fatalError = useAtomValue(fatalErrorStateAtom);
   const appState = useAtomValue(appStateAtom);
