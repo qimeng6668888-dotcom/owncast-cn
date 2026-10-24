@@ -16,6 +16,7 @@ import { Localization } from '../../../types/localization';
 import { isVideoPlayingAtom, clockSkewAtom } from '../../stores/ClientConfigStore';
 import PlaybackMetrics from '../metrics/playback';
 import { createVideoSettingsMenuButton, LATENCY_COMPENSATION_ENABLED } from '../settings-menu';
+import { installMobileFullscreen, type MobileFullscreenPlayer } from '../mobileFullscreen';
 import LatencyCompensator from '../latencyCompensator';
 import styles from './OwncastPlayer.module.scss';
 import { VideoSettingsServiceContext } from '../../../services/video-settings-service';
@@ -48,6 +49,7 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
   const VideoSettingsService = useContext(VideoSettingsServiceContext);
   const playerRef = React.useRef(null);
   const detachLivePlaybackRef = React.useRef<(() => void) | null>(null);
+  const detachMobileFullscreenRef = React.useRef<(() => void) | null>(null);
   const [videoPlaying, setVideoPlaying] = useAtom(isVideoPlayingAtom);
   const clockSkew = useAtomValue(clockSkewAtom);
   const { t } = useTranslation();
@@ -330,6 +332,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     liveui: true,
     preload: 'auto',
     muted: initiallyMuted,
+    // Phone controls, including 退出全屏, hide this long after the last tap.
+    inactivityTimeout: 2000,
     controlBar: {
       progressControl: {
         seekBar: false,
@@ -361,6 +365,11 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     setSavedVolume();
     setupAirplay(player, videojs);
     setupUnmuteButton(player, videojs);
+    detachMobileFullscreenRef.current?.();
+    detachMobileFullscreenRef.current = installMobileFullscreen(player as MobileFullscreenPlayer, {
+      enterLabel: translated(t, Localization.Frontend.Player.Fullscreen, '全屏'),
+      exitLabel: translated(t, Localization.Frontend.Player.NonFullscreen, '退出全屏'),
+    });
 
     // You can handle player events here, for example:
     player.on('waiting', () => {
@@ -372,6 +381,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       ping.stop();
       detachLivePlaybackRef.current?.();
       detachLivePlaybackRef.current = null;
+      detachMobileFullscreenRef.current?.();
+      detachMobileFullscreenRef.current = null;
     });
 
     player.on('playing', () => {
@@ -434,6 +445,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       playbackMetrics?.stop();
       detachLivePlaybackRef.current?.();
       detachLivePlaybackRef.current = null;
+      detachMobileFullscreenRef.current?.();
+      detachMobileFullscreenRef.current = null;
     },
     [],
   );
