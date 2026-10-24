@@ -114,39 +114,97 @@
     color: var(--theme-color-components-text-on-light);
   }
 
-  // Phone control bar: keep the live / settings / PiP / fullscreen cluster
-  // from colliding, and turn fullscreen into a text button. The volume
-  // slider is the desktop hover rule above; hardware volume covers phones.
-  @media (width <= 1024px) and (pointer: coarse), (width <= 1024px) and (hover: none) {
+  // Phone bar. The class is added with the fullscreen decision so layout and
+  // behavior stay on the same devices. The progress slot is an empty flex
+  // grower (seeking is already off) and is what pushed 全屏 off the screen.
+  &.oc-phone-controls {
     .vjs-control-bar {
-      height: calc(52px + env(safe-area-inset-bottom, 0));
-      column-gap: 12px;
-      padding: 0 10px env(safe-area-inset-bottom, 0) 4px;
+      align-items: center;
+      justify-content: space-evenly;
+      height: calc(48px + env(safe-area-inset-bottom, 0));
+      padding: 0 4px env(safe-area-inset-bottom, 0);
+      column-gap: 0;
     }
 
-    .vjs-button {
-      width: 44px;
-    }
-
-    .vjs-volume-panel,
-    .vjs-volume-panel.vjs-volume-panel-horizontal,
-    .vjs-hover.vjs-volume-panel-horizontal {
-      width: 44px !important;
-    }
-
+    .vjs-progress-control,
+    .vjs-custom-control-spacer,
     .vjs-volume-control {
-      display: none;
+      display: none !important;
+    }
+
+    .vjs-control-bar > .vjs-control {
+      flex: 0 0 auto;
+      align-self: center;
+      width: 40px;
+      min-width: 40px;
+      max-width: 40px;
+      height: 44px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .vjs-control-bar > .vjs-volume-panel,
+    .vjs-control-bar > .vjs-volume-panel.vjs-volume-panel-horizontal,
+    .vjs-control-bar > .vjs-hover.vjs-volume-panel-horizontal {
+      flex: 0 0 auto;
+      width: 40px !important;
+      min-width: 40px;
+      max-width: 40px;
+    }
+
+    .vjs-volume-panel .vjs-mute-control {
+      width: 40px;
+      min-width: 40px;
+      height: 44px;
+    }
+
+    .vjs-control-bar > .vjs-seek-to-live-control,
+    .vjs-control-bar > .vjs-fullscreen-control.oc-fullscreen-text {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: max-content;
+      max-width: none;
+      padding: 0 2px;
+    }
+
+    .vjs-button > .vjs-icon-placeholder::before {
+      top: 50%;
+      left: 50%;
+      width: auto;
+      height: auto;
+      font-size: 22px;
+      line-height: 1;
+      transform: translate(-50%, -50%);
     }
 
     .vjs-seek-to-live-control {
-      width: auto;
-      padding: 0 8px;
+      line-height: 1;
+
+      .vjs-icon-placeholder {
+        position: relative;
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        margin-right: 4px;
+      }
+
+      .vjs-icon-placeholder::before {
+        position: static;
+        font-size: 10px;
+        line-height: 1;
+        transform: none;
+      }
+
+      .vjs-seek-to-live-text {
+        line-height: 1;
+      }
     }
 
     .vjs-fullscreen-control.oc-fullscreen-text {
-      width: auto;
-      min-width: 72px;
-      margin-left: 4px;
+      margin: 0;
 
       .vjs-icon-placeholder {
         display: flex;
@@ -154,17 +212,26 @@
         justify-content: center;
         width: 100%;
         height: 100%;
+      }
 
-        &::before {
-          content: none;
-        }
+      .vjs-icon-placeholder::before {
+        content: none;
       }
 
       .oc-fs-label {
         font-size: 18px;
         font-weight: 600;
         line-height: 1;
+        white-space: nowrap;
       }
+    }
+
+    .vjs-airplay .vjs-icon-placeholder::before {
+      top: 50% !important;
+      left: 50% !important;
+      width: 22px !important;
+      height: 22px !important;
+      transform: translate(-50%, -50%);
     }
   }
 
@@ -238,4 +305,15 @@ body.vjs-full-window .video-js.vjs-fullscreen {
 
 .vjs-seek-to-live-control.vjs-control.vjs-at-live-edge .vjs-icon-placeholder {
   color: var(--theme-color-components-video-live-indicator) !important;
+}
+
+// Chrome paints its own overflow chip on the video. Hide that chip only.
+// AirPlay, Picture-in-Picture, and the iOS system player stay available.
+.vjs-owncast video::-webkit-media-controls-overflow-button,
+.vjs-owncast video::-webkit-media-controls-overlay-enclosure {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }

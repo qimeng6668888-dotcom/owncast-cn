@@ -13,7 +13,16 @@ export type DeviceHints = {
   userAgent: string;
   platform: string;
   maxTouchPoints: number;
+  screenWidth?: number;
 };
+
+export type ScreenHints = {
+  screenWidth: number;
+  maxTouchPoints: number;
+};
+
+// Marks the player whose control bar uses the even phone layout.
+export const PHONE_CONTROLS_CLASS = 'oc-phone-controls';
 
 type WebkitVideo = HTMLVideoElement & {
   webkitEnterFullScreen?: () => void;
@@ -49,8 +58,25 @@ export type MobileFullscreenPlayer = {
   };
 };
 
-export const prefersPseudoFullscreen = (match: MatchMediaQuery): boolean =>
-  match('(width <= 1024px) and (hover: none)') || match('(width <= 1024px) and (pointer: coarse)');
+// A phone is a narrow touch screen. Pointer and hover queries miss on some
+// Android browsers, which then kept the desktop fullscreen icon. Screen width
+// plus touch points catches those. A desktop window dragged narrow stays on
+// the browser fullscreen button because the monitor itself is wide.
+export const prefersPseudoFullscreen = (
+  match: MatchMediaQuery,
+  screen: ScreenHints = {
+    screenWidth: typeof window === 'undefined' ? 0 : window.screen?.width || 0,
+    maxTouchPoints: typeof navigator === 'undefined' ? 0 : navigator.maxTouchPoints || 0,
+  },
+): boolean => {
+  const narrowViewport = match('(max-width: 1024px)');
+  const coarse = match('(pointer: coarse)') || match('(hover: none)');
+  const narrowDevice = screen.screenWidth > 0 && screen.screenWidth <= 1024;
+  return (
+    (narrowDevice && screen.maxTouchPoints > 0) ||
+    (narrowViewport && (coarse || screen.maxTouchPoints > 1))
+  );
+};
 
 export const isAppleTouch = (nav: DeviceHints): boolean => {
   if (/iPad|iPhone|iPod/i.test(nav.userAgent)) {
@@ -64,6 +90,12 @@ const deviceHints = (): DeviceHints => ({
   userAgent: navigator.userAgent,
   platform: navigator.platform,
   maxTouchPoints: navigator.maxTouchPoints || 0,
+  screenWidth: window.screen?.width || 0,
+});
+
+const screenHints = (nav: DeviceHints): ScreenHints => ({
+  screenWidth: nav.screenWidth ?? (typeof window === 'undefined' ? 0 : window.screen?.width || 0),
+  maxTouchPoints: nav.maxTouchPoints || 0,
 });
 
 const enterApplePlayer = (root: HTMLElement): boolean => {
@@ -168,13 +200,28 @@ export const installMobileFullscreen = (
   match: MatchMediaQuery = query => window.matchMedia(query).matches,
   nav: DeviceHints = deviceHints(),
 ): (() => void) => {
-  if (!prefersPseudoFullscreen(match)) {
+  const markPhoneBar = () => {
+    player.el().classList.add(PHONE_CONTROLS_CLASS);
+  };
+  const unmarkPhoneBar = () => {
+    player.el().classList.remove(PHONE_CONTROLS_CLASS);
+  };
+
+  // iPhone and iPad use Apple's player at any width, including landscape.
+  if (isAppleTouch(nav)) {
+    markPhoneBar();
+    const detach = installAppleFullscreen(player, labels);
+    return () => {
+      detach();
+      unmarkPhoneBar();
+    };
+  }
+
+  if (!prefersPseudoFullscreen(match, screenHints(nav))) {
     return () => {};
   }
 
-  if (isAppleTouch(nav)) {
-    return installAppleFullscreen(player, labels);
-  }
+  markPhoneBar();
 
   if (player.options_) {
     player.options_.inactivityTimeout = FULLSCREEN_HIDE_MS;
@@ -262,6 +309,7 @@ export const installMobileFullscreen = (
   const onDispose = () => {
     window.removeEventListener('popstate', onPop);
     exitBtn.remove();
+    unmarkPhoneBar();
     player.requestFullscreen = originalRequest;
     player.exitFullscreen = originalExit;
     if (player.isFullWindow) {
