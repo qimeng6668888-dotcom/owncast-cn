@@ -9,8 +9,8 @@ import (
 
 func TestDefaultVariantEncodes720pH264AAC(t *testing.T) {
 	defaults := config.GetDefaults().StreamVariants
-	if len(defaults) != 1 {
-		t.Fatalf("expected one default variant, got %d", len(defaults))
+	if len(defaults) != 2 {
+		t.Fatalf("expected 720p and 480p default variants, got %d", len(defaults))
 	}
 
 	variant := getVariantFromConfigQuality(defaults[0], 0)
@@ -35,5 +35,10 @@ func TestDefaultVariantEncodes720pH264AAC(t *testing.T) {
 	codec := getCodec("libx264")
 	if codec.Name() != "libx264" {
 		t.Fatalf("default codec name = %q, want libx264", codec.Name())
+	}
+
+	second := getVariantFromConfigQuality(defaults[1], 1)
+	if second.videoSize.Height != 480 {
+		t.Fatalf("second height = %d, want 480", second.videoSize.Height)
 	}
 }

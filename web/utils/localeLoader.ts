@@ -61,36 +61,13 @@ export const AVAILABLE_LOCALES = [
 export const DEFAULT_LOCALE = 'zh-CN';
 
 /**
- * Maps a browser language tag onto a catalog we ship.
- * zh-CN / zh-Hans / bare zh use Simplified Chinese. zh-TW / zh-HK / zh-Hant
- * keep the existing Traditional catalog. The zh directory is never rewritten.
- */
-export const browserLocale = (browserLanguage: string | undefined): string | null => {
-  const tag = (browserLanguage || '').trim().toLowerCase().replace(/_/g, '-');
-  if (!tag) {
-    return null;
-  }
-  if (tag === 'zh-cn' || tag === 'zh-hans' || tag === 'zh-sg' || tag === 'zh') {
-    return DEFAULT_LOCALE;
-  }
-  if (tag === 'zh-tw' || tag === 'zh-hk' || tag === 'zh-mo' || tag === 'zh-hant') {
-    return 'zh';
-  }
-  const short = tag.split('-')[0];
-  return AVAILABLE_LOCALES.includes(short) ? short : null;
-};
-
-/**
  * Decides which locale catalog to fetch. Only an explicit, known ?lang=
  * value switches away from Simplified Chinese. Browser language is ignored
  * so Malay, English, and German viewers stay on zh-CN unless they pick
  * another language in the URL. zh-CN and English are already bundled, so
  * neither needs a fetch. An explicit ?lang=zh still loads Traditional.
  */
-export const pickLocale = (
-  queryLang: string | undefined,
-  _browserLanguage?: string | undefined,
-): string | null => {
+export const pickLocale = (queryLang: string | undefined): string | null => {
   const locale = queryLang && AVAILABLE_LOCALES.includes(queryLang) ? queryLang : null;
   if (!locale || locale === DEFAULT_LOCALE || locale === 'en') {
     return null;
