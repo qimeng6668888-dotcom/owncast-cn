@@ -5,6 +5,7 @@
 import {
   FULLSCREEN_HIDE_MS,
   installMobileFullscreen,
+  isAppleTouch,
   paintFullscreenLabel,
   prefersPseudoFullscreen,
   type MobileFullscreenPlayer,
@@ -79,6 +80,35 @@ const makePlayer = (): MobileFullscreenPlayer & {
   return player;
 };
 
+describe('isAppleTouch', () => {
+  test('iPhone and desktop-mode iPad count as Apple', () => {
+    expect(
+      isAppleTouch({
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)',
+        platform: 'iPhone',
+        maxTouchPoints: 5,
+      }),
+    ).toBe(true);
+    expect(
+      isAppleTouch({
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        platform: 'MacIntel',
+        maxTouchPoints: 5,
+      }),
+    ).toBe(true);
+  });
+
+  test('Android does not count as Apple', () => {
+    expect(
+      isAppleTouch({
+        userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 7)',
+        platform: 'Linux armv8l',
+        maxTouchPoints: 5,
+      }),
+    ).toBe(false);
+  });
+});
+
 describe('prefersPseudoFullscreen', () => {
   test('phones use in-page fullscreen', () => {
     expect(prefersPseudoFullscreen(phoneMatch)).toBe(true);
@@ -124,6 +154,37 @@ describe('installMobileFullscreen', () => {
     exit.click();
     expect(player.isFullWindow).toBe(false);
     expect(player.requests).not.toContain('native-exit');
+  });
+
+  test('iPhone keeps the text button and opens the system player', () => {
+    const player = makePlayer();
+    const video = document.createElement('video');
+    let entered = 0;
+    Object.assign(video, {
+      webkitEnterFullScreen: () => {
+        entered += 1;
+      },
+    });
+    player.el().appendChild(video);
+
+    installMobileFullscreen(
+      player,
+      { enterLabel: '全屏', exitLabel: '退出全屏' },
+      phoneMatch,
+      {
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)',
+        platform: 'iPhone',
+        maxTouchPoints: 5,
+      },
+    );
+
+    expect(player.el().querySelector('.oc-fs-label')?.textContent).toBe('全屏');
+    expect(player.el().querySelector('.oc-exit-fullscreen')).toBeNull();
+    player.requestFullscreen();
+    expect(entered).toBe(1);
+    expect(player.isFullWindow).toBe(false);
+    expect(player.requests).not.toContain('enter-window');
+    expect(player.requests).not.toContain('native-request');
   });
 });
 

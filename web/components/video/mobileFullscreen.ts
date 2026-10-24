@@ -1,14 +1,24 @@
-// Phone fullscreen stays inside the page (video.js full-window) instead of the
-// browser Fullscreen API. Android Chrome's Fullscreen API paints its own
-// "swipe from the top, then tap back" toast, and that gesture often does not
-// leave the player. Full-window mode keeps our controls, so we can offer an
-// explicit exit and let the player hide them after its inactivity timeout.
-// That hide is the usual "immersive" / auto-hide chrome behavior.
+// Phones show a text fullscreen button. Android then uses video.js full-window
+// mode (in-page fullscreen) so Chrome does not paint its "swipe from the top"
+// toast; the exit control and the bar hide together after the inactivity
+// timeout. iPhone and iPad keep that text button, then hand the tap to the
+// system video player (webkitEnterFullScreen).
 
 export const FULLSCREEN_HIDE_MS = 2000;
 const HISTORY_KEY = 'ocPseudoFs';
 
 export type MatchMediaQuery = (query: string) => boolean;
+
+export type DeviceHints = {
+  userAgent: string;
+  platform: string;
+  maxTouchPoints: number;
+};
+
+type WebkitVideo = HTMLVideoElement & {
+  webkitEnterFullScreen?: () => void;
+  webkitEnterFullscreen?: () => void;
+};
 
 export type MobileFullscreenLabels = {
   enterLabel: string;
@@ -41,6 +51,30 @@ export type MobileFullscreenPlayer = {
 
 export const prefersPseudoFullscreen = (match: MatchMediaQuery): boolean =>
   match('(width <= 1024px) and (hover: none)') || match('(width <= 1024px) and (pointer: coarse)');
+
+export const isAppleTouch = (nav: DeviceHints): boolean => {
+  if (/iPad|iPhone|iPod/i.test(nav.userAgent)) {
+    return true;
+  }
+  // iPadOS 13+ reports a desktop Mac user agent and platform.
+  return nav.platform === 'MacIntel' && nav.maxTouchPoints > 1;
+};
+
+const deviceHints = (): DeviceHints => ({
+  userAgent: navigator.userAgent,
+  platform: navigator.platform,
+  maxTouchPoints: navigator.maxTouchPoints || 0,
+});
+
+const enterApplePlayer = (root: HTMLElement): boolean => {
+  const video = root.querySelector('video') as WebkitVideo | null;
+  const enter = video?.webkitEnterFullScreen || video?.webkitEnterFullscreen;
+  if (!video || !enter) {
+    return false;
+  }
+  enter.call(video);
+  return true;
+};
 
 const fullscreenButton = (player: MobileFullscreenPlayer): FullscreenButton | null => {
   const bar = player.controlBar;
@@ -81,13 +115,65 @@ const nudgeActivity = (player: MobileFullscreenPlayer) => {
   }
 };
 
+const installAppleFullscreen = (
+  player: MobileFullscreenPlayer,
+  labels: MobileFullscreenLabels,
+): (() => void) => {
+  const originalRequest = player.requestFullscreen.bind(player);
+  const button = fullscreenButton(player);
+  const video = player.el().querySelector('video');
+
+  const paintEnter = () => {
+    if (!button) {
+      return;
+    }
+    button.controlText(labels.enterLabel);
+    paintFullscreenLabel(button.el(), labels.enterLabel);
+  };
+
+  player.requestFullscreen = () => {
+    if (!enterApplePlayer(player.el())) {
+      return originalRequest();
+    }
+    return Promise.resolve();
+  };
+
+  if (button) {
+    button.handleFullscreenChange = () => {
+      paintEnter();
+    };
+    paintEnter();
+  }
+
+  const onEnd = () => {
+    paintEnter();
+  };
+  video?.addEventListener('webkitendfullscreen', onEnd);
+
+  const onDispose = () => {
+    video?.removeEventListener('webkitendfullscreen', onEnd);
+    player.requestFullscreen = originalRequest;
+  };
+  player.on('dispose', onDispose);
+
+  return () => {
+    player.off?.('dispose', onDispose);
+    onDispose();
+  };
+};
+
 export const installMobileFullscreen = (
   player: MobileFullscreenPlayer,
   labels: MobileFullscreenLabels,
   match: MatchMediaQuery = query => window.matchMedia(query).matches,
+  nav: DeviceHints = deviceHints(),
 ): (() => void) => {
   if (!prefersPseudoFullscreen(match)) {
     return () => {};
+  }
+
+  if (isAppleTouch(nav)) {
+    return installAppleFullscreen(player, labels);
   }
 
   if (player.options_) {
