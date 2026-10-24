@@ -378,6 +378,7 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       console.debug('player is playing');
       ping.start();
       setVideoPlaying(true);
+      window.dispatchEvent(new Event('owncast-playing'));
     });
 
     player.on('pause', () => {

@@ -592,6 +592,7 @@
 		"lastLiveAgo": "上次实况时间：{{timeAgo}}前",
 		"liveFor": "已直播 {{duration}}",
 		"streamOffline": "离线",
+		"oneMoment": "请稍候…",
 		"openChat": "聊天",
 		"noWorkingPlaylist": "无法继续播放，没有可用的播放列表。",
 		"liveInterrupted": "直播中断了，请点播放继续。",

@@ -67,14 +67,38 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
     }
   }, [router.isReady]);
 
-  // Register the production service worker (generated at build time by
-  // build-scripts/generate-sw.js). Dev never registers one: a rewrite
-  // serves a self-destroying worker at /sw.js instead, to clean up stale
-  // production workers browsers may have pinned to a dev port.
+  // Register the production service worker after playback starts (or after a
+  // short fallback). Precaching the static bundle on first paint competes
+  // with the live playlist. Dev never registers one: a rewrite serves a
+  // self-destroying worker at /sw.js instead.
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
+    if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
+      return undefined;
     }
+    if (window.location.pathname.startsWith('/admin')) {
+      return undefined;
+    }
+
+    let registered = false;
+    const register = () => {
+      if (registered) {
+        return;
+      }
+      registered = true;
+      navigator.serviceWorker.register('/sw.js');
+    };
+
+    const onPlaying = () => {
+      window.removeEventListener('owncast-playing', onPlaying);
+      register();
+    };
+    window.addEventListener('owncast-playing', onPlaying);
+    const fallback = window.setTimeout(register, 8000);
+
+    return () => {
+      window.removeEventListener('owncast-playing', onPlaying);
+      window.clearTimeout(fallback);
+    };
   }, []);
 
   return (

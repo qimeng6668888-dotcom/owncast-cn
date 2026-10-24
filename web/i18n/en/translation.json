@@ -592,6 +592,7 @@
 		"lastLiveAgo": "Last live {{timeAgo}} ago",
 		"liveFor": "Live for {{duration}}",
 		"streamOffline": "Offline",
+		"oneMoment": "One moment…",
 		"openChat": "Chat",
 		"noWorkingPlaylist": "Playback cannot continue. No available working or supported playlists.",
 		"liveInterrupted": "The live stream was interrupted. Press play to continue.",

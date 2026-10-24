@@ -18,6 +18,7 @@ export const Localization = {
     lastLiveAgo: 'Last live {{timeAgo}} ago',
     liveFor: 'Frontend.liveFor',
     streamOffline: 'Frontend.streamOffline',
+    oneMoment: 'Frontend.oneMoment',
     openChat: 'Frontend.openChat',
     noWorkingPlaylist: 'Frontend.noWorkingPlaylist',
     liveInterrupted: 'Frontend.liveInterrupted',

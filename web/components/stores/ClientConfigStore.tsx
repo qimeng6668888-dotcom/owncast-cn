@@ -38,10 +38,27 @@ const CLIENT_CONFIG_POLL_DURATION = 15000;
 // initializing state from this data during hydration makes React's first
 // render differ from the server HTML (React errors #418/#423/#425).
 // Returns both the config and whether parsing succeeded.
+// The Go index template injects a JSON object literal
+// (`window.configHydration = {...}`), not a quoted string. JSON.parse on that
+// object throws, which used to discard the payload and wait on /api/config
+// before the player could mount.
+const parseHydration = <T,>(raw: unknown): T | null => {
+  if (raw == null || raw === '') {
+    return null;
+  }
+  if (typeof raw === 'string') {
+    return JSON.parse(raw) as T;
+  }
+  if (typeof raw === 'object') {
+    return raw as T;
+  }
+  return null;
+};
+
 const getInitialConfig = (): { config: ClientConfig; success: boolean } => {
   if (typeof window !== 'undefined' && (window as any).configHydration) {
     try {
-      const parsed = JSON.parse((window as any).configHydration);
+      const parsed = parseHydration<ClientConfig>((window as any).configHydration);
       if (parsed) {
         return { config: parsed, success: true };
       }
@@ -55,7 +72,7 @@ const getInitialConfig = (): { config: ClientConfig; success: boolean } => {
 const getInitialStatus = (): { status: ServerStatus; success: boolean } => {
   if (typeof window !== 'undefined' && (window as any).statusHydration) {
     try {
-      const parsed = JSON.parse((window as any).statusHydration);
+      const parsed = parseHydration<ServerStatus>((window as any).statusHydration);
       if (parsed) {
         return { status: parsed, success: true };
       }
@@ -407,11 +424,11 @@ export const ClientConfigStore: FC = () => {
       updateClientConfig();
     }
 
-    // If the URL includes a ?displayname=xyz query param, use it as the
-    // proposed display name when registering a new chat user (the server may
-    // sanitize or override it). It has no effect if the visitor has
-    // previously registered (an access token is already saved).
-    handleUserRegistration(getDisplayNameFromQuery(window.location.search));
+    // Chat signup can wait a tick so the player chunk and HLS playlist get
+    // the first network slot on a live open.
+    const chatAuthTimer = window.setTimeout(() => {
+      handleUserRegistration(getDisplayNameFromQuery(window.location.search));
+    }, 0);
 
     if (hasHydratedStatus) {
       handleStatusChange(status);
@@ -435,6 +452,7 @@ export const ClientConfigStore: FC = () => {
     }, CLIENT_CONFIG_POLL_DURATION);
 
     return () => {
+      window.clearTimeout(chatAuthTimer);
       clearInterval(serverStatusRefreshPoll);
       clearInterval(clientConfigRefreshPoll);
     };

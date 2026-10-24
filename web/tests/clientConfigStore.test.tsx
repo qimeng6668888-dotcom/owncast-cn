@@ -41,8 +41,8 @@ jest.mock('../services/websocket-service', () => ({
 }));
 
 const hydrationWindow = window as unknown as {
-  configHydration?: string;
-  statusHydration?: string;
+  configHydration?: string | Record<string, unknown>;
+  statusHydration?: string | Record<string, unknown>;
 };
 
 const testConfig = { ...makeEmptyClientConfig(), name: 'test server', summary: 'from api' };
@@ -118,6 +118,21 @@ describe('ClientConfigStore', () => {
     await waitFor(() => expect(store.get(serverStatusState).online).toBe(true));
     // The app state machine must leave "loading" and reflect the live stream.
     await waitFor(() => expect(store.get(appStateAtom).videoAvailable).toBe(true));
+  });
+
+  it('applies object hydration injected by the Go index template without hitting the API', async () => {
+    localStorage.setItem('accessToken', 'saved-token');
+    hydrationWindow.configHydration = { ...testConfig, summary: 'from object hydration' };
+    hydrationWindow.statusHydration = onlineStatus;
+    const services = makeServices();
+    const store = renderStore(services);
+
+    await waitFor(() => expect(store.get(isClientConfigLoadedAtom)).toBe(true));
+    expect(store.get(clientConfigStateAtom).summary).toBe('from object hydration');
+    expect(store.get(serverStatusState).online).toBe(true);
+    await waitFor(() => expect(store.get(appStateAtom).videoAvailable).toBe(true));
+    expect(services.configService.getConfig).not.toHaveBeenCalled();
+    expect(services.statusService.getStatus).not.toHaveBeenCalled();
   });
 
   it('applies server-injected hydration data from the mount effect without hitting the API', async () => {

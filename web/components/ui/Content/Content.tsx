@@ -8,6 +8,7 @@ import ActionButtons from './ActionButtons';
 import { LOCAL_STORAGE_KEYS, getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
 import { canPushNotificationsBeSupported } from '../../../utils/browserPushNotifications';
 import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 
 import {
   clientConfigStateAtom,
@@ -65,7 +66,10 @@ const BrowserNotifyModal = dynamic(
 );
 
 const OwncastPlayer = dynamic(
-  () => import('../../video/OwncastPlayer/OwncastPlayer').then(mod => mod.OwncastPlayer),
+  () =>
+    import(/* webpackPrefetch: true */ '../../video/OwncastPlayer/OwncastPlayer').then(
+      mod => mod.OwncastPlayer,
+    ),
   {
     ssr: false,
     loading: () => <Skeleton loading active paragraph={{ rows: 12 }} />,
@@ -144,7 +148,7 @@ export const Content: FC = () => {
   // social features: federation stays on (follow button, go-live posts,
   // engagement) but the public followers list is not shown.
   const showFollowersTab = fediverseEnabled && !hideFollowersTab;
-  const { servers: federatedServers } = useFederatedServers();
+  const { servers: federatedServers } = useFederatedServers(false, supportFediverseFeatures);
 
   const externalActionSelected = (action: ExternalAction) => {
     const { openExternally, url } = action;
@@ -254,7 +258,11 @@ export const Content: FC = () => {
             className={classnames([styles.topSectionElement, styles.centerSpinner])}
             style={{ height: '30vh' }}
           >
-            <Spin delay={2} size="large" tip="One moment..." />
+            <Spin
+              delay={2}
+              size="large"
+              tip={translated(t, Localization.Frontend.oneMoment, '请稍候…')}
+            />
           </div>
         )}
         <Row>
