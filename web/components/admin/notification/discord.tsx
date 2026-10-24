@@ -104,7 +104,7 @@ export const DiscordNotify = () => {
     <>
       <Title>{tx('Discord')}</Title>
       <p className="description reduced-margins">
-        Let your Discord channel know each time you go live.
+        {tx('Let your Discord channel know each time you go live.')}
       </p>
       <p className="description reduced-margins">
         <a
@@ -112,9 +112,10 @@ export const DiscordNotify = () => {
           target="_blank"
           rel="noreferrer"
         >
-          Create a webhook
+          {tx('Create a webhook')}
         </a>{' '}
-        under <i>Edit Channel / Integrations</i> on your Discord channel and provide it below.
+        {tx('under')} <i>{tx('Edit Channel / Integrations')}</i>{' '}
+        {tx('on your Discord channel and provide it below.')}
       </p>
 
       <ToggleSwitch

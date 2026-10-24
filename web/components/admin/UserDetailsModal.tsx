@@ -15,6 +15,7 @@ import { User, UserConnectionInfo } from '../../types/chat';
 import { Localization } from '../../types/localization';
 import { formatDisplayDate, formatUAstring } from '../../utils/format';
 import { Translation } from '../ui/Translation/Translation';
+import { useAdminText } from '../../utils/adminText';
 
 export type UserDetailsModalProps = {
   user: User;
@@ -29,6 +30,7 @@ export const UserDetailsModal: FC<UserDetailsModalProps> = ({
   onClose,
   connectionInfo = null,
 }) => {
+  const tx = useAdminText();
   const { displayName, createdAt, previousNames, nameChangedAt, disabledAt, disabledReason } = user;
   const { connectedAt, messageCount, userAgent } = connectionInfo || {};
 
@@ -51,31 +53,33 @@ export const UserDetailsModal: FC<UserDetailsModalProps> = ({
     <Modal
       destroyOnClose
       width={600}
-      cancelText="Close"
+      cancelText={tx('Close')}
       okButtonProps={{ style: { display: 'none' } }}
-      title={`User details: ${displayName}`}
+      title={`${tx('User details:')} ${displayName}`}
       open={open}
       onOk={onClose}
       onCancel={onClose}
     >
       <div className="user-details">
         <Typography.Title level={4}>{displayName}</Typography.Title>
-        <p className="created-at">User created at {createdAtDate}.</p>
+        <p className="created-at">
+          {tx('User created at')} {createdAtDate}.
+        </p>
         <Row gutter={16}>
           {connectionInfo && (
             <Col md={lastNameChangeDate ? 12 : 24}>
               <Typography.Title level={5}>
-                This user is currently connected to Chat.
+                {tx('This user is currently connected to Chat.')}
               </Typography.Title>
               <ul className="connection-info">
                 <li>
-                  <strong>Active for:</strong> {formatDistanceToNow(new Date(connectedAt))}
+                  <strong>{tx('Active for:')}</strong> {formatDistanceToNow(new Date(connectedAt))}
                 </li>
                 <li>
-                  <strong>Messages sent:</strong> {messageCount}
+                  <strong>{tx('Messages sent')}:</strong> {messageCount}
                 </li>
                 <li>
-                  <strong>User Agent:</strong>
+                  <strong>{tx('User Agent')}:</strong>
                   <br />
                   {formatUAstring(userAgent)}
                 </li>
@@ -84,12 +88,14 @@ export const UserDetailsModal: FC<UserDetailsModalProps> = ({
           )}
           {lastNameChangeDate && (
             <Col md={connectionInfo ? 12 : 24}>
-              <Typography.Title level={5}>This user is also seen as:</Typography.Title>
+              <Typography.Title level={5}>{tx('This user is also seen as:')}</Typography.Title>
               <ul className="previous-names-list">
                 {uniq(nameList).map((name, index) => (
                   <li className={index === 0 ? 'latest' : ''}>
                     <span className="user-name-item">{name}</span>
-                    {index === 0 ? ` (Changed ${lastNameChangeDuration} ago)` : ''}
+                    {index === 0
+                      ? ` (${tx('Changed')} ${lastNameChangeDuration} ${tx('ago')})`
+                      : ''}
                   </li>
                 ))}
               </ul>
@@ -100,7 +106,7 @@ export const UserDetailsModal: FC<UserDetailsModalProps> = ({
         <Space direction="horizontal">
           {disabledAt ? (
             <>
-              This user was banned on <code>{formatDisplayDate(disabledAt)}</code>.
+              {tx('This user was banned on')} <code>{formatDisplayDate(disabledAt)}</code>.
               {disabledReason && (
                 <p>
                   <strong>

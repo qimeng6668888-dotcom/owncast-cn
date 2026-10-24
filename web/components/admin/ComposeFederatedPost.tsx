@@ -3,6 +3,7 @@ import { FC, useState } from 'react';
 import { Button, Input, Modal } from 'antd';
 import { STATUS_ERROR, STATUS_SUCCESS } from '../../utils/input-statuses';
 import { fetchData, FEDERATION_MESSAGE_SEND } from '../../utils/apis';
+import { useAdminText } from '../../utils/adminText';
 
 const { TextArea } = Input;
 
@@ -12,6 +13,7 @@ export type ComposeFederatedPostProps = {
 };
 
 export const ComposeFederatedPost: FC<ComposeFederatedPostProps> = ({ open, handleClose }) => {
+  const tx = useAdminText();
   const [content, setContent] = useState('');
   const [postPending, setPostPending] = useState(false);
   const [postSuccessState, setPostSuccessState] = useState(null);
@@ -52,26 +54,28 @@ export const ComposeFederatedPost: FC<ComposeFederatedPostProps> = ({ open, hand
     <Modal
       destroyOnClose
       width={600}
-      title="Post to Followers"
+      title={tx('Post to Followers')}
       open={open}
       onCancel={handleClose}
       footer={[
-        <Button onClick={() => handleClose()}>Cancel</Button>,
+        <Button onClick={() => handleClose()}>{tx('Cancel')}</Button>,
         <Button
           type="primary"
           onClick={sendButtonClicked}
           disabled={postPending || postSuccessState}
           loading={postPending}
         >
-          {postSuccessState?.toUpperCase() || 'Post'}
+          {postSuccessState?.toUpperCase() || tx('Post')}
         </Button>,
       ]}
     >
       <h3>
-        Tell the world about your future streaming plans or let your followers know to tune in.
+        {tx(
+          'Tell the world about your future streaming plans or let your followers know to tune in.',
+        )}
       </h3>
       <TextArea
-        placeholder="I'm still live, come join me!"
+        placeholder={tx("I'm still live, come join me!")}
         size="large"
         showCount
         maxLength={500}

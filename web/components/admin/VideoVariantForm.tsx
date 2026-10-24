@@ -306,7 +306,9 @@ export const VideoVariantForm: FC<VideoVariantFormProps> = ({
                 <div className="advanced-switch-container">
                   <Popconfirm
                     disabled={dataState.videoPassthrough === true}
-                    title="Did you read the documentation about video passthrough and understand the risks involved with enabling it?"
+                    title={tx(
+                      'Did you read the documentation about video passthrough and understand the risks involved with enabling it?',
+                    )}
                     icon={<ExclamationCircleFilled />}
                     onConfirm={handleVideoPassConfirm}
                     okText={tx('Yes')}

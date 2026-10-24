@@ -98,9 +98,9 @@ export const BrowserNotify = () => {
     <>
       <Title>{tx('Browser Alerts')}</Title>
       <p className="description reduced-margins">
-        Viewers can opt into being notified when you go live with their browser.
+        {tx('Viewers can opt into being notified when you go live with their browser.')}
       </p>
-      <p className="description reduced-margins">Not all browsers support this.</p>
+      <p className="description reduced-margins">{tx('Not all browsers support this.')}</p>
       <ToggleSwitch
         apiPath=""
         fieldName="enabled"

@@ -13,6 +13,7 @@ import {
 import { ServerStatusContext } from '../../utils/server-status-context';
 import { FormStatusIndicator } from './FormStatusIndicator';
 import { TextField, TextFieldProps } from './TextField';
+import { useAdminText } from '../../utils/adminText';
 
 export const TEXTFIELD_TYPE_TEXTAREA = 'textarea';
 export const TEXTFIELD_TYPE_URL = 'url';
@@ -32,6 +33,7 @@ export const TextFieldWithSubmit: FC<TextFieldWithSubmitProps> = ({
   useTrimLead,
   ...textFieldProps // rest of props
 }) => {
+  const tx = useAdminText();
   const [submitStatus, setSubmitStatus] = useState<StatusState>(null);
 
   const [hasChanged, setHasChanged] = useState(false);
@@ -101,7 +103,9 @@ export const TextFieldWithSubmit: FC<TextFieldWithSubmitProps> = ({
           setSubmitStatus(createInputStatus(STATUS_SUCCESS));
         },
         onError: (message: string) => {
-          setSubmitStatus(createInputStatus(STATUS_ERROR, `There was an error: ${message}`));
+          setSubmitStatus(
+            createInputStatus(STATUS_ERROR, `${tx('There was an error:')} ${message}`),
+          );
         },
       });
       resetTimer = setTimeout(resetStates, RESET_TIMEOUT);
@@ -143,7 +147,7 @@ export const TextFieldWithSubmit: FC<TextFieldWithSubmitProps> = ({
                 onClick={handleSubmit}
                 disabled={!hasChanged}
               >
-                Update
+                {tx('Update')}
               </Button>
             )}
           </div>

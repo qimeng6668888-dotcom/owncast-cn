@@ -549,6 +549,8 @@
 			"userLeft": "已离开聊天室。",
 			"inputLabel": "聊天输入框",
 			"sendPlaceholder": "发送一条聊天消息",
+			"sendButton": "发送",
+			"emojiButton": "表情",
 			"streamEnding": "直播即将结束。"
 		},
 		"FollowModal": {

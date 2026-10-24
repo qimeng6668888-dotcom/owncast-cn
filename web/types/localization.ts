@@ -128,6 +128,8 @@ export const Localization = {
       moderatorNotification: 'Frontend.Chat.moderatorNotification',
       authenticateToChat: 'Frontend.Chat.authenticateToChat',
       sendPlaceholder: 'Frontend.Chat.sendPlaceholder',
+      sendButton: 'Frontend.Chat.sendButton',
+      emojiButton: 'Frontend.Chat.emojiButton',
       inputLabel: 'Frontend.Chat.inputLabel',
       streamEnding: 'Frontend.Chat.streamEnding',
     },

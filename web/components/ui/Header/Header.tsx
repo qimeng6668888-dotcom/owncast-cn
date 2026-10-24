@@ -52,9 +52,6 @@ export const Header: FC<HeaderComponentProps> = ({
       <Link href="#skip-to-content" className={styles.skipLink}>
         {t(Localization.Frontend.Header.skipToContent)}
       </Link>
-      <Link href="#footer" className={styles.skipLink}>
-        {t(Localization.Frontend.Header.skipToFooter)}
-      </Link>
       <div className={styles.logo}>
         <div id="header-logo" className={styles.logoImage}>
           <Avatar src={logo} size="large" shape="circle" className={styles.avatar} />

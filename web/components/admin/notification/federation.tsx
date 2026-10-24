@@ -25,13 +25,14 @@ export const FediverseNotify = () => {
     <>
       <Title>{tx('Fediverse Social')}</Title>
       <p className="description">
-        Enabling the Fediverse social features will not just alert people to when you go live, but
-        also enable other functionality.
+        {tx(
+          'Enabling the Fediverse social features will not just alert people to when you go live, but also enable other functionality.',
+        )}
       </p>
       <p>
-        Fediverse social features:{' '}
+        {tx('Fediverse social features:')}{' '}
         <span style={{ color: federation.enabled ? 'green' : 'red' }}>
-          {formDataValues.enabled ? 'Enabled' : 'Disabled'}
+          {formDataValues.enabled ? tx('Enabled') : tx('Disabled')}
         </span>
       </p>
 
@@ -45,7 +46,7 @@ export const FediverseNotify = () => {
             marginTop: '20px',
           }}
         >
-          Configure
+          {tx('Configure')}
         </Button>
       </Link>
     </>

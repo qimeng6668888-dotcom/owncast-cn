@@ -1,4 +1,3 @@
-import { useTranslation } from 'next-export-i18n';
 import { Card, Col, Row, Typography } from 'antd';
 import Link from 'next/link';
 import { FC, useContext } from 'react';
@@ -8,6 +7,7 @@ import { OwncastLogo } from '../common/OwncastLogo/OwncastLogo';
 import { NewsFeed } from './NewsFeed';
 import { ConfigDetails } from '../../types/config-section';
 import { ServerStatusContext } from '../../utils/server-status-context';
+import { useAdminText } from '../../utils/adminText';
 
 const { Paragraph, Text } = Typography;
 
@@ -44,7 +44,7 @@ export type OfflineProps = {
 export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
   const serverStatusData = useContext(ServerStatusContext);
 
-  const { t } = useTranslation();
+  const tx = useAdminText();
   const { serverConfig } = serverStatusData || {};
   const { rtmpServerPort, streamKeyOverridden } = serverConfig;
   const instanceUrl = global.window?.location.hostname || '';
@@ -57,7 +57,7 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
   const data = [
     {
       icon: <BookTwoTone twoToneColor="#6f42c1" />,
-      title: t('Use your broadcasting software'),
+      title: tx('Use your broadcasting software'),
       content: (
         <div>
           <a
@@ -65,13 +65,13 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            {t(
+            {tx(
               'Learn how to point your existing software to your new server and start streaming your content.',
             )}
           </a>
           <div className="stream-info-container">
             <Text strong className="stream-info-label">
-              {t('Streaming URL:')}
+              {tx('Streaming URL:')}
             </Text>
             {rtmpURL && (
               <Paragraph className="stream-info-box" copyable>
@@ -79,14 +79,14 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
               </Paragraph>
             )}
             <Text strong className="stream-info-label">
-              {t('Streaming Keys:')}
+              {tx('Streaming Keys:')}
             </Text>
             <Text strong className="stream-info-box">
               {!streamKeyOverridden ? (
-                <Link href="/admin/config/server"> {t('View')} </Link>
+                <Link href="/admin/config/server"> {tx('View')} </Link>
               ) : (
                 <span style={{ paddingLeft: '10px', fontWeight: 'normal' }}>
-                  {t('Overridden via command line.')}
+                  {tx('Overridden via command line.')}
                 </span>
               )}
             </Text>
@@ -96,7 +96,7 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
     },
     {
       icon: <PlaySquareTwoTone twoToneColor="#f9826c" />,
-      title: t('Embed your video onto other sites'),
+      title: tx('Embed your video onto other sites'),
       content: (
         <div>
           <a
@@ -104,7 +104,7 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            {t('Learn how you can add your Owncast stream to other sites you control.')}
+            {tx('Learn how you can add your Owncast stream to other sites you control.')}
           </a>
         </div>
       ),
@@ -114,19 +114,21 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
   if (!config?.chatDisabled) {
     data.push({
       icon: <MessageTwoTone twoToneColor="#0366d6" />,
-      title: t('Chat is disabled'),
-      content: <span>{t('Chat will continue to be disabled until you begin a live stream.')}</span>,
+      title: tx('Chat is disabled'),
+      content: (
+        <span>{tx('Chat will continue to be disabled until you begin a live stream.')}</span>
+      ),
     });
   }
 
   if (!config?.yp?.enabled) {
     data.push({
       icon: <ProfileTwoTone twoToneColor="#D18BFE" />,
-      title: t('Find an audience on the Owncast Directory'),
+      title: tx('Find an audience on the Owncast Directory'),
       content: (
         <div>
-          {t('List yourself in the Owncast Directory and show off your stream. Enable it in')}{' '}
-          <Link href="/admin/config/general/">{t('settings.')}</Link>
+          {tx('List yourself in the Owncast Directory and show off your stream. Enable it in')}{' '}
+          <Link href="/admin/config/general/">{tx('settings.')}</Link>
         </div>
       ),
     });
@@ -135,11 +137,11 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
   if (!config?.federation?.enabled) {
     data.push({
       icon: <img alt="fediverse" width="20px" src="/img/fediverse-color.png" />,
-      title: t('Add your Owncast instance to the Fediverse'),
+      title: tx('Add your Owncast instance to the Fediverse'),
       content: (
         <div>
-          <Link href="/admin/config-federation/">{t('Enable Owncast social features')}</Link>{' '}
-          {t(
+          <Link href="/admin/config-federation/">{tx('Enable Owncast social features')}</Link>{' '}
+          {tx(
             'to have your instance join the Fediverse, allowing people to follow, share and engage with your live stream.',
           )}
         </div>
@@ -156,8 +158,8 @@ export const Offline: FC<OfflineProps> = ({ logs = [], config }) => {
               <OwncastLogo variant="simple" />
             </span>
             <div>
-              <Title level={2}>{t('No stream is active')}</Title>
-              <p>{t('You should start one.')}</p>
+              <Title level={2}>{tx('No stream is active')}</Title>
+              <p>{tx('You should start one.')}</p>
             </div>
           </div>
         </Col>

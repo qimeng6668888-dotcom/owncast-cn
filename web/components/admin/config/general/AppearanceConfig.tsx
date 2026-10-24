@@ -96,18 +96,19 @@ const ColorPicker = React.memo(
     onChange: (name: string, value: string, description: string) => void;
   }) => {
     const { t } = useTranslation();
+    const tx = useAdminText();
     return (
       <Col span={3} key={name}>
         <input
           type="color"
           id={name}
           name={description}
-          title={description}
+          title={tx(description)}
           value={value}
           className={s.colorPicker}
           onChange={e => onChange(name, e.target.value, description)}
         />
-        <div style={{ padding: '2px' }}>{description}</div>
+        <div style={{ padding: '2px' }}>{tx(description)}</div>
         {alsoSetBy && alsoSetBy.length > 0 && (
           <Tooltip
             title={t(Localization.Admin.Appearance.alsoSetByPluginTooltip, {
@@ -298,8 +299,9 @@ export default function Appearance() {
           <Collapse defaultActiveKey={['1']}>
             <Panel header={<strong>{tx('Section Colors')}</strong>} key="1">
               <p>
-                Certain sections of the interface can be customized by selecting new colors for
-                them.
+                {tx(
+                  'Certain sections of the interface can be customized by selecting new colors for them.',
+                )}
               </p>
               <Row gutter={[16, 16]}>
                 <ColorCollection
@@ -319,7 +321,7 @@ export default function Appearance() {
               </Row>
             </Panel>
             <Panel header={<strong>{tx('Other Settings')}</strong>} key="4">
-              How rounded should corners be?
+              {tx('How rounded should corners be?')}
               <Row gutter={[16, 16]}>
                 <Col span={12}>
                   <Slider

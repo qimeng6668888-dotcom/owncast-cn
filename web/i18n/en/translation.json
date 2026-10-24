@@ -549,6 +549,8 @@
 			"userLeft": "left the chat.",
 			"inputLabel": "Chat text input",
 			"sendPlaceholder": "Send a message to chat",
+			"sendButton": "Send",
+			"emojiButton": "Emoji",
 			"streamEnding": "The stream is ending."
 		},
 		"FollowModal": {

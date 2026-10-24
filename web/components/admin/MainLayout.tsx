@@ -111,7 +111,7 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
   const router = useRouter();
   const { route } = router || {};
 
-  const { Header, Footer, Content, Sider } = Layout;
+  const { Header, Content, Sider } = Layout;
 
   const [upgradeVersion, setUpgradeVersion] = useState('');
   const checkForUpgrade = async () => {
@@ -526,15 +526,6 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
         {headerAlertMessage}
 
         <Content className="main-content-container">{children}</Content>
-
-        <Footer className="footer-container">
-          <a href="https://owncast.online/?source=admin" target="_blank" rel="noopener noreferrer">
-            {nav(Localization.Admin.Nav.aboutOwncast, '关于 Owncast v{{version}}').replace(
-              '{{version}}',
-              versionNumber || '',
-            )}
-          </a>
-        </Footer>
       </Layout>
 
       <ComposeFederatedPost

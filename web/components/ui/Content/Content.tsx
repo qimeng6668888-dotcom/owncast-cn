@@ -33,7 +33,6 @@ import { ExternalAction } from '../../../interfaces/external-action';
 import { Modal } from '../Modal/Modal';
 import { DesktopContent } from './DesktopContent';
 import { MobileContent } from './MobileContent';
-import { Footer } from '../Footer/Footer';
 import { useFederatedServers } from '../../../hooks/useFederatedServers';
 
 // Lazy loaded components
@@ -367,8 +366,6 @@ export const Content: FC = () => {
             </div>
           )}
         </Row>
-        <div style={{ flex: '1 1' }} />
-        <Footer />
       </div>
       {showChat && !isMobile && currentUser && (
         <ChatContainer

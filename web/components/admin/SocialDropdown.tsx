@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { Select } from 'antd';
 import { SocialHandleDropdownItem } from '../../types/config-section';
 import { OTHER_SOCIAL_HANDLE_OPTION } from '../../utils/config-constants';
+import { useAdminText } from '../../utils/adminText';
 
 export type DropdownProps = {
   iconList: SocialHandleDropdownItem[];
@@ -10,6 +11,7 @@ export type DropdownProps = {
 };
 
 export const SocialDropdown: FC<DropdownProps> = ({ iconList, selectedOption, onSelected }) => {
+  const tx = useAdminText();
   const handleSelected = (value: string) => {
     if (onSelected) {
       onSelected(value);
@@ -19,19 +21,20 @@ export const SocialDropdown: FC<DropdownProps> = ({ iconList, selectedOption, on
   return (
     <div className="social-dropdown-container">
       <p className="description">
-        If you are looking for a platform name not on this list, please select Other and type in
-        your own name. A logo will not be provided.
+        {tx(
+          'If you are looking for a platform name not on this list, please select Other and type in your own name. A logo will not be provided.',
+        )}
       </p>
 
       <div className="formfield-container">
         <div className="label-side">
-          <span className="formfield-label">Social Platform</span>
+          <span className="formfield-label">{tx('Social Platform')}</span>
         </div>
         <div className="input-side">
           <Select
             style={{ width: 240 }}
             className="social-dropdown"
-            placeholder="Social platform..."
+            placeholder={tx('Social platform...')}
             defaultValue={inititalSelected}
             value={inititalSelected}
             onSelect={handleSelected}
@@ -53,7 +56,7 @@ export const SocialDropdown: FC<DropdownProps> = ({ iconList, selectedOption, on
               key={`platform-${OTHER_SOCIAL_HANDLE_OPTION}`}
               value={OTHER_SOCIAL_HANDLE_OPTION}
             >
-              Other...
+              {tx('Other...')}
             </Select.Option>
           </Select>
         </div>

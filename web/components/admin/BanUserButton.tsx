@@ -3,6 +3,7 @@ import { FC } from 'react';
 import dynamic from 'next/dynamic';
 import { USER_ENABLED_TOGGLE, fetchData } from '../../utils/apis';
 import { User } from '../../types/chat';
+import { useAdminText } from '../../utils/adminText';
 
 // Lazy loaded components
 
@@ -31,6 +32,7 @@ export const BanUserButton: FC<BanUserButtonProps> = ({
   label = '',
   onClick = null,
 }) => {
+  const tx = useAdminText();
   async function buttonClicked({ id }): Promise<Boolean> {
     const data = {
       userId: id,
@@ -50,7 +52,7 @@ export const BanUserButton: FC<BanUserButtonProps> = ({
     return false;
   }
 
-  const actionString = isEnabled ? 'ban' : 'unban';
+  const actionString = isEnabled ? tx('ban') : tx('unban');
   const icon = isEnabled ? (
     <ExclamationCircleFilled style={{ color: 'var(--ant-error)' }} />
   ) : (
@@ -59,14 +61,15 @@ export const BanUserButton: FC<BanUserButtonProps> = ({
 
   const content = (
     <>
-      Are you sure you want to {actionString} <strong>{user.displayName}</strong>
-      {isEnabled ? ' and remove their messages?' : '?'}
+      {isEnabled ? tx('Are you sure you want to ban') : tx('Are you sure you want to unban')}{' '}
+      <strong>{user.displayName}</strong>
+      {isEnabled ? tx('and remove their messages?') : '?'}
     </>
   );
 
   const confirmBlockAction = () => {
     Modal.confirm({
-      title: `Confirm ${actionString}`,
+      title: isEnabled ? tx('Confirm ban') : tx('Confirm unban'),
       content,
       onCancel: () => {},
       onOk: () =>
@@ -84,7 +87,7 @@ export const BanUserButton: FC<BanUserButtonProps> = ({
           }
         }),
       okType: 'danger',
-      okText: isEnabled ? 'Absolutely' : null,
+      okText: isEnabled ? tx('Absolutely') : null,
       icon,
     });
   };
@@ -97,7 +100,7 @@ export const BanUserButton: FC<BanUserButtonProps> = ({
       icon={isEnabled ? <StopTwoTone twoToneColor="#ff4d4f" /> : null}
       className="block-user-button"
     >
-      {label || actionString}
+      {tx(label) || actionString}
     </Button>
   );
 };

@@ -67,18 +67,36 @@
   }
 }
 
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding-left: 4px;
+  gap: 2px;
+}
+
 .emojiButton {
   border: none;
   background: none;
   cursor: pointer;
   padding: 0 0.25rem;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .sendButton {
+  flex-shrink: 0;
   border: none;
-  background: none;
+  border-radius: var(--theme-rounded-corners);
+  background: var(--theme-color-action, #2080e8);
+  color: #fff;
   cursor: pointer;
-  padding: 0 1rem;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  min-width: 52px;
+  min-height: 36px;
+  padding: 0 12px;
 }
 
 // emoji-mart's shadow root sets `:host { width: min-content }` and its preview

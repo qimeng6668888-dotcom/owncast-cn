@@ -111,7 +111,7 @@ const AddKeyForm = ({ setShowAddKeyForm, setFieldInConfigState, streamKeys, setE
         style={{ width: '60%', marginRight: '5px' }}
         label={tx('Comment')}
         name="comment"
-        tooltip="For remembering why you added this key"
+        tooltip={tx('For remembering why you added this key')}
       >
         <Input placeholder={tx('My OBS Key')} />
       </Item>

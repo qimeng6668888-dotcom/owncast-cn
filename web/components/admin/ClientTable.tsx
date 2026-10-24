@@ -8,6 +8,7 @@ import { Client } from '../../types/chat';
 import { UserPopover } from './UserPopover';
 import { BanUserButton } from './BanUserButton';
 import { formatUAstring } from '../../utils/format';
+import { useAdminText } from '../../utils/adminText';
 
 // Lazy loaded components
 
@@ -20,9 +21,10 @@ export type ClientTableProps = {
 };
 
 export const ClientTable: FC<ClientTableProps> = ({ data }) => {
+  const tx = useAdminText();
   const columns: ColumnsType<Client> = [
     {
-      title: 'Display Name',
+      title: tx('Display Name'),
       key: 'username',
       // eslint-disable-next-line react/destructuring-assignment
       render: (client: Client) => {
@@ -44,7 +46,7 @@ export const ClientTable: FC<ClientTableProps> = ({ data }) => {
         return (
           <div style={{ padding: 8 }}>
             <Input
-              placeholder="Search display names..."
+              placeholder={tx('Search display names...')}
               value={selectedKeys[0].toString()} // Convert selectedKeys[0] to string
               onChange={e => {
                 setSelectedKeys(e.target.value ? [e.target.value] : []);
@@ -58,7 +60,7 @@ export const ClientTable: FC<ClientTableProps> = ({ data }) => {
       sortDirections: ['descend', 'ascend'] as SortOrder[],
     },
     {
-      title: 'Messages sent',
+      title: tx('Messages sent'),
       dataIndex: 'messageCount',
       key: 'messageCount',
       className: 'number-col',
@@ -68,7 +70,7 @@ export const ClientTable: FC<ClientTableProps> = ({ data }) => {
       render: (count: number) => <div style={{ textAlign: 'center' }}>{count}</div>,
     },
     {
-      title: 'Connected Time',
+      title: tx('Connected Time'),
       dataIndex: 'connectedAt',
       key: 'connectedAt',
       defaultSortOrder: 'ascend',
@@ -78,13 +80,13 @@ export const ClientTable: FC<ClientTableProps> = ({ data }) => {
       sortDirections: ['descend', 'ascend'] as SortOrder[],
     },
     {
-      title: 'User Agent',
+      title: tx('User Agent'),
       dataIndex: 'userAgent',
       key: 'userAgent',
       render: (ua: string) => formatUAstring(ua),
     },
     {
-      title: 'Location',
+      title: tx('Location'),
       dataIndex: 'geo',
       key: 'geo',
       render: geo => (geo ? `${geo.regionName}, ${geo.countryCode}` : '-'),

@@ -26,6 +26,7 @@ import {
   STATUS_SUCCESS,
 } from '../../../../utils/input-statuses';
 import { FormStatusIndicator } from '../../FormStatusIndicator';
+import { useAdminText } from '../../../../utils/adminText';
 
 const { Title } = Typography;
 
@@ -45,6 +46,7 @@ const DeleteOutlined = dynamic(() => import('@ant-design/icons/DeleteOutlined'),
 
 // eslint-disable-next-line react/function-component-definition
 export default function EditSocialLinks() {
+  const tx = useAdminText();
   const [availableIconsList, setAvailableIconsList] = useState([]);
   const [currentSocialHandles, setCurrentSocialHandles] = useState([]);
 
@@ -319,7 +321,7 @@ export default function EditSocialLinks() {
       <div className="label-side" />
       <div className="input-side">
         <Input
-          placeholder="Other platform name"
+          placeholder={tx('Other platform name')}
           defaultValue={modalDataState.platform}
           onChange={handleOtherNameChange}
         />
@@ -330,10 +332,10 @@ export default function EditSocialLinks() {
   return (
     <div className="social-links-edit-container">
       <Title level={3} className="section-title">
-        Your Social Handles
+        {tx('Your Social Handles')}
       </Title>
       <p className="description">
-        Add all your social media handles and links to your other profiles here.
+        {tx('Add all your social media handles and links to your other profiles here.')}
       </p>
 
       <FormStatusIndicator status={submitStatus} />
@@ -348,7 +350,7 @@ export default function EditSocialLinks() {
       />
 
       <Modal
-        title="Edit Social Handle"
+        title={tx('Edit Social Handle')}
         open={displayModal}
         onOk={handleModalOk}
         onCancel={handleModalCancel}

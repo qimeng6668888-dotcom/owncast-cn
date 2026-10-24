@@ -21,10 +21,6 @@ const EmojiPicker = dynamic(() => import('./EmojiPicker').then(mod => mod.EmojiP
   ssr: false,
 });
 
-const SendOutlined = dynamic(() => import('@ant-design/icons/SendOutlined'), {
-  ssr: false,
-});
-
 const SmileOutlined = dynamic(() => import('@ant-design/icons/SmileOutlined'), {
   ssr: false,
 });
@@ -158,6 +154,7 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
     websocketService.send({ type: MessageType.CHAT, body: message });
     contentEditable.innerHTML = '';
     setInputDraft('');
+    contentEditable.blur();
   };
 
   const insertTextAtEnd = (textToInsert: string) => {
@@ -175,6 +172,10 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
+    const native = e.nativeEvent as KeyboardEvent;
+    if (native.isComposing || native.keyCode === 229) {
+      return;
+    }
     if (e.key === 'Enter' && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)) {
       e.preventDefault();
       sendMessage();
@@ -299,10 +300,12 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
           onRootRef={onRootRef}
           style={{ whiteSpace: 'pre-wrap', width: '100%' }}
           role="textbox"
+          enterKeyHint="send"
+          inputMode="text"
           aria-label={translated(t, Localization.Frontend.Chat.inputLabel, '聊天输入框')}
         />
         {enabled && (
-          <div style={{ display: 'flex', paddingLeft: '5px' }}>
+          <div className={styles.actions}>
             <Popover
               content={
                 <div className={styles.emojiPickerContainer}>
@@ -314,23 +317,23 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
             >
               <button
                 type="button"
-                aria-label="Emoji picker"
+                aria-label={translated(t, Localization.Frontend.Chat.emojiButton, '表情')}
                 id="owncast-emoji-picker-button"
                 className={styles.emojiButton}
-                title="Emoji picker button"
+                title={translated(t, Localization.Frontend.Chat.emojiButton, '表情')}
               >
                 <SmileOutlined />
               </button>
             </Popover>
             <button
               type="button"
-              aria-label="Send message"
+              aria-label={translated(t, Localization.Frontend.Chat.sendButton, '发送')}
               id="owncast-send-message-button"
               className={styles.sendButton}
-              title="Send message Button"
+              title={translated(t, Localization.Frontend.Chat.sendButton, '发送')}
               onClick={sendMessage}
             >
-              <SendOutlined />
+              {translated(t, Localization.Frontend.Chat.sendButton, '发送')}
             </button>
           </div>
         )}

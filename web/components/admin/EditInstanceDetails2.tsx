@@ -20,11 +20,13 @@ import {
 } from '../../utils/config-constants';
 import { UpdateArgs } from '../../types/config-section';
 import { ResetYP } from './ResetYP';
+import { useAdminText } from '../../utils/adminText';
 
 const { Panel } = Collapse;
 
 // eslint-disable-next-line react/function-component-definition
 export default function EditInstanceDetails() {
+  const tx = useAdminText();
   const [formDataValues, setFormDataValues] = useState(null);
   const serverStatusData = useContext(ServerStatusContext);
   const { setMessage } = useContext(AlertMessageContext);
@@ -64,18 +66,20 @@ export default function EditInstanceDetails() {
   };
 
   const showConfigurationRestartMessage = () => {
-    setMessage('Updating server settings requires a restart of your Owncast server.');
+    setMessage(tx('Updating server settings requires a restart of your Owncast server.'));
   };
 
   const showStreamKeyChangeMessage = () => {
     setMessage(
-      'Changing your password will log you out of the admin. You may want to refresh the page to force yourself to log back in if not prompted.',
+      tx(
+        'Changing your password will log you out of the admin. You may want to refresh the page to force yourself to log back in if not prompted.',
+      ),
     );
   };
 
   const showFfmpegChangeMessage = () => {
     if (serverStatusData.online) {
-      setMessage('The updated ffmpeg path will be used when starting your next live stream.');
+      setMessage(tx('The updated ffmpeg path will be used when starting your next live stream.'));
     }
   };
 
@@ -129,10 +133,11 @@ export default function EditInstanceDetails() {
         onSubmit={showConfigurationRestartMessage}
       />
       <Collapse className="advanced-settings">
-        <Panel header="Advanced Settings" key="1">
+        <Panel header={tx('Advanced Settings')} key="1">
           <Typography.Paragraph>
-            If you have a CDN in front of your entire Owncast instance, specify your origin server
-            here for the websocket to connect to. Most people will never need to set this.
+            {tx(
+              'If you have a CDN in front of your entire Owncast instance, specify your origin server here for the websocket to connect to. Most people will never need to set this.',
+            )}
           </Typography.Paragraph>
           <TextFieldWithSubmit
             fieldName="socketHostOverride"

@@ -70,8 +70,8 @@ describe('pickLocale', () => {
     ['explicit zh-CN query needs no fetch', 'zh-CN', 'de-DE', null],
     ['unknown query and unknown browser yield nothing', 'xx', 'zz-ZZ', null],
     ['both inputs missing yields nothing', undefined, undefined, null],
-  ])('%s', (_name, queryLang, browserLanguage, expected) => {
-    expect(pickLocale(queryLang, browserLanguage)).toBe(expected);
+  ])('%s', (_name, queryLang, _browserLanguage, expected) => {
+    expect(pickLocale(queryLang)).toBe(expected);
   });
 });
 
