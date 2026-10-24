@@ -30,10 +30,8 @@ const i18n = {
     'zh-CN': withFallback(zhCN, en),
   },
   defaultLang: 'zh-CN',
-  // Browser-language detection for non-default locales is handled by
-  // utils/localeLoader, which fetches the catalog before switching. The
-  // library's own detector is off so an English browser does not override
-  // the Simplified Chinese default before that loader runs.
+  // Keep Simplified Chinese unless the viewer sets ?lang=. The library
+  // detector is off so an English or Malay browser cannot override it.
   useBrowserDefault: false,
   languageDataStore: 'query',
 };

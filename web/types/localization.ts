@@ -245,6 +245,11 @@ export const Localization = {
       success: 'Admin.Branding.success',
       failure: 'Admin.Branding.failure',
       invalidColor: 'Admin.Branding.invalidColor',
+      summaryLabel: 'Admin.Branding.summaryLabel',
+      summaryPlaceholder: 'Admin.Branding.summaryPlaceholder',
+      extraPageLabel: 'Admin.Branding.extraPageLabel',
+      extraPagePlaceholder: 'Admin.Branding.extraPagePlaceholder',
+      extraPageTip: 'Admin.Branding.extraPageTip',
     },
 
     General: {

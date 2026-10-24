@@ -81,18 +81,17 @@ export const browserLocale = (browserLanguage: string | undefined): string | nul
 };
 
 /**
- * Decides which locale catalog to fetch. An explicit, known ?lang= value
- * wins, then the browser language. zh-CN is already bundled as the default,
- * and English is bundled as the fallback, so neither needs a fetch. An
- * explicit ?lang=zh still loads the existing Traditional catalog.
+ * Decides which locale catalog to fetch. Only an explicit, known ?lang=
+ * value switches away from Simplified Chinese. Browser language is ignored
+ * so Malay, English, and German viewers stay on zh-CN unless they pick
+ * another language in the URL. zh-CN and English are already bundled, so
+ * neither needs a fetch. An explicit ?lang=zh still loads Traditional.
  */
 export const pickLocale = (
   queryLang: string | undefined,
-  browserLanguage: string | undefined,
+  _browserLanguage?: string | undefined,
 ): string | null => {
-  const fromQuery = queryLang && AVAILABLE_LOCALES.includes(queryLang) ? queryLang : null;
-  const fromBrowser = browserLocale(browserLanguage);
-  const locale = fromQuery || fromBrowser;
+  const locale = queryLang && AVAILABLE_LOCALES.includes(queryLang) ? queryLang : null;
   if (!locale || locale === DEFAULT_LOCALE || locale === 'en') {
     return null;
   }
@@ -136,8 +135,7 @@ export const loadViewerLocale = async (router: NextRouter): Promise<void> => {
   }
 
   const queryLang = typeof router.query.lang === 'string' ? router.query.lang : undefined;
-  const browserLanguage = window.navigator.languages?.[0] || window.navigator.language;
-  const locale = pickLocale(queryLang, browserLanguage);
+  const locale = pickLocale(queryLang);
   if (!locale || i18n.translations[locale]) {
     return;
   }
@@ -149,7 +147,7 @@ export const loadViewerLocale = async (router: NextRouter): Promise<void> => {
   loadStarted = true;
 
   try {
-    // The locale is only known at runtime (browser language or ?lang=), so a
+    // The locale is only known at runtime from ?lang=, so a
     // static import cannot work here. webpack turns this into one chunk per
     // catalog and loads just the one the viewer needs.
     const importedCatalog = await import(`../i18n/${locale}/translation.json`);

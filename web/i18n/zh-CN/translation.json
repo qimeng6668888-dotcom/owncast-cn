@@ -441,7 +441,10 @@
 		"Branding": {
 			"accentColor": "强调色",
 			"deleteLogo": "删除 Logo",
-			"description": "设置访客页面上显示的品牌名称、Logo 和颜色。保存后写入本机配置，刷新或重启后仍然有效。",
+			"description": "设置访客页面上显示的品牌名称、Logo、简介、页面正文和颜色。保存后立刻生效，刷新或重启后仍然有效。",
+			"extraPageLabel": "页面正文",
+			"extraPagePlaceholder": "用 Markdown 写给观众看的介绍正文",
+			"extraPageTip": "显示在直播页下方「关于」区域，支持 Markdown。",
 			"failure": "更新品牌失败：{{message}}",
 			"invalidColor": "请使用 #RRGGBB 格式的颜色。",
 			"logoLabel": "Logo",
@@ -452,6 +455,8 @@
 			"noLogo": "未设置 Logo",
 			"primaryColor": "主色",
 			"success": "品牌已更新",
+			"summaryLabel": "简介",
+			"summaryPlaceholder": "用一两句话介绍直播间",
 			"title": "品牌",
 			"updateButton": "更新品牌",
 			"upload": "上传"

@@ -20,11 +20,13 @@ import {
   STATUS_SUCCESS,
 } from '../../../../utils/input-statuses';
 import { FormStatusIndicator } from '../../FormStatusIndicator';
+import { useAdminText } from '../../../../utils/adminText';
 
 const { Title } = Typography;
 
 // eslint-disable-next-line react/function-component-definition
 export default function EditPageContent() {
+  const tx = useAdminText();
   const [content, setContent] = useState('');
   const [submitStatus, setSubmitStatus] = useState<StatusState>(null);
   const [hasChanged, setHasChanged] = useState(false);
@@ -82,24 +84,24 @@ export default function EditPageContent() {
   return (
     <div className="edit-page-content">
       <Title level={3} className="section-title">
-        Custom Page Content
+        {tx('Custom Page Content')}
       </Title>
 
       <p className="description">
-        Edit the content of your page by using simple{' '}
+        {tx('Edit the content of your page by using simple')}{' '}
         <a
           href="https://www.markdownguide.org/basic-syntax/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Markdown syntax
+          {tx('Markdown syntax')}
         </a>
         .
       </p>
 
       <CodeMirror
         value={content}
-        placeholder="Enter your custom page content here..."
+        placeholder={tx('Enter your custom page content here...')}
         theme={bbedit}
         height="200px"
         onChange={handleEditorChange}
@@ -113,7 +115,7 @@ export default function EditPageContent() {
       <div className="page-content-actions">
         {hasChanged && (
           <Button type="primary" onClick={handleSave}>
-            Save
+            {tx('Save')}
           </Button>
         )}
         <FormStatusIndicator status={submitStatus} />

@@ -116,6 +116,7 @@ export const Content: FC = () => {
     extraPageContent,
     name,
     summary,
+    logo,
     socialHandles,
     tags,
     externalActions,
@@ -345,6 +346,7 @@ export const Content: FC = () => {
               showFollowersTab={showFollowersTab}
               online={online}
               federatedServers={federatedServers}
+              logo={logo || '/logo'}
             />
           ) : (
             <div className={desktopStyles.bottomSectionContent}>
@@ -358,6 +360,7 @@ export const Content: FC = () => {
                 setShowFollowModal={setShowFollowModal}
                 showFollowersTab={showFollowersTab}
                 federatedServers={federatedServers}
+                logo={logo || '/logo'}
               />
             </div>
           )}

@@ -441,7 +441,10 @@
 		"Branding": {
 			"accentColor": "Accent color",
 			"deleteLogo": "Delete logo",
-			"description": "Set the name, logo, and colors viewers see on your page. Changes are saved on this server and stay in place after a refresh or restart.",
+			"description": "Set the name, logo, summary, page content, and colors viewers see on your page. Changes apply immediately and stay in place after a refresh or restart.",
+			"extraPageLabel": "Page content",
+			"extraPagePlaceholder": "Write the about-page copy in Markdown",
+			"extraPageTip": "Shown in the About section under the stream. Markdown is supported.",
 			"failure": "Could not update brand: {{message}}",
 			"invalidColor": "Use a color like #RRGGBB.",
 			"logoLabel": "Logo",
@@ -452,6 +455,8 @@
 			"noLogo": "No logo",
 			"primaryColor": "Primary color",
 			"success": "Brand updated.",
+			"summaryLabel": "Summary",
+			"summaryPlaceholder": "A short introduction to your stream",
 			"title": "Brand",
 			"updateButton": "Update brand",
 			"upload": "Upload"

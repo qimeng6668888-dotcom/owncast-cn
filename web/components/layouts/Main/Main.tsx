@@ -45,7 +45,7 @@ export const Main: FC = () => {
   const { t } = useTranslation();
   const clientConfig = useAtomValue(clientConfigStateAtom);
   const clientStatus = useAtomValue(serverStatusState);
-  const { name, summary } = clientConfig;
+  const { name, summary, logo } = clientConfig;
   const isChatAvailable = useAtomValue(isChatAvailableSelector);
   const fatalError = useAtomValue(fatalErrorStateAtom);
   const appState = useAtomValue(appStateAtom);
@@ -121,6 +121,7 @@ export const Main: FC = () => {
           chatAvailable={isChatAvailable}
           chatDisabled={chatDisabled}
           online={videoAvailable}
+          logo={logo || '/logo'}
         />
         <Content />
         {fatalError && (

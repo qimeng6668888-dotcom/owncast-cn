@@ -142,11 +142,16 @@ func (h *Handlers) getConfigResponse(r *http.Request) webConfigResponse {
 		IndieAuthEnabled: configRepository.GetServerURL() != "",
 	}
 
+	logoPath := "/logo"
+	if uniqueness := configRepository.GetLogoUniquenessString(); uniqueness != "" {
+		logoPath = "/logo?hash=" + url.QueryEscape(uniqueness)
+	}
+
 	return webConfigResponse{
 		Name:                       configRepository.GetServerName(),
 		Summary:                    serverSummary,
 		OfflineMessage:             offlineMessage,
-		Logo:                       "/logo",
+		Logo:                       logoPath,
 		Tags:                       configRepository.GetServerMetadataTags(),
 		Version:                    config.GetReleaseString(),
 		NSFW:                       configRepository.GetNSFW(),

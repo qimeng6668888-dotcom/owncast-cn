@@ -31,6 +31,7 @@ import FormStatusIndicator from '../../FormStatusIndicator';
 import { createInputStatus, STATUS_SUCCESS } from '../../../../utils/input-statuses';
 import { Translation } from '../../../ui/Translation/Translation';
 import { Localization } from '../../../../types/localization';
+import { useAdminText } from '../../../../utils/adminText';
 
 const { Title } = Typography;
 
@@ -39,64 +40,72 @@ export type DirectoryInfoModalProps = {
   okPressed: () => void;
 };
 
-const DirectoryInfoModal: FC<DirectoryInfoModalProps> = ({ cancelPressed, okPressed }) => (
-  <Modal
-    width="70%"
-    title="Owncast Directory"
-    visible
-    onCancel={cancelPressed}
-    footer={
-      <div>
-        <Button onClick={cancelPressed}>Do not share my server.</Button>
-        <Button type="primary" onClick={okPressed}>
-          Understood. Share my server publicly.
-        </Button>
-      </div>
-    }
-  >
-    <Typography.Title level={3}>What is the Owncast Directory?</Typography.Title>
-    <Typography.Paragraph>
-      Owncast operates a public directory at{' '}
-      <a href="https://owncast.directory">owncast.directory</a> to share your video streams with
-      more people, while also using these as examples for others. Live streams and servers listed on
-      the directory may optionally be shared on other platforms and applications.
-    </Typography.Paragraph>
+const DirectoryInfoModal: FC<DirectoryInfoModalProps> = ({ cancelPressed, okPressed }) => {
+  const tx = useAdminText();
+  return (
+    <Modal
+      width="70%"
+      title={tx('Owncast Directory')}
+      visible
+      onCancel={cancelPressed}
+      footer={
+        <div>
+          <Button onClick={cancelPressed}>{tx('Do not share my server.')}</Button>
+          <Button type="primary" onClick={okPressed}>
+            {tx('Understood. Share my server publicly.')}
+          </Button>
+        </div>
+      }
+    >
+      <Typography.Title level={3}>{tx('What is the Owncast Directory?')}</Typography.Title>
+      <Typography.Paragraph>
+        {tx(
+          'Owncast operates a public directory at owncast.directory to share your video streams with more people, while also using these as examples for others. Live streams and servers listed on the directory may optionally be shared on other platforms and applications.',
+        )}
+      </Typography.Paragraph>
 
-    <Typography.Title level={3}>Disclaimers and Responsibility</Typography.Title>
-    <Typography.Paragraph>
-      <ul>
-        <li>
-          By enabling this feature you are granting explicit rights to Owncast to share your stream
-          to the public via the directory, as well as other sites, applications and any platform
-          where the Owncast project may be promoting Owncast-powered streams including social media.
-        </li>
-        <li>
-          There is no obligation to list any specific server or topic. Servers can and will be
-          removed at any time for any reason.
-        </li>
-        <li>
-          Any server that is streaming Not Safe For Work (NSFW) content and does not have the NSFW
-          toggle enabled on their server will be removed.
-        </li>
-        <li>
-          Any server streaming harmful, hurtful, misleading or hateful content in any way will not
-          be listed.
-        </li>
-        <li>
-          You may reach out to the Owncast team to report any objectionable content or content that
-          you believe should not be be publicly listed.
-        </li>
-        <li>
-          You have the right to free software and to build whatever you want with it. But there is
-          no obligation for others to share it.
-        </li>
-      </ul>
-    </Typography.Paragraph>
-  </Modal>
-);
+      <Typography.Title level={3}>{tx('Disclaimers and Responsibility')}</Typography.Title>
+      <Typography.Paragraph>
+        <ul>
+          <li>
+            {tx(
+              'By enabling this feature you are granting explicit rights to Owncast to share your stream to the public via the directory, as well as other sites, applications and any platform where the Owncast project may be promoting Owncast-powered streams including social media.',
+            )}
+          </li>
+          <li>
+            {tx(
+              'There is no obligation to list any specific server or topic. Servers can and will be removed at any time for any reason.',
+            )}
+          </li>
+          <li>
+            {tx(
+              'Any server that is streaming Not Safe For Work (NSFW) content and does not have the NSFW toggle enabled on their server will be removed.',
+            )}
+          </li>
+          <li>
+            {tx(
+              'Any server streaming harmful, hurtful, misleading or hateful content in any way will not be listed.',
+            )}
+          </li>
+          <li>
+            {tx(
+              'You may reach out to the Owncast team to report any objectionable content or content that you believe should not be be publicly listed.',
+            )}
+          </li>
+          <li>
+            {tx(
+              'You have the right to free software and to build whatever you want with it. But there is no obligation for others to share it.',
+            )}
+          </li>
+        </ul>
+      </Typography.Paragraph>
+    </Modal>
+  );
+};
 
 // eslint-disable-next-line react/function-component-definition
 export default function EditInstanceDetails() {
+  const tx = useAdminText();
   const [formDataValues, setFormDataValues] = useState(null);
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig } = serverStatusData || {};
@@ -194,7 +203,7 @@ export default function EditInstanceDetails() {
   return (
     <div className="edit-general-settings">
       <Title level={3} className="section-title">
-        Configure Instance Details
+        {tx('Configure Instance Details')}
       </Title>
       <br />
 
@@ -234,7 +243,9 @@ export default function EditInstanceDetails() {
             alignItems: 'end',
           }}
         >
-          <p style={{ margin: '20px', marginRight: '10px', fontWeight: '400' }}>Offline Message:</p>
+          <p style={{ margin: '20px', marginRight: '10px', fontWeight: '400' }}>
+            {tx('Offline Message')}:
+          </p>
           <CodeMirror
             value={formDataValues.offlineMessage}
             {...TEXTFIELD_PROPS_SERVER_OFFLINE_MESSAGE}
@@ -262,7 +273,7 @@ export default function EditInstanceDetails() {
           onClick={handleSaveOfflineMessage}
           style={{ margin: '10px', float: 'right' }}
         >
-          Save Message
+          {tx('Save Message')}
         </Button>
         <FormStatusIndicator status={offlineMessageSaveStatus} />
       </div>

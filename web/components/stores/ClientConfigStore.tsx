@@ -30,6 +30,7 @@ import { handleNameChangeEvent } from './eventhandlers/handleNameChangeEvent';
 import { DisplayableError } from '../../types/displayable-error';
 
 const SERVER_STATUS_POLL_DURATION = 5000;
+const CLIENT_CONFIG_POLL_DURATION = 15000;
 
 // Helper to safely parse hydration data injected into the page by the Owncast
 // server (see ServerRenderedHydration). Read from a mount effect, never during
@@ -68,6 +69,7 @@ const getInitialStatus = (): { status: ServerStatus; success: boolean } => {
 const ACCESS_TOKEN_KEY = 'accessToken';
 
 let serverStatusRefreshPoll: ReturnType<typeof setInterval>;
+let clientConfigRefreshPoll: ReturnType<typeof setInterval>;
 let hasBeenModeratorNotified = false;
 let hasWebsocketDisconnected = false;
 
@@ -427,8 +429,14 @@ export const ClientConfigStore: FC = () => {
       updateServerStatus();
     }, SERVER_STATUS_POLL_DURATION);
 
+    clearInterval(clientConfigRefreshPoll);
+    clientConfigRefreshPoll = setInterval(() => {
+      updateClientConfig();
+    }, CLIENT_CONFIG_POLL_DURATION);
+
     return () => {
       clearInterval(serverStatusRefreshPoll);
+      clearInterval(clientConfigRefreshPoll);
     };
   }, []);
 

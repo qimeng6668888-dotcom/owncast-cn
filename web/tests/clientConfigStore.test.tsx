@@ -103,6 +103,7 @@ describe('ClientConfigStore', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
@@ -262,6 +263,27 @@ describe('ClientConfigStore', () => {
     await waitFor(() => expect(store.get(accessTokenAtom)).toBe('new-token'));
     expect(localStorage.getItem('accessToken')).toBe('new-token');
     expect(services.chatService.registerUser).toHaveBeenCalled();
+  });
+
+  it('polls config so branding changes show without a refresh', async () => {
+    jest.useFakeTimers();
+    localStorage.setItem('accessToken', 'saved-token');
+    const services = makeServices();
+    services.configService.getConfig
+      .mockResolvedValueOnce(testConfig)
+      .mockResolvedValueOnce({ ...testConfig, summary: 'updated intro', name: '新名称' });
+    const store = renderStore(services);
+
+    await waitFor(() => expect(store.get(isClientConfigLoadedAtom)).toBe(true));
+    expect(store.get(clientConfigStateAtom).summary).toBe('from api');
+
+    await act(async () => {
+      jest.advanceTimersByTime(15000);
+    });
+
+    await waitFor(() => expect(store.get(clientConfigStateAtom).summary).toBe('updated intro'));
+    expect(store.get(clientConfigStateAtom).name).toBe('新名称');
+    jest.useRealTimers();
   });
 
   it('surfaces a fatal error when the server is unreachable', async () => {

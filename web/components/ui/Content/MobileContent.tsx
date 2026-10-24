@@ -25,6 +25,7 @@ export type MobileContentProps = {
   showFollowersTab: boolean;
   online: boolean;
   federatedServers?: any[]; // Will be properly typed when API is implemented
+  logo?: string;
 };
 
 // lazy loaded components
@@ -70,13 +71,14 @@ export const MobileContent: FC<MobileContentProps> = ({
   showFollowersTab,
   online,
   federatedServers = [],
+  logo = '/logo',
 }) => {
   const { t } = useTranslation();
   const [activeKey, setActiveKey] = useState('0');
 
   const aboutTabContent = (
     <>
-      <ContentHeader name={name} summary={summary} tags={tags} links={socialHandles} logo="/logo" />
+      <ContentHeader name={name} summary={summary} tags={tags} links={socialHandles} logo={logo} />
       {!!extraPageContent && (
         <div className={styles.bottomPageContentContainer}>
           <CustomPageContent content={extraPageContent} />

@@ -20,6 +20,7 @@ export type DesktopContentProps = {
   setShowFollowModal: (show: boolean) => void;
   showFollowersTab: boolean;
   federatedServers?: any[]; // Will be properly typed when API is implemented
+  logo?: string;
 };
 
 // lazy loaded components
@@ -52,6 +53,7 @@ export const DesktopContent: FC<DesktopContentProps> = ({
   setShowFollowModal,
   showFollowersTab,
   federatedServers = [],
+  logo = '/logo',
 }) => {
   const aboutTabContent = (
     <div className={styles.bottomPageContentContainer}>
@@ -122,7 +124,7 @@ export const DesktopContent: FC<DesktopContentProps> = ({
           summary={summary}
           tags={tags}
           links={socialHandles}
-          logo="/logo"
+          logo={logo}
         />
       </div>
 

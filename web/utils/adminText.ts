@@ -63,8 +63,34 @@ const ZH: Record<string, string> = {
   Yes: '是',
   No: '否',
   Add: '添加',
+  Save: '保存',
   Update: '更新',
   Edit: '编辑',
+  'Configure Instance Details': '直播间资料',
+  'Save Message': '保存提示',
+  'Custom Page Content': '页面正文',
+  'Enter your custom page content here...': '在这里填写页面正文…',
+  'Edit the content of your page by using simple': '用简单的',
+  'Markdown syntax': 'Markdown 语法',
+  'Owncast Directory': 'Owncast 目录',
+  'Do not share my server.': '不公开这台服务器。',
+  'Understood. Share my server publicly.': '明白了，公开分享这台服务器。',
+  'What is the Owncast Directory?': '什么是 Owncast 目录？',
+  'Disclaimers and Responsibility': '免责声明',
+  'Owncast operates a public directory at owncast.directory to share your video streams with more people, while also using these as examples for others. Live streams and servers listed on the directory may optionally be shared on other platforms and applications.':
+    'Owncast 在 owncast.directory 维护一份公开目录，用来把直播介绍给更多人，同时也给其他主播做参考。目录里的直播也可以被转发到其他平台。',
+  'By enabling this feature you are granting explicit rights to Owncast to share your stream to the public via the directory, as well as other sites, applications and any platform where the Owncast project may be promoting Owncast-powered streams including social media.':
+    '打开这项功能，即表示你授权 Owncast 通过目录以及其他推广 Owncast 直播的站点、应用和社交媒体公开分享你的直播。',
+  'There is no obligation to list any specific server or topic. Servers can and will be removed at any time for any reason.':
+    '目录没有义务收录任何特定服务器或主题，也可以随时以任何原因下架。',
+  'Any server that is streaming Not Safe For Work (NSFW) content and does not have the NSFW toggle enabled on their server will be removed.':
+    '播出成人内容却没有打开 NSFW 开关的服务器会被下架。',
+  'Any server streaming harmful, hurtful, misleading or hateful content in any way will not be listed.':
+    '播出有害、误导或仇恨内容的服务器不会被收录。',
+  'You may reach out to the Owncast team to report any objectionable content or content that you believe should not be be publicly listed.':
+    '如发现不宜公开的内容，可以向 Owncast 团队举报。',
+  'You have the right to free software and to build whatever you want with it. But there is no obligation for others to share it.':
+    '你有权使用自由软件做任何事，但别人没有义务帮你传播。',
   Key: '推流码',
   Comment: '备注',
   'Loading...': '加载中...',

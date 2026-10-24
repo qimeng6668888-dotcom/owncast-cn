@@ -28,6 +28,8 @@ const { Title, Paragraph } = Typography;
 
 const NAME_ENDPOINT = '/name';
 const LOGO_ENDPOINT = '/logo';
+const SUMMARY_ENDPOINT = '/serversummary';
+const PAGE_CONTENT_ENDPOINT = '/pagecontent';
 const APPEARANCE_ENDPOINT = '/appearance';
 
 const UploadOutlined = dynamic(() => import('@ant-design/icons/UploadOutlined'), {
@@ -58,9 +60,13 @@ export default function BrandingConfig() {
   const { serverConfig, setFieldInConfigState } = serverStatusData || {};
   const instanceDetails = serverConfig?.instanceDetails;
   const savedName = instanceDetails?.name || '';
+  const savedSummary = instanceDetails?.summary || '';
+  const savedExtraPage = instanceDetails?.extraPageContent || '';
   const savedColors = readBrandColors(instanceDetails?.appearanceVariables);
 
   const [name, setName] = useState(savedName);
+  const [summary, setSummary] = useState(savedSummary);
+  const [extraPageContent, setExtraPageContent] = useState(savedExtraPage);
   const [primary, setPrimary] = useState(savedColors.primary);
   const [accent, setAccent] = useState(savedColors.accent);
   const [dirty, setDirty] = useState(false);
@@ -76,6 +82,8 @@ export default function BrandingConfig() {
       return;
     }
     setName(instanceDetails.name || '');
+    setSummary(instanceDetails.summary || '');
+    setExtraPageContent(instanceDetails.extraPageContent || '');
     const colors = readBrandColors(instanceDetails.appearanceVariables);
     setPrimary(colors.primary);
     setAccent(colors.accent);
@@ -85,10 +93,24 @@ export default function BrandingConfig() {
     title: text(Localization.Admin.Branding.title, '品牌'),
     description: text(
       Localization.Admin.Branding.description,
-      '设置访客页面上显示的品牌名称、Logo 和颜色。保存后写入本机配置，刷新或重启后仍然有效。',
+      '设置访客页面上显示的品牌名称、Logo、简介、页面正文和颜色。保存后立刻生效，刷新或重启后仍然有效。',
     ),
     name: text(Localization.Admin.Branding.nameLabel, '品牌名称'),
     namePlaceholder: text(Localization.Admin.Branding.namePlaceholder, '你的品牌名称'),
+    summary: text(Localization.Admin.Branding.summaryLabel, '简介'),
+    summaryPlaceholder: text(
+      Localization.Admin.Branding.summaryPlaceholder,
+      '用一两句话介绍直播间',
+    ),
+    extraPage: text(Localization.Admin.Branding.extraPageLabel, '页面正文'),
+    extraPagePlaceholder: text(
+      Localization.Admin.Branding.extraPagePlaceholder,
+      '用 Markdown 写给观众看的介绍正文',
+    ),
+    extraPageTip: text(
+      Localization.Admin.Branding.extraPageTip,
+      '显示在直播页下方「关于」区域，支持 Markdown。',
+    ),
     logo: text(Localization.Admin.Branding.logoLabel, 'Logo'),
     preview: text(Localization.Admin.Branding.logoPreview, 'Logo 预览'),
     noLogo: text(Localization.Admin.Branding.noLogo, '未设置 Logo'),
@@ -153,6 +175,21 @@ export default function BrandingConfig() {
       await postConfig(NAME_ENDPOINT, { value: trimmedName });
       setFieldInConfigState({ fieldName: 'name', value: trimmedName, path: 'instanceDetails' });
 
+      const trimmedSummary = summary.trim();
+      await postConfig(SUMMARY_ENDPOINT, { value: trimmedSummary });
+      setFieldInConfigState({
+        fieldName: 'summary',
+        value: trimmedSummary,
+        path: 'instanceDetails',
+      });
+
+      await postConfig(PAGE_CONTENT_ENDPOINT, { value: extraPageContent });
+      setFieldInConfigState({
+        fieldName: 'extraPageContent',
+        value: extraPageContent,
+        path: 'instanceDetails',
+      });
+
       if (logoChange.kind === 'upload') {
         await postConfig(LOGO_ENDPOINT, { value: logoChange.dataUrl });
         setFieldInConfigState({
@@ -177,6 +214,7 @@ export default function BrandingConfig() {
 
       setLogoChange({ kind: 'keep' });
       setName(trimmedName);
+      setSummary(trimmedSummary);
       setSubmitStatus(createInputStatus(STATUS_SUCCESS, label.success));
       setSaving(false);
       setTimeout(() => setSubmitStatus(null), RESET_TIMEOUT);
@@ -186,7 +224,7 @@ export default function BrandingConfig() {
   };
 
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%', maxWidth: 720 }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%', maxWidth: 720 }}>
       <div>
         <Title level={3}>{label.title}</Title>
         <Paragraph>{label.description}</Paragraph>
@@ -207,6 +245,45 @@ export default function BrandingConfig() {
               setName(event.target.value);
             }}
           />
+        </div>
+      </div>
+
+      <div className="formfield-container">
+        <div className="label-side">
+          <span className="formfield-label">{label.summary}</span>
+        </div>
+        <div className="input-side">
+          <Input.TextArea
+            id="brand-summary"
+            value={summary}
+            placeholder={label.summaryPlaceholder}
+            maxLength={500}
+            rows={3}
+            onChange={event => {
+              setDirty(true);
+              setSummary(event.target.value);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="formfield-container">
+        <div className="label-side">
+          <span className="formfield-label">{label.extraPage}</span>
+        </div>
+        <div className="input-side">
+          <Input.TextArea
+            id="brand-extra-page"
+            value={extraPageContent}
+            placeholder={label.extraPagePlaceholder}
+            maxLength={20000}
+            rows={8}
+            onChange={event => {
+              setDirty(true);
+              setExtraPageContent(event.target.value);
+            }}
+          />
+          <p className="field-tip">{label.extraPageTip}</p>
         </div>
       </div>
 

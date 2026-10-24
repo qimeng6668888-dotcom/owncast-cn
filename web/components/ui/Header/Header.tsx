@@ -21,9 +21,16 @@ export type HeaderComponentProps = {
   chatAvailable: boolean;
   chatDisabled: boolean;
   online: boolean;
+  logo?: string;
 };
 
-export const Header: FC<HeaderComponentProps> = ({ name, chatAvailable, chatDisabled, online }) => {
+export const Header: FC<HeaderComponentProps> = ({
+  name,
+  chatAvailable,
+  chatDisabled,
+  online,
+  logo = '/logo',
+}) => {
   const [canHideChat, setCanHideChat] = useState(false);
   const { t } = useTranslation();
 
@@ -50,7 +57,7 @@ export const Header: FC<HeaderComponentProps> = ({ name, chatAvailable, chatDisa
       </Link>
       <div className={styles.logo}>
         <div id="header-logo" className={styles.logoImage}>
-          <Avatar src="/logo" size="large" shape="circle" className={styles.avatar} />
+          <Avatar src={logo} size="large" shape="circle" className={styles.avatar} />
         </div>
         <h1 className={styles.title} id="global-header-text">
           {name}
