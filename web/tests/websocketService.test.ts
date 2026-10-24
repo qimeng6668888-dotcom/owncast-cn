@@ -1,4 +1,4 @@
-import WebsocketService from '../services/websocket-service';
+import WebsocketService, { buildChatSocketUrl } from '../services/websocket-service';
 import { MessageType, SocketEvent } from '../interfaces/socket-events';
 
 // A stand-in for the browser WebSocket: records constructed instances and
@@ -56,6 +56,36 @@ describe('WebsocketService', () => {
   afterEach(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();
+  });
+
+  it('keeps an explicit origin port instead of copying the page port', () => {
+    const url = buildChatSocketUrl('https://live.example.com:8443/ignored', 'tok', {
+      protocol: 'https:',
+      hostname: 'cdn.example.com',
+      port: '',
+    });
+
+    expect(url.protocol).toBe('wss:');
+    expect(url.host).toBe('live.example.com:8443');
+    expect(url.pathname).toBe('/ws');
+    expect(url.searchParams.get('accessToken')).toBe('tok');
+  });
+
+  it('rewrites only the dev page port from 3000 to 8080', () => {
+    const dev = buildChatSocketUrl('http://localhost:3000/live', 'tok', {
+      protocol: 'http:',
+      hostname: 'localhost',
+      port: '3000',
+    });
+    expect(dev.port).toBe('8080');
+
+    const cdnPage = buildChatSocketUrl('https://live.example.com', 'tok', {
+      protocol: 'https:',
+      hostname: 'cdn.example.com',
+      port: '3000',
+    });
+    expect(cdnPage.port).toBe('');
+    expect(cdnPage.hostname).toBe('live.example.com');
   });
 
   it('connects to /ws on the given host with the access token', () => {

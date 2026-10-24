@@ -22,6 +22,8 @@ import { MessageType, SocketEvent } from '../interfaces/socket-events';
 
 type MockSocket = {
   accessToken: string;
+  host: string;
+  isShutdown: boolean;
   shutdown: jest.Mock;
   handleMessage?: (message: SocketEvent) => void;
   socketConnected?: () => void;
@@ -33,9 +35,18 @@ type MockSocket = {
 const mockSockets: MockSocket[] = [];
 jest.mock('../services/websocket-service', () => ({
   __esModule: true,
-  default: jest.fn().mockImplementation(function fakeSocket(this: MockSocket, accessToken: string) {
+  default: jest.fn().mockImplementation(function fakeSocket(
+    this: MockSocket,
+    accessToken: string,
+    _path: string,
+    host: string,
+  ) {
     this.accessToken = accessToken;
-    this.shutdown = jest.fn();
+    this.host = host;
+    this.isShutdown = false;
+    this.shutdown = jest.fn(() => {
+      this.isShutdown = true;
+    });
     mockSockets.push(this);
   }),
 }));
@@ -206,6 +217,29 @@ describe('ClientConfigStore', () => {
 
     await waitFor(() => expect(store.get(accessTokenAtom)).toBe('saved-token'));
     expect(services.chatService.registerUser).not.toHaveBeenCalled();
+  });
+
+  it('moves chat to the socket host override when config gains one', async () => {
+    localStorage.setItem('accessToken', 'saved-token');
+    hydrationWindow.configHydration = { ...testConfig, socketHostOverride: '' };
+    hydrationWindow.statusHydration = onlineStatus;
+    const services = makeServices();
+    const store = renderStore(services);
+
+    await waitFor(() => expect(mockSockets).toHaveLength(1));
+    expect(mockSockets[0].host).toBe(`${window.location.origin}${window.location.pathname}`);
+
+    act(() => {
+      store.set(clientConfigStateAtom, {
+        ...testConfig,
+        socketHostOverride: 'https://live.example.com',
+      });
+    });
+
+    await waitFor(() => expect(mockSockets).toHaveLength(2));
+    expect(mockSockets[0].shutdown).toHaveBeenCalled();
+    expect(mockSockets[1].host).toBe('https://live.example.com');
+    expect(mockSockets[1].accessToken).toBe('saved-token');
   });
 
   it('starts the websocket with the access token once config is loaded', async () => {

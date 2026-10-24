@@ -1,5 +1,31 @@
 import { MessageType, SocketEvent } from '../interfaces/socket-events';
 
+// Page location fields the socket URL is allowed to consult. Kept structural
+// so tests can pass a plain object instead of the browser Location.
+export type ChatSocketPage = {
+  protocol: string;
+  hostname: string;
+  port: string;
+};
+
+// Build the chat websocket URL. An explicit host (the admin socket host
+// override) keeps its own port: copying the page port onto it breaks chat
+// when the page is opened on a video CDN and the socket must go to the
+// origin. The dev server is the exception, and only when the socket host is
+// the page itself: Next.js on :3000 talks to the Go server on :8080.
+export function buildChatSocketUrl(host: string, accessToken: string, page: ChatSocketPage): URL {
+  const url = new URL(host);
+  url.protocol = page.protocol === 'https:' ? 'wss:' : 'ws:';
+  url.pathname = '/ws';
+  url.search = '';
+  url.hash = '';
+  if (url.hostname === page.hostname && page.port === '3000') {
+    url.port = '8080';
+  }
+  url.searchParams.append('accessToken', accessToken);
+  return url;
+}
+
 export interface SocketMessage {
   type: MessageType;
   data: any;
@@ -48,11 +74,7 @@ export default class WebsocketService {
       return;
     }
 
-    const url = new URL(this.host);
-    url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    url.pathname = '/ws';
-    url.port = window.location.port === '3000' ? '8080' : window.location.port;
-    url.searchParams.append('accessToken', this.accessToken);
+    const url = buildChatSocketUrl(this.host, this.accessToken, window.location);
 
     const ws = new WebSocket(url.toString());
     ws.onopen = this.onOpen.bind(this);

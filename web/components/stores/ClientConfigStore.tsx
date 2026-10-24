@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect } from 'react';
+import { FC, useContext, useEffect, useRef } from 'react';
 import { atom, useAtom, useSetAtom } from 'jotai';
 import { useMachine } from '@xstate/react';
 import { makeEmptyClientConfig, ClientConfig } from '../../interfaces/client-config.model';
@@ -88,7 +88,11 @@ const ACCESS_TOKEN_KEY = 'accessToken';
 let serverStatusRefreshPoll: ReturnType<typeof setInterval>;
 let clientConfigRefreshPoll: ReturnType<typeof setInterval>;
 let hasBeenModeratorNotified = false;
-let hasWebsocketDisconnected = false;
+
+// True after the live chat socket drops, until the next successful open.
+// An atom (not a module flag) so the chat panel re-renders as soon as the
+// socket recovers, instead of waiting for the next status poll.
+const chatSocketDisconnectedAtom = atom(false);
 
 const serverConnectivityError = `Cannot connect to the Owncast service. Please check your internet connection and verify this Owncast server is running.`;
 
@@ -142,8 +146,17 @@ const removedMessageIdsAtom = atom<string[]>([]);
 export const isChatAvailableSelector = atom(get => {
   const state: AppStateOptions = get(appStateAtom);
   const accessToken: string = get(accessTokenAtom);
-  return Boolean(accessToken && state.chatAvailable && !hasWebsocketDisconnected);
+  const disconnected = get(chatSocketDisconnectedAtom);
+  return Boolean(accessToken && state.chatAvailable && !disconnected);
 });
+
+// Where the chat socket should connect. The override wins so a viewer who
+// opened the site on the video CDN still reaches the origin; the CDN does
+// not forward the websocket upgrade.
+function chatSocketHost(socketHostOverride: string | undefined, pageLocation: string): string {
+  const override = socketHostOverride?.trim();
+  return override || pageLocation;
+}
 
 // The requested state of chat in the UI
 export enum ChatState {
@@ -196,8 +209,8 @@ export const ClientConfigStore: FC = () => {
   const setWebsocketService = useSetAtom(websocketServiceAtom);
   const setHiddenMessageIds = useSetAtom(removedMessageIdsAtom);
   const [hasLoadedConfig, setHasLoadedConfig] = useAtom(isClientConfigLoadedAtom);
-
-  let ws: WebsocketService;
+  const setChatSocketDisconnected = useSetAtom(chatSocketDisconnectedAtom);
+  const socketRef = useRef<WebsocketService | null>(null);
 
   const setGlobalFatalError = (title: string, message: string) => {
     setGlobalFatalErrorMessage({
@@ -293,7 +306,8 @@ export const ClientConfigStore: FC = () => {
   const resetAndReAuth = () => {
     setLocalStorage(ACCESS_TOKEN_KEY, '');
     setAccessToken(null);
-    ws?.shutdown();
+    socketRef.current?.shutdown();
+    socketRef.current = null;
     handleUserRegistration();
   };
 
@@ -307,11 +321,11 @@ export const ClientConfigStore: FC = () => {
   };
 
   const handleSocketDisconnect = () => {
-    hasWebsocketDisconnected = true;
+    setChatSocketDisconnected(true);
   };
 
   const handleSocketConnected = () => {
-    hasWebsocketDisconnected = false;
+    setChatSocketDisconnected(false);
   };
 
   const handleMessage = (message: SocketEvent) => {
@@ -384,25 +398,23 @@ export const ClientConfigStore: FC = () => {
     }
   };
 
-  const startChat = async () => {
+  const startChat = () => {
     try {
-      if (ws) {
-        ws?.shutdown();
-        setWebsocketService(null);
-        ws = null;
-      }
-
-      const { socketHostOverride } = clientConfig;
-
-      // Get a copy of the browser location without #fragments.
       const location = window.location.origin + window.location.pathname;
-      const host = socketHostOverride || location;
+      const host = chatSocketHost(clientConfig.socketHostOverride, location);
+      const current = socketRef.current;
+      if (current && !current.isShutdown && current.host === host) {
+        return;
+      }
+      current?.shutdown();
+      socketRef.current = null;
 
-      ws = new WebsocketService(accessToken, '/ws', host);
-      ws.handleMessage = handleMessage;
-      ws.socketDisconnected = handleSocketDisconnect;
-      ws.socketConnected = handleSocketConnected;
-      setWebsocketService(ws);
+      const next = new WebsocketService(accessToken, '/ws', host);
+      next.handleMessage = handleMessage;
+      next.socketDisconnected = handleSocketDisconnect;
+      next.socketConnected = handleSocketConnected;
+      socketRef.current = next;
+      setWebsocketService(next);
     } catch (error) {
       console.error(`ChatService -> startChat() ERROR: \n${error}`);
       sendEvent([AppStateEvent.ChatUserDisabled]);
@@ -460,23 +472,23 @@ export const ClientConfigStore: FC = () => {
 
   useEffect(() => {
     if (clientConfig.chatDisabled) {
-      return;
+      return undefined;
     }
 
     if (!accessToken) {
-      return;
+      return undefined;
     }
 
     if (!hasLoadedConfig) {
-      return;
+      return undefined;
     }
 
-    if (ws) {
-      return;
-    }
-
+    // Re-run when the socket host override arrives. A page opened on the
+    // video CDN starts without it (stale HTML) and must move the socket to
+    // the origin once /api/config reports the override.
     startChat();
-  }, [hasLoadedConfig, accessToken]);
+    return undefined;
+  }, [hasLoadedConfig, accessToken, clientConfig.socketHostOverride, clientConfig.chatDisabled]);
 
   useEffect(() => {
     if (accessToken) {
