@@ -4,64 +4,90 @@ import {
   getDisplayNameFromQuery,
   trimUnicodeWhitespace,
 } from '../../../utils/displayNameValidation';
-import { getLocalStorage } from '../../../utils/localStorage';
+import { getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
 import { requestEntryPlayback } from '../../video/entryGatePlayback';
+import { MessageType } from '../../../interfaces/socket-events';
 import {
   clientConfigStateAtom,
   accessTokenAtom,
+  currentUserAtom,
   isClientConfigLoadedAtom,
   submitEntryNameAtom,
+  websocketServiceAtom,
 } from '../../stores/ClientConfigStore';
 import { EntryNameCard } from './EntryNameCard';
-import { entryGateWithDefaults } from './defaults';
+import { entryGateWithDefaults, shouldShowEntryGate } from './defaults';
 import styles from './EntryNameGate.module.scss';
 
 const NAME_LIMIT = 30;
+const ENTRY_NAME_KEY = 'entryDisplayName';
+const RENAME_WAIT_MS = 4000;
 
 export const EntryNameGate: FC = () => {
   const configLoaded = useAtomValue(isClientConfigLoadedAtom);
   const clientConfig = useAtomValue(clientConfigStateAtom);
   const accessToken = useAtomValue(accessTokenAtom);
+  const currentUser = useAtomValue(currentUserAtom);
+  const websocketService = useAtomValue(websocketServiceAtom);
   const submitEntryName = useAtomValue(submitEntryNameAtom);
-  const [checkedStorage, setCheckedStorage] = useState(false);
-  const [savedToken, setSavedToken] = useState(true);
+  const [ready, setReady] = useState(false);
+  const [entered, setEntered] = useState(false);
   const [name, setName] = useState('');
   const [hint, setHint] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [pendingName, setPendingName] = useState<string | null>(null);
   const gate = entryGateWithDefaults(clientConfig.entryGate);
 
   useEffect(() => {
-    const stored = !!getLocalStorage('accessToken');
-    setSavedToken(stored);
-    setCheckedStorage(true);
-    if (!stored) {
-      const fromLink = getDisplayNameFromQuery(window.location.search);
-      if (fromLink) {
-        setName(fromLink);
-      }
+    const fromLink = getDisplayNameFromQuery(window.location.search);
+    const remembered = getLocalStorage(ENTRY_NAME_KEY);
+    if (fromLink) {
+      setName(fromLink);
+    } else if (remembered) {
+      setName(remembered);
     }
+    setReady(true);
   }, []);
 
   useEffect(() => {
-    if (!checkedStorage) {
-      return undefined;
+    if (!currentUser?.displayName) {
+      return;
     }
-    if (accessToken) {
-      setSavedToken(true);
-      return undefined;
-    }
-    // A dropped chat identity (ERROR_NEEDS_REGISTRATION) clears the saved
-    // token. Show the card again instead of registering an English name.
-    setSavedToken(!!getLocalStorage('accessToken'));
-    return undefined;
-  }, [accessToken, checkedStorage]);
+    setName(current => current || currentUser.displayName);
+  }, [currentUser]);
 
-  const visible =
-    checkedStorage &&
-    configLoaded &&
-    clientConfig.entryGate?.enabled === true &&
-    !accessToken &&
-    !savedToken;
+  useEffect(() => {
+    if (!pendingName || currentUser?.displayName !== pendingName) {
+      return undefined;
+    }
+    setLocalStorage(ENTRY_NAME_KEY, pendingName);
+    setPendingName(null);
+    setEntered(true);
+    return undefined;
+  }, [currentUser, pendingName]);
+
+  useEffect(() => {
+    if (!pendingName) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      setPendingName(current => {
+        if (current !== pendingName) {
+          return current;
+        }
+        setHint('这个姓名不能使用');
+        setSubmitting(false);
+        return null;
+      });
+    }, RENAME_WAIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [pendingName]);
+
+  const visible = shouldShowEntryGate({
+    configLoaded: configLoaded && ready,
+    enabled: clientConfig.entryGate?.enabled === true,
+    enteredThisVisit: entered,
+  });
 
   useEffect(() => {
     if (!visible) {
@@ -78,30 +104,52 @@ export const EntryNameGate: FC = () => {
     return null;
   }
 
+  const rememberedName = () => currentUser?.displayName || getLocalStorage(ENTRY_NAME_KEY) || '';
+
+  const finish = (confirmed: string) => {
+    setLocalStorage(ENTRY_NAME_KEY, confirmed);
+    setEntered(true);
+  };
+
   const submit = async () => {
     const trimmed = trimUnicodeWhitespace(name);
     if (!trimmed) {
-      setHint('请填写真实姓名');
+      setHint('请填写姓名');
       return;
     }
     if ([...trimmed].length > NAME_LIMIT) {
       setHint('姓名最多 30 个字');
       return;
     }
-    if (!submitEntryName) {
-      setHint('页面还在准备，请再试一次');
-      return;
-    }
+    // The click starts playback immediately. Renaming is one chat message
+    // and does not gate the video.
     requestEntryPlayback();
     setSubmitting(true);
     setHint('');
-    try {
-      await submitEntryName.submit(trimmed);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '';
-      setHint(message || '这个姓名不能使用');
-      setSubmitting(false);
+
+    if (accessToken && trimmed === rememberedName()) {
+      finish(trimmed);
+      return;
     }
+
+    if (!accessToken) {
+      if (!submitEntryName) {
+        setHint('页面还在准备，请再试一次');
+        setSubmitting(false);
+        return;
+      }
+      await submitEntryName.submit(trimmed);
+      finish(trimmed);
+      return;
+    }
+
+    if (!websocketService?.isConnected()) {
+      setHint('页面还在准备，请再试一次');
+      setSubmitting(false);
+      return;
+    }
+    setPendingName(trimmed);
+    websocketService.send({ type: MessageType.NAME_CHANGE, newName: trimmed });
   };
 
   return (
@@ -124,7 +172,7 @@ export const EntryNameGate: FC = () => {
               setSubmitting(false);
             });
           }}
-          onDismissAttempt={() => setHint('请填写真实姓名后再进入')}
+          onDismissAttempt={() => setHint('请填写姓名后再进入')}
         />
       </div>
     </div>
