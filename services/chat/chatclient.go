@@ -115,7 +115,7 @@ func (c *Client) readPump() {
 
 		// Throw away messages greater than max message size.
 		if len(message) > maxMessageSize {
-			c.sendAction("Sorry, that message exceeded the maximum size and can't be delivered.")
+			c.sendAction("这条消息太长，无法发送。")
 			continue
 		}
 
@@ -135,7 +135,7 @@ func (c *Client) readPump() {
 		// Check if this message passes the optional language filter
 
 		if c.server.configRepository.GetChatSlurFilterEnabled() && !c.messageFilter.Allow(string(message)) {
-			c.sendAction("Sorry, that message contained language that is not allowed in this chat.")
+			c.sendAction("这条消息包含不允许的内容。")
 			continue
 		}
 
@@ -233,7 +233,7 @@ func (c *Client) startChatRejectionTimeout() {
 		}
 	}(c)
 
-	c.sendAction("You are temporarily blocked from sending chat messages due to perceived flooding.")
+	c.sendAction("发送过于频繁，请稍后再试。")
 }
 
 func (c *Client) sendPayload(payload interface{}) {

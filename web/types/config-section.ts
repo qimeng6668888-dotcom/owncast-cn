@@ -151,6 +151,16 @@ export interface StreamKey {
   comment: string;
 }
 
+export interface EntryGateFields {
+  enabled: boolean;
+  title: string;
+  body: string;
+  placeholder: string;
+  button: string;
+  footer: string;
+  crest?: string;
+}
+
 export interface ConfigDetails {
   externalActions: ExternalAction[];
   styleContributors: PluginStyleInfo[];
@@ -175,6 +185,7 @@ export interface ConfigDetails {
   chatSpamProtectionEnabled: boolean;
   chatSlurFilterEnabled: boolean;
   chatRequireAuthentication: boolean;
+  entryGate: EntryGateFields;
   federation: Federation;
   notifications: NotificationsConfig;
   chatJoinMessagesEnabled: boolean;

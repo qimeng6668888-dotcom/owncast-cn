@@ -52,6 +52,7 @@ type webConfigResponse struct {
 	ChatDisabled               bool                         `json:"chatDisabled"`
 	ChatSpamProtectionDisabled bool                         `json:"chatSpamProtectionDisabled"`
 	ChatRequireAuthentication  bool                         `json:"chatRequireAuthentication"`
+	EntryGate                  models.EntryGate             `json:"entryGate"`
 	NSFW                       bool                         `json:"nsfw"`
 	Autoplay                   models.AutoplayMode          `json:"autoplay"`
 	Authentication             authenticationConfigResponse `json:"authentication"`
@@ -173,6 +174,7 @@ func (h *Handlers) getConfigResponse(r *http.Request) webConfigResponse {
 		ChatDisabled:               configRepository.GetChatDisabled(),
 		ChatSpamProtectionDisabled: configRepository.GetChatSpamProtectionEnabled(),
 		ChatRequireAuthentication:  configRepository.GetChatRequireAuthentication(),
+		EntryGate:                  configRepository.GetEntryGate().Public(),
 		ExternalActions:            mergePluginActions(configRepository.GetExternalActions(), h.pluginActions),
 		PluginTabs:                 pluginTabsOrEmpty(r, h.pluginTabs),
 		CustomStyles:               configRepository.GetCustomStyles(),

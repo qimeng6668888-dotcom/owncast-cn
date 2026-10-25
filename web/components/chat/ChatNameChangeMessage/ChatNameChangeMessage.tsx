@@ -32,7 +32,7 @@ export const ChatNameChangeMessage: FC<ChatNameChangeMessageProps> = ({ message 
           translationKey={Localization.Frontend.Chat.nameChangeText}
           className={styles.plain}
           id="owncast-name-change-is-now-known-text"
-          defaultText="is now known as"
+          defaultText="改名为"
         />
         <span> </span>
         <span style={{ color }}>{displayName}</span>

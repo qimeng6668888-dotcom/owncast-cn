@@ -17,6 +17,7 @@ import { isVideoPlayingAtom, clockSkewAtom } from '../../stores/ClientConfigStor
 import PlaybackMetrics from '../metrics/playback';
 import { createVideoSettingsMenuButton, LATENCY_COMPENSATION_ENABLED } from '../settings-menu';
 import { installMobileFullscreen, type MobileFullscreenPlayer } from '../mobileFullscreen';
+import { ENTRY_PLAY_EVENT, playEntryGateIfRequested, playEntryGateNow } from '../entryGatePlayback';
 import LatencyCompensator from '../latencyCompensator';
 import styles from './OwncastPlayer.module.scss';
 import { VideoSettingsServiceContext } from '../../../services/video-settings-service';
@@ -431,7 +432,14 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     playbackMetrics.setClockSkew(clockSkew);
 
     createSettings(player, videojs);
+    playEntryGateIfRequested(player);
   };
+
+  useEffect(() => {
+    const onEntryPlay = () => playEntryGateNow(playerRef.current);
+    window.addEventListener(ENTRY_PLAY_EVENT, onEntryPlay);
+    return () => window.removeEventListener(ENTRY_PLAY_EVENT, onEntryPlay);
+  }, []);
 
   useEffect(() => {
     if (playbackMetrics) {

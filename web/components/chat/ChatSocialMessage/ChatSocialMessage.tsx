@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { FC } from 'react';
 import cn from 'classnames';
 import { ChatSocialMessage as ChatMessage } from '../../../interfaces/chat-social-message.model';
+import { localizeChatSystemBody } from '../../../utils/chatSystemCopy';
 import styles from './ChatSocialMessage.module.scss';
 
 const FollowIcon = dynamic(() => import('./follow.svg'), {
@@ -52,7 +53,10 @@ export const ChatSocialMessage: FC<ChatSocialMessageProps> = ({ message }) => {
             </Col>
             <Col className={styles.containerColumn}>
               <Row className={styles.account}>{title}</Row>
-              <Row className={styles.body} dangerouslySetInnerHTML={{ __html: body }} />
+              <Row
+                className={styles.body}
+                dangerouslySetInnerHTML={{ __html: localizeChatSystemBody(body) }}
+              />
             </Col>
           </Row>
         </a>

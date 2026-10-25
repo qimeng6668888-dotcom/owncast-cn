@@ -109,7 +109,7 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request) {
 		displayName := utils.MakeSafeStringOfLength(request.DisplayName, config.MaxChatDisplayNameLength)
 		authenticatedDisplayName := utils.MakeSafeStringOfLength(u.DisplayName, config.MaxChatDisplayNameLength)
 		if displayName != authenticatedDisplayName {
-			loginMessage := fmt.Sprintf("**%s** is now authenticated as **%s**", displayName, authenticatedDisplayName)
+			loginMessage := fmt.Sprintf("**%s** 已验证为 **%s**", displayName, authenticatedDisplayName)
 			if err := h.chat.SendSystemAction(loginMessage, true); err != nil {
 				log.Errorln(err)
 			}

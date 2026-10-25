@@ -4208,6 +4208,8 @@ components:
         chatRequireAuthentication:
           type: boolean
           description: Whether users must authenticate before sending chat messages
+        entryGate:
+          $ref: '#/components/schemas/EntryGate'
         nsfw:
           type: boolean
         autoplay:
@@ -4272,6 +4274,24 @@ components:
       properties:
         indieAuthEnabled:
           type: boolean
+    EntryGate:
+      type: object
+      description: Card shown to a new viewer. The typed name becomes the chat display name. The player keeps loading behind the card.
+      properties:
+        enabled:
+          type: boolean
+        title:
+          type: string
+        body:
+          type: string
+        placeholder:
+          type: string
+        button:
+          type: string
+        footer:
+          type: string
+        crest:
+          type: string
     YPDetails:
       type: object
       properties:
@@ -4857,6 +4877,8 @@ components:
           type: boolean
         chatEstablishedUserMode:
           type: boolean
+        entryGate:
+          $ref: '#/components/schemas/EntryGate'
         disableSearchIndexing:
           type: boolean
         streamKeyOverridden:

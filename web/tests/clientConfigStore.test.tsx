@@ -173,6 +173,29 @@ describe('ClientConfigStore', () => {
     expect(store.get(clientConfigStateAtom).summary).toBe('from api');
   });
 
+  it('holds registration when the entry gate is enabled', async () => {
+    hydrationWindow.configHydration = {
+      ...testConfig,
+      entryGate: {
+        enabled: true,
+        title: '擒龙直播间 实名验证',
+        body: '请填写姓名',
+        placeholder: '姓名',
+        button: '进入',
+        footer: '页脚',
+      },
+    };
+    const services = makeServices();
+    const store = renderStore(services);
+
+    await waitFor(() => expect(store.get(isClientConfigLoadedAtom)).toBe(true));
+    await new Promise(resolve => {
+      window.setTimeout(resolve, 30);
+    });
+    expect(services.chatService.registerUser).not.toHaveBeenCalled();
+    expect(store.get(accessTokenAtom)).toBeNull();
+  });
+
   it('registers a new chat user and stores the access token', async () => {
     const services = makeServices();
     const store = renderStore(services);

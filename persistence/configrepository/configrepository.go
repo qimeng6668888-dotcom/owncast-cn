@@ -142,6 +142,9 @@ type ConfigRepository interface {
 	SetSharePreviewPath(path string) error
 	GetSharePreviewUniquenessString() string
 	SetSharePreviewUniquenessString(uniqueness string) error
+	GetEntryGate() models.EntryGate
+	SetEntryGate(gate models.EntryGate) error
+	SetEntryGateCrest(path, uniqueness string) error
 }
 
 // temporaryGlobalInstance is set once during application startup so

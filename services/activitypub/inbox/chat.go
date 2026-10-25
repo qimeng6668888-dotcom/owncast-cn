@@ -48,15 +48,15 @@ func (s *Service) handleEngagementActivity(eventType events.EventType, isLiveNot
 	userPrefix := fmt.Sprintf("%s ", actorName)
 	var suffix string
 	if isLiveNotification && action == events.FediverseEngagementLike {
-		suffix = "liked that this stream went live."
+		suffix = "赞了这场直播。"
 	} else if action == events.FediverseEngagementLike {
-		suffix = fmt.Sprintf("liked a post from %s.", s.configRepository.GetServerName())
+		suffix = fmt.Sprintf("赞了 %s 的帖子。", s.configRepository.GetServerName())
 	} else if isLiveNotification && action == events.FediverseEngagementRepost {
-		suffix = "shared this stream with their followers."
+		suffix = "把这场直播分享给了关注者。"
 	} else if action == events.FediverseEngagementRepost {
-		suffix = fmt.Sprintf("shared a post from %s.", s.configRepository.GetServerName())
+		suffix = fmt.Sprintf("转发了 %s 的帖子。", s.configRepository.GetServerName())
 	} else if action == events.FediverseEngagementFollow {
-		suffix = "followed this stream."
+		suffix = "关注了这场直播。"
 	} else {
 		return fmt.Errorf("could not handle event for sending to chat: %s", action)
 	}

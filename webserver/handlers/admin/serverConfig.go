@@ -68,6 +68,7 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 		ChatSpamProtectionEnabled: configRepository.GetChatSpamProtectionEnabled(),
 		ChatSlurFilterEnabled:     configRepository.GetChatSlurFilterEnabled(),
 		ChatRequireAuthentication: configRepository.GetChatRequireAuthentication(),
+		EntryGate:                 configRepository.GetEntryGate().Public(),
 		HideViewerCount:           configRepository.GetHideViewerCount(),
 		DisableSearchIndexing:     configRepository.GetDisableSearchIndexing(),
 		VideoSettings: videoSettings{
@@ -152,6 +153,7 @@ type serverConfigAdminResponse struct {
 	ChatSpamProtectionEnabled bool                        `json:"chatSpamProtectionEnabled"`
 	ChatSlurFilterEnabled     bool                        `json:"chatSlurFilterEnabled"`
 	ChatRequireAuthentication bool                        `json:"chatRequireAuthentication"`
+	EntryGate                 models.EntryGate            `json:"entryGate"`
 	DisableSearchIndexing     bool                        `json:"disableSearchIndexing"`
 	StreamKeyOverridden       bool                        `json:"streamKeyOverridden"`
 	HideViewerCount           bool                        `json:"hideViewerCount"`

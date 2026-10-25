@@ -25,12 +25,12 @@ const variants = {
   [ChatEventType.Join]: {
     Icon: UsergroupAddOutlined,
     translationKey: Localization.Frontend.Chat.userJoined,
-    defaultText: 'joined the chat.',
+    defaultText: '加入了聊天。',
   },
   [ChatEventType.Part]: {
     Icon: UsergroupDeleteOutlined,
     translationKey: Localization.Frontend.Chat.userLeft,
-    defaultText: 'left the chat.',
+    defaultText: '离开了聊天。',
   },
 };
 

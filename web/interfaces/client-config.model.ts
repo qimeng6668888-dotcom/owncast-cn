@@ -14,6 +14,7 @@ export interface ClientConfig {
   socialHandles: SocialHandle[];
   chatDisabled: boolean;
   chatRequireAuthentication: boolean;
+  entryGate?: EntryGateConfig;
   externalActions: any[];
   // customStyles is the admin's custom CSS. Theme.tsx renders it last
   // in the appearance cascade (after pluginStyles and the appearance
@@ -36,6 +37,16 @@ export interface ClientConfig {
   notifications: Notifications;
   authentication: Authentication;
   socketHostOverride?: string;
+}
+
+export interface EntryGateConfig {
+  enabled: boolean;
+  title: string;
+  body: string;
+  placeholder: string;
+  button: string;
+  footer: string;
+  crest?: string;
 }
 
 interface Authentication {

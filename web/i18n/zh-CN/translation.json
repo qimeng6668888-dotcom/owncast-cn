@@ -543,15 +543,15 @@
 		},
 		"Chat": {
 			"authenticateToChat": "验证以进行聊天",
-			"moderatorNotification": "您现在是版主。",
-			"nameChangeText": "现在被称为",
-			"userJoined": "已加入聊天室。",
-			"userLeft": "已离开聊天室。",
+			"moderatorNotification": "你现在是主持人。",
+			"nameChangeText": "改名为",
+			"userJoined": "加入了聊天。",
+			"userLeft": "离开了聊天。",
 			"inputLabel": "聊天输入框",
 			"sendPlaceholder": "发送一条聊天消息",
 			"sendButton": "发送",
 			"emojiButton": "表情",
-			"streamEnding": "直播即将结束。"
+			"streamEnding": "直播已结束。"
 		},
 		"FollowModal": {
 			"description": "透过跟随这个串流，您将会在 Fediverse 上收到其开始直播的通知。现在是个了解的好时机",
@@ -571,8 +571,8 @@
 			"source": "源导"
 		},
 		"Header": {
-			"chatOffline": "聊天室已离线。",
-			"chatWillBeAvailable": "聊天室将在串流直播时可用。",
+			"chatOffline": "聊天已离线。",
+			"chatWillBeAvailable": "直播开始后可以聊天。",
 			"skipToContent": "跳到页面内容",
 			"skipToFooter": "跳到页脚",
 			"skipToOfflineMessage": "跳到离线讯息",
@@ -593,7 +593,7 @@
 		},
 		"chatDisabled": "聊天已禁用。",
 		"chatEmbedTitle": "{{name}} 聊天",
-		"chatOffline": "聊天室已离线",
+		"chatOffline": "聊天已离线",
 		"componentError": "错误： {{message}}",
 		"helloWorld": "你好，世界",
 		"lastLiveAgo": "上次实况时间：{{timeAgo}}前",

@@ -34,7 +34,7 @@ func (s *Service) userNameChanged(eventData chatClientEvent) {
 	// Check if the sanitized name is empty or just whitespace
 	if strings.TrimSpace(proposedUsername) == "" {
 		log.Debugln(logSanitize(eventData.client.User.DisplayName), "attempted to change name to empty or whitespace-only name")
-		message := "Display name cannot be empty or contain only whitespace."
+		message := "姓名不能为空。"
 		s.sendActionToClient(eventData.client, message)
 
 		// Resend the client's user so their username is in sync.
@@ -49,7 +49,7 @@ func (s *Service) userNameChanged(eventData chatClientEvent) {
 		if strings.Contains(normalizedName, proposedUsername) {
 			// Denied.
 			log.Debugln(logSanitize(eventData.client.User.DisplayName), "blocked from changing name to", logSanitize(proposedUsername), "due to blocked name", normalizedName)
-			message := fmt.Sprintf("You cannot change your name to **%s**.", proposedUsername)
+			message := fmt.Sprintf("不能改成 **%s**。", proposedUsername)
 			s.sendActionToClient(eventData.client, message)
 
 			// Resend the client's user so their username is in sync.
@@ -64,7 +64,7 @@ func (s *Service) userNameChanged(eventData chatClientEvent) {
 		log.Errorln("error checking if name is available", err)
 		return
 	} else if !available {
-		message := fmt.Sprintf("The name **%s** has already been registered. If this is your name, please authenticate.", proposedUsername)
+		message := fmt.Sprintf("**%s** 已被注册。如果这是你的名字，请先验证身份。", proposedUsername)
 		s.sendActionToClient(eventData.client, message)
 
 		// Resend the client's user so their username is in sync.

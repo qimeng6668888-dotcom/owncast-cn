@@ -1,5 +1,5 @@
 import { FC, useContext, useEffect, useRef } from 'react';
-import { atom, useAtom, useSetAtom } from 'jotai';
+import { atom, useAtom, useSetAtom, type PrimitiveAtom } from 'jotai';
 import { useMachine } from '@xstate/react';
 import { makeEmptyClientConfig, ClientConfig } from '../../interfaces/client-config.model';
 import { ClientConfigServiceContext } from '../../services/client-config-service';
@@ -84,6 +84,17 @@ const getInitialStatus = (): { status: ServerStatus; success: boolean } => {
 };
 
 const ACCESS_TOKEN_KEY = 'accessToken';
+
+// A holder, not a bare function: jotai treats a function stored in an atom as
+// the read function, and a function passed to the setter as an updater.
+export type EntryNameSubmitter = {
+  submit: (name: string) => Promise<void>;
+};
+
+const emptyEntryNameSubmitter = null as EntryNameSubmitter | null;
+
+export const submitEntryNameAtom: PrimitiveAtom<EntryNameSubmitter | null> =
+  atom(emptyEntryNameSubmitter);
 
 let serverStatusRefreshPoll: ReturnType<typeof setInterval>;
 let clientConfigRefreshPoll: ReturnType<typeof setInterval>;
@@ -242,15 +253,17 @@ export const ClientConfigStore: FC = () => {
     }
   };
 
-  const updateClientConfig = async () => {
+  const updateClientConfig = async (): Promise<ClientConfig | undefined> => {
     try {
       const config = await ClientConfigService.getConfig();
       setClientConfig(config);
       setGlobalFatalErrorMessage(null);
       setHasLoadedConfig(true);
+      return config;
     } catch (error) {
       setGlobalFatalError('Unable to reach Owncast server', serverConnectivityError);
       console.error(`ClientConfigService -> getConfig() ERROR: \n`, error);
+      return undefined;
     }
   };
 
@@ -286,7 +299,7 @@ export const ClientConfigStore: FC = () => {
       const response = await ChatService.registerUser(optionalDisplayName);
       const { accessToken: newAccessToken, displayName: newDisplayName, displayColor } = response;
       if (!newAccessToken) {
-        return;
+        throw new Error('注册没有成功，请重试');
       }
 
       setCurrentUser({
@@ -300,15 +313,30 @@ export const ClientConfigStore: FC = () => {
     } catch (e) {
       sendEvent([AppStateEvent.Fail]);
       console.error(`ChatService -> registerUser() ERROR: \n${e}`);
+      throw e;
     }
   };
+
+  const gateEnabledRef = useRef(false);
+  const submitEntryNameRef = useRef<(name: string) => Promise<void>>(async () => {
+    throw new Error('进房姓名还没准备好');
+  });
+  const setSubmitEntryName = useSetAtom(submitEntryNameAtom);
+
+  useEffect(() => {
+    gateEnabledRef.current = !!clientConfig.entryGate?.enabled;
+    submitEntryNameRef.current = (name: string) => handleUserRegistration(name);
+  });
 
   const resetAndReAuth = () => {
     setLocalStorage(ACCESS_TOKEN_KEY, '');
     setAccessToken(null);
     socketRef.current?.shutdown();
     socketRef.current = null;
-    handleUserRegistration();
+    if (gateEnabledRef.current) {
+      return;
+    }
+    handleUserRegistration().catch(() => {});
   };
 
   const handleMessageVisibilityChange = (message: MessageVisibilityEvent) => {
@@ -429,17 +457,36 @@ export const ClientConfigStore: FC = () => {
     const { config, success: hasHydratedConfig } = getInitialConfig();
     const { status, success: hasHydratedStatus } = getInitialStatus();
 
+    const beginChatIdentity = (loaded: ClientConfig) => {
+      const savedAccessToken = getLocalStorage(ACCESS_TOKEN_KEY);
+      if (savedAccessToken) {
+        setAccessToken(savedAccessToken);
+        return;
+      }
+      if (loaded.entryGate?.enabled) {
+        return;
+      }
+      handleUserRegistration(getDisplayNameFromQuery(window.location.search)).catch(() => {});
+    };
+
     if (hasHydratedConfig) {
       setClientConfig(config);
       setHasLoadedConfig(true);
     } else {
-      updateClientConfig();
+      updateClientConfig().then(loaded => {
+        if (loaded) {
+          beginChatIdentity(loaded);
+        }
+      });
     }
 
     // Chat signup can wait a tick so the player chunk and HLS playlist get
-    // the first network slot on a live open.
+    // the first network slot on a live open. A saved token still restores
+    // immediately. The entry card holds registration until a name is typed.
     const chatAuthTimer = window.setTimeout(() => {
-      handleUserRegistration(getDisplayNameFromQuery(window.location.search));
+      if (hasHydratedConfig) {
+        beginChatIdentity(config);
+      }
     }, 0);
 
     if (hasHydratedStatus) {
@@ -469,6 +516,15 @@ export const ClientConfigStore: FC = () => {
       clearInterval(clientConfigRefreshPoll);
     };
   }, []);
+
+  useEffect(() => {
+    setSubmitEntryName({
+      submit: (name: string) => submitEntryNameRef.current(name),
+    });
+    return () => {
+      setSubmitEntryName(null);
+    };
+  }, [setSubmitEntryName]);
 
   useEffect(() => {
     if (clientConfig.chatDisabled) {

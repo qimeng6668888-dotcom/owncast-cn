@@ -33,6 +33,10 @@ func (s *ServerInterfaceImpl) Handler() http.Handler {
 	r.Post("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.SetSharePreview))
 	r.Options("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.SetSharePreview))
 	r.Delete("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.ResetSharePreview))
+	r.Post("/admin/config/chat/entrygate", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGate))
+	r.Options("/admin/config/chat/entrygate", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGate))
+	r.Post("/admin/config/chat/entrygate/crest", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGateCrest))
+	r.Options("/admin/config/chat/entrygate/crest", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGateCrest))
 	return generated.HandlerFromMux(s, r)
 }
 

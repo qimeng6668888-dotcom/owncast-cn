@@ -67,4 +67,12 @@ const (
 	faviconPathKey                       = "favicon_path"
 	sharePreviewPathKey                  = "share_preview_path"
 	sharePreviewUniquenessKey            = "share_preview_uniqueness"
+	entryGateEnabledKey                  = "entry_gate_enabled"
+	entryGateTitleKey                    = "entry_gate_title"
+	entryGateBodyKey                     = "entry_gate_body"
+	entryGatePlaceholderKey              = "entry_gate_placeholder"
+	entryGateButtonKey                   = "entry_gate_button"
+	entryGateFooterKey                   = "entry_gate_footer"
+	entryGateCrestPathKey                = "entry_gate_crest_path"
+	entryGateCrestUniquenessKey          = "entry_gate_crest_uniqueness"
 )

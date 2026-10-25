@@ -26,6 +26,7 @@ import { Theme } from '../../theme/Theme';
 import styles from './Main.module.scss';
 import { PushNotificationServiceWorker } from '../../workers/PushNotificationServiceWorker/PushNotificationServiceWorker';
 import { Noscript } from '../../ui/Noscript/Noscript';
+import { EntryNameGate } from '../../modals/EntryNameGate/EntryNameGate';
 import { Localization } from '../../../types/localization';
 import { translated } from '../../../utils/playerLanguage';
 
@@ -141,6 +142,7 @@ export const Main: FC = () => {
           <FatalErrorStateModal title={fatalError.title} message={fatalError.message} />
         )}
       </Layout>
+      <EntryNameGate />
       <Noscript />
     </>
   );
