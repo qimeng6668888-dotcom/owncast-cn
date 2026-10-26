@@ -78,8 +78,8 @@ export const EntryNameCard: FC<EntryNameCardProps> = ({
         </span>
         <input
           lang="zh-CN"
-          name="real-name"
-          autoComplete="name"
+          name="entry-display-name"
+          autoComplete="off"
           enterKeyHint="done"
           maxLength={30}
           placeholder={placeholder}

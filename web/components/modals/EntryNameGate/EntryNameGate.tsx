@@ -39,22 +39,14 @@ export const EntryNameGate: FC = () => {
   const gate = entryGateWithDefaults(clientConfig.entryGate);
 
   useEffect(() => {
+    // Only an explicit ?displayname= link may prefill. A saved chat nickname
+    // is often an old English phrase, and must not appear in the box.
     const fromLink = getDisplayNameFromQuery(window.location.search);
-    const remembered = getLocalStorage(ENTRY_NAME_KEY);
     if (fromLink) {
       setName(fromLink);
-    } else if (remembered) {
-      setName(remembered);
     }
     setReady(true);
   }, []);
-
-  useEffect(() => {
-    if (!currentUser?.displayName) {
-      return;
-    }
-    setName(current => current || currentUser.displayName);
-  }, [currentUser]);
 
   useEffect(() => {
     if (!pendingName || currentUser?.displayName !== pendingName) {
