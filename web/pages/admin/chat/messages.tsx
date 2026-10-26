@@ -1,5 +1,5 @@
-import { useState, useEffect, ReactElement } from 'react';
-import { Table, Typography, Button } from 'antd';
+import { useState, useEffect, useContext, ReactElement } from 'react';
+import { Table, Typography, Button, Switch, Modal } from 'antd';
 import classNames from 'classnames';
 import { ColumnsType } from 'antd/es/table';
 import { format } from 'date-fns';
@@ -13,6 +13,8 @@ import {
   FETCH_INTERVAL,
   UPDATE_CHAT_MESSGAE_VIZ,
 } from '../../../utils/apis';
+import { postConfigUpdateToAPI } from '../../../utils/config-constants';
+import { ServerStatusContext } from '../../../utils/server-status-context';
 import { isEmptyObject } from '../../../utils/format';
 import { MessageVisiblityToggle } from '../../../components/admin/MessageVisiblityToggle';
 import { UserPopover } from '../../../components/admin/UserPopover';
@@ -63,6 +65,9 @@ export default function Chat() {
   const [bulkOutcome, setBulkOutcome] = useState(null);
   const [bulkAction, setBulkAction] = useState('');
   const { t } = useTranslation();
+  const { serverConfig, setFieldInConfigState } = useContext(ServerStatusContext);
+  const [muted, setMuted] = useState(!!serverConfig?.chatMuted);
+  const [muteSaving, setMuteSaving] = useState(false);
   let outcomeTimeout = null;
   let chatReloadInterval = null;
 
@@ -78,6 +83,10 @@ export default function Chat() {
       console.log('==== error', error);
     }
   };
+
+  useEffect(() => {
+    setMuted(!!serverConfig?.chatMuted);
+  }, [serverConfig?.chatMuted]);
 
   useEffect(() => {
     getInfo();
@@ -153,6 +162,58 @@ export default function Chat() {
     handleSubmitBulk(false);
   };
 
+  const toggleMute = (checked: boolean) => {
+    setMuteSaving(true);
+    postConfigUpdateToAPI({
+      apiPath: '/chat/muted',
+      data: { value: checked },
+      onSuccess: () => {
+        setMuted(checked);
+        setFieldInConfigState?.({ fieldName: 'chatMuted', value: checked });
+        setMuteSaving(false);
+      },
+      onError: () => {
+        setMuteSaving(false);
+      },
+    });
+  };
+
+  const banSelectedUsers = () => {
+    const selected = messages.filter(message => selectedRowKeys.includes(message.id));
+    const users = new Map<string, string>();
+    selected.forEach(message => {
+      const user = message.user;
+      if (!user?.id || user.scopes?.includes('MODERATOR')) {
+        return;
+      }
+      users.set(user.id, user.displayName);
+    });
+    const names = [...users.values()];
+    if (!names.length) {
+      Modal.warning({ title: '没有可封禁的观众', content: '主持人和管理员不会被封禁。' });
+      return;
+    }
+    Modal.confirm({
+      title: `封禁这 ${names.length} 位观众？`,
+      content: `${names.join('、')} 会被移出聊天，消息会被隐藏。不会封 IP。`,
+      okText: '封禁',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        const result = await fetchData('/api/admin/chat/users/ban', {
+          auth: true,
+          method: 'POST',
+          data: { userIds: [...users.keys()] },
+        });
+        if (!result?.success) {
+          throw new Error(result?.message || '封禁失败');
+        }
+        setSelectedRows([]);
+        await getInfo();
+      },
+    });
+  };
+
   const chatColumns: ColumnsType<MessageType> = [
     {
       title: t('Time'),
@@ -223,6 +284,11 @@ export default function Chat() {
     <div className="chat-messages">
       <Title>{t('Chat Messages')}</Title>
       <p>{t('Manage the messages from viewers that show up on your stream.')}</p>
+      <div className={bulkDivClasses} style={{ marginBottom: 12 }}>
+        <span className="label">全员禁言</span>
+        <Switch checked={muted} loading={muteSaving} onChange={toggleMute} />
+        <span className="label">观众不能发言，主持人和管理员可以。</span>
+      </div>
       <div className={bulkDivClasses}>
         <span className="label">
           {t('Check multiple messages to change their visibility to:')}{' '}
@@ -251,6 +317,16 @@ export default function Chat() {
           onClick={handleSubmitBulkHide}
         >
           {t('Hide')}
+        </Button>
+        <Button
+          danger
+          size="small"
+          shape="round"
+          className="button"
+          disabled={!selectedRowKeys.length}
+          onClick={banSelectedUsers}
+        >
+          封禁
         </Button>
       </div>
       <Table

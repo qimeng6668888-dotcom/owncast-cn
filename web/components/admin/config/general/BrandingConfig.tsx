@@ -22,6 +22,7 @@ import {
   readableBytes,
 } from '../../../../utils/images';
 import { appearanceWithBrand, isBrandHex, readBrandColors } from '../../../../utils/branding';
+import { PageFigureConfig } from './PageFigureConfig';
 import { translated } from '../../../../utils/playerLanguage';
 
 const { Title, Paragraph } = Typography;
@@ -342,6 +343,8 @@ export default function BrandingConfig() {
           <p className="field-tip">{label.extraPageTip}</p>
         </div>
       </div>
+
+      <PageFigureConfig />
 
       <div className="formfield-container logo-upload-container">
         <div className="label-side">

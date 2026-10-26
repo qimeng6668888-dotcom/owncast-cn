@@ -394,6 +394,12 @@ export const ClientConfigStore: FC = () => {
       case MessageType.CHAT_ACTION:
         setChatMessages(currentState => [...currentState, message as ChatEvent]);
         break;
+      case MessageType.CHAT_MUTE:
+        setClientConfig(current => ({
+          ...current,
+          chatMuted: !!(message as { muted?: boolean }).muted,
+        }));
+        break;
       case MessageType.FEDIVERSE_ENGAGEMENT_FOLLOW:
         setChatMessages(currentState => [...currentState, message as unknown as ChatMessage]);
         break;

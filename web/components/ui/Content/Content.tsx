@@ -123,7 +123,9 @@ export const Content: FC = () => {
     externalActions,
     offlineMessage,
     chatDisabled,
+    chatMuted,
     chatRequireAuthentication,
+    pageFigure,
     federation,
     notifications,
     pluginTabs,
@@ -239,13 +241,17 @@ export const Content: FC = () => {
 
   // Determine if chat input should be enabled based on authentication requirements.
   // Moderators bypass the authentication requirement.
+  const viewerMuted = !!chatMuted && !currentUser?.isModerator;
   const chatInputEnabled = !!(
     isChatAvailable &&
+    !viewerMuted &&
     (!chatRequireAuthentication || isUserAuthenticated || currentUser?.isModerator)
   );
-  const chatInputDisabledMessage = chatRequireAuthentication
-    ? t(Localization.Frontend.Chat.authenticateToChat)
-    : t(Localization.Frontend.chatDisabled);
+  const chatInputDisabledMessage = viewerMuted
+    ? '全员禁言中'
+    : chatRequireAuthentication
+      ? t(Localization.Frontend.Chat.authenticateToChat)
+      : t(Localization.Frontend.chatDisabled);
 
   return (
     <div className={styles.main}>
@@ -344,6 +350,7 @@ export const Content: FC = () => {
               name={name}
               summary={summary}
               extraPageContent={extraPageContent}
+              pageFigure={pageFigure}
               pluginTabs={pluginTabs}
               setShowFollowModal={setShowFollowModal}
               showFollowersTab={showFollowersTab}
@@ -357,6 +364,7 @@ export const Content: FC = () => {
                 name={name}
                 summary={summary}
                 extraPageContent={extraPageContent}
+                pageFigure={pageFigure}
                 pluginTabs={pluginTabs}
                 setShowFollowModal={setShowFollowModal}
                 showFollowersTab={showFollowersTab}

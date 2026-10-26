@@ -32,6 +32,7 @@ export interface ConfigInstanceDetailsFields {
   customStyles: string;
   customJavascript: string;
   extraPageContent: string;
+  pageFigure?: PageFigureFields;
   logo: string;
   sharePreview: string;
   name: string;
@@ -151,6 +152,12 @@ export interface StreamKey {
   comment: string;
 }
 
+export interface PageFigureFields {
+  title: string;
+  body: string;
+  image?: string;
+}
+
 export interface EntryGateFields {
   enabled: boolean;
   title: string;
@@ -182,6 +189,7 @@ export interface ConfigDetails {
   forbiddenUsernames: string[];
   suggestedUsernames: string[];
   chatDisabled: boolean;
+  chatMuted: boolean;
   chatSpamProtectionEnabled: boolean;
   chatSlurFilterEnabled: boolean;
   chatRequireAuthentication: boolean;

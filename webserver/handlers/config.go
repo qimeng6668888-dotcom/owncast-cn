@@ -50,9 +50,11 @@ type webConfigResponse struct {
 	MaxSocketPayloadSize       int                          `json:"maxSocketPayloadSize"`
 	HideViewerCount            bool                         `json:"hideViewerCount"`
 	ChatDisabled               bool                         `json:"chatDisabled"`
+	ChatMuted                  bool                         `json:"chatMuted"`
 	ChatSpamProtectionDisabled bool                         `json:"chatSpamProtectionDisabled"`
 	ChatRequireAuthentication  bool                         `json:"chatRequireAuthentication"`
 	EntryGate                  models.EntryGate             `json:"entryGate"`
+	PageFigure                 models.PageFigure            `json:"pageFigure"`
 	NSFW                       bool                         `json:"nsfw"`
 	Autoplay                   models.AutoplayMode          `json:"autoplay"`
 	Authentication             authenticationConfigResponse `json:"authentication"`
@@ -172,9 +174,11 @@ func (h *Handlers) getConfigResponse(r *http.Request) webConfigResponse {
 		StreamTitle:                configRepository.GetStreamTitle(),
 		SocialHandles:              socialHandles,
 		ChatDisabled:               configRepository.GetChatDisabled(),
+		ChatMuted:                  configRepository.GetChatMuted(),
 		ChatSpamProtectionDisabled: configRepository.GetChatSpamProtectionEnabled(),
 		ChatRequireAuthentication:  configRepository.GetChatRequireAuthentication(),
 		EntryGate:                  configRepository.GetEntryGate().Public(),
+		PageFigure:                 configRepository.GetPageFigure().Public(),
 		ExternalActions:            mergePluginActions(configRepository.GetExternalActions(), h.pluginActions),
 		PluginTabs:                 pluginTabsOrEmpty(r, h.pluginTabs),
 		CustomStyles:               configRepository.GetCustomStyles(),

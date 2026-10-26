@@ -145,6 +145,11 @@ type ConfigRepository interface {
 	GetEntryGate() models.EntryGate
 	SetEntryGate(gate models.EntryGate) error
 	SetEntryGateCrest(path, uniqueness string) error
+	GetChatMuted() bool
+	SetChatMuted(muted bool) error
+	GetPageFigure() models.PageFigure
+	SetPageFigure(figure models.PageFigure) error
+	SetPageFigureImage(path, uniqueness string) error
 }
 
 // temporaryGlobalInstance is set once during application startup so

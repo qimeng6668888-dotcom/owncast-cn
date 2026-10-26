@@ -168,6 +168,12 @@ func (s *Service) userMessageSent(eventData chatClientEvent) {
 		return
 	}
 
+	// Mute-all blocks viewers immediately. Moderators, including the host, can still speak.
+	if s.configRepository.GetChatMuted() && !event.User.IsModerator() {
+		s.sendActionToClient(eventData.client, "全员禁言中。")
+		return
+	}
+
 	// Run inbound-message filters (plugin filterChatMessage handlers) before
 	// broadcast. A filter may rewrite event.Body in place or drop the message.
 	if s.events != nil && !s.events.ApplyFilters(context.Background(), dispatcher.Event{Type: models.MessageSent, Payload: &event}) {

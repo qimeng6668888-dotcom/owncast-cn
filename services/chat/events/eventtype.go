@@ -34,6 +34,8 @@ const (
 	ConnectedUserInfo EventType = "CONNECTED_USER_INFO"
 	// ChatActionSent is a generic chat action that can be used for anything that doesn't need specific handling or formatting.
 	ChatActionSent EventType = "CHAT_ACTION"
+	// ChatMuted is broadcast when the operator toggles mute-all.
+	ChatMuted EventType = "CHAT_MUTE"
 	// ErrorNeedsRegistration is an error returned when the client needs to perform registration.
 	ErrorNeedsRegistration EventType = "ERROR_NEEDS_REGISTRATION" // nolint:gosec
 	// ErrorMaxConnectionsExceeded is an error returned when the server determined it should not handle more connections.

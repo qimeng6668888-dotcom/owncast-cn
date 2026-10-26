@@ -5,18 +5,20 @@ import type { TabsProps } from 'antd';
 import { useTranslation } from 'next-export-i18n';
 import { ErrorBoundary } from 'react-error-boundary';
 import classNames from 'classnames';
-import { PluginTab } from '../../../interfaces/client-config.model';
+import { PageFigureConfig, PluginTab } from '../../../interfaces/client-config.model';
 import { Localization } from '../../../types/localization';
 import styles from './Content.module.scss';
 import { CustomPageContent } from '../CustomPageContent/CustomPageContent';
 import { PluginTabFrame } from '../PluginTabFrame/PluginTabFrame';
 import { ContentHeader } from '../../common/ContentHeader/ContentHeader';
+import { PageFigure } from '../PageFigure/PageFigure';
 import { ComponentError } from '../ComponentError/ComponentError';
 
 export type MobileContentProps = {
   name: string;
   summary: string;
   extraPageContent: string;
+  pageFigure?: PageFigureConfig;
   pluginTabs: PluginTab[];
   setShowFollowModal: (show: boolean) => void;
   showFollowersTab: boolean;
@@ -61,6 +63,7 @@ export const MobileContent: FC<MobileContentProps> = ({
   name,
   summary,
   extraPageContent,
+  pageFigure,
   pluginTabs,
   setShowFollowModal,
   showFollowersTab,
@@ -79,6 +82,7 @@ export const MobileContent: FC<MobileContentProps> = ({
           <CustomPageContent content={extraPageContent} />
         </div>
       )}
+      <PageFigure figure={pageFigure} />
     </>
   );
   const followersTabContent = (

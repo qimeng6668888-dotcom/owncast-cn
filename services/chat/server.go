@@ -376,6 +376,14 @@ func (s *Service) HandleClientConnection(w http.ResponseWriter, r *http.Request)
 	s.Addclient(conn, user, accessToken, userAgent, ipAddress)
 }
 
+// BroadcastChatMuted tells every connected client the mute-all switch changed.
+func (s *Service) BroadcastChatMuted(muted bool) {
+	_ = s.Broadcast(events.EventPayload{
+		"type":  events.ChatMuted,
+		"muted": muted,
+	})
+}
+
 // Broadcast sends message to all connected clients.
 func (s *Service) Broadcast(payload events.EventPayload) error {
 	data, err := json.Marshal(payload)

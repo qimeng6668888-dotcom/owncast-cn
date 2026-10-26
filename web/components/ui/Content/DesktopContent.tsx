@@ -2,17 +2,19 @@ import { ComponentType, FC } from 'react';
 import dynamic from 'next/dynamic';
 import { TabsProps } from 'antd';
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary';
-import { PluginTab } from '../../../interfaces/client-config.model';
+import { PageFigureConfig, PluginTab } from '../../../interfaces/client-config.model';
 import styles from './Content.module.scss';
 import { CustomPageContent } from '../CustomPageContent/CustomPageContent';
 import { PluginTabFrame } from '../PluginTabFrame/PluginTabFrame';
 import { ContentHeader } from '../../common/ContentHeader/ContentHeader';
+import { PageFigure } from '../PageFigure/PageFigure';
 import { ComponentError } from '../ComponentError/ComponentError';
 
 export type DesktopContentProps = {
   name: string;
   summary: string;
   extraPageContent: string;
+  pageFigure?: PageFigureConfig;
   pluginTabs: PluginTab[];
   setShowFollowModal: (show: boolean) => void;
   showFollowersTab: boolean;
@@ -44,6 +46,7 @@ export const DesktopContent: FC<DesktopContentProps> = ({
   name,
   summary,
   extraPageContent,
+  pageFigure,
   pluginTabs,
   setShowFollowModal,
   showFollowersTab,
@@ -51,9 +54,14 @@ export const DesktopContent: FC<DesktopContentProps> = ({
   logo = '/logo',
 }) => {
   const aboutTabContent = (
-    <div className={styles.bottomPageContentContainer}>
-      <CustomPageContent content={extraPageContent} />
-    </div>
+    <>
+      {!!extraPageContent && (
+        <div className={styles.bottomPageContentContainer}>
+          <CustomPageContent content={extraPageContent} />
+        </div>
+      )}
+      <PageFigure figure={pageFigure} />
+    </>
   );
 
   const followersTabContent = (
@@ -69,7 +77,7 @@ export const DesktopContent: FC<DesktopContentProps> = ({
   );
 
   const items: NonNullable<TabsProps['items']> = [];
-  if (extraPageContent) {
+  if (extraPageContent || pageFigure?.title || pageFigure?.body || pageFigure?.image) {
     items.push({ label: 'About', key: '2', children: aboutTabContent });
   }
   if (showFollowersTab) {
@@ -121,7 +129,11 @@ export const DesktopContent: FC<DesktopContentProps> = ({
         {items.length > 1 ? (
           <Tabs defaultActiveKey="0" items={items} />
         ) : (
-          !!extraPageContent && aboutTabContent
+          (!!extraPageContent ||
+            !!pageFigure?.title ||
+            !!pageFigure?.body ||
+            !!pageFigure?.image) &&
+          aboutTabContent
         )}
       </div>
     </ErrorBoundary>

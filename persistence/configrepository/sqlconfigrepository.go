@@ -1180,3 +1180,47 @@ func (r *SqlConfigRepository) SetEntryGateCrest(path, uniqueness string) error {
 	}
 	return r.datastore.SetString(entryGateCrestUniquenessKey, uniqueness)
 }
+
+// GetChatMuted reports whether viewers are muted. Moderators can still speak.
+func (r *SqlConfigRepository) GetChatMuted() bool {
+	muted, err := r.datastore.GetBool(chatMutedKey)
+	if err != nil {
+		return false
+	}
+	return muted
+}
+
+// SetChatMuted stores the live mute-all switch.
+func (r *SqlConfigRepository) SetChatMuted(muted bool) error {
+	return r.datastore.SetBool(chatMutedKey, muted)
+}
+
+// GetPageFigure returns the poster under the page body.
+func (r *SqlConfigRepository) GetPageFigure() models.PageFigure {
+	title, _ := r.datastore.GetString(pageFigureTitleKey)
+	body, _ := r.datastore.GetString(pageFigureBodyKey)
+	imagePath, _ := r.datastore.GetString(pageFigureImagePathKey)
+	uniqueness, _ := r.datastore.GetString(pageFigureImageUniquenessKey)
+	return models.PageFigure{
+		Title:           title,
+		Body:            body,
+		ImagePath:       imagePath,
+		ImageUniqueness: uniqueness,
+	}
+}
+
+// SetPageFigure stores the poster title and description. The image file is separate.
+func (r *SqlConfigRepository) SetPageFigure(figure models.PageFigure) error {
+	if err := r.datastore.SetString(pageFigureTitleKey, figure.Title); err != nil {
+		return err
+	}
+	return r.datastore.SetString(pageFigureBodyKey, figure.Body)
+}
+
+// SetPageFigureImage stores the poster filename and a cache-busting token.
+func (r *SqlConfigRepository) SetPageFigureImage(path, uniqueness string) error {
+	if err := r.datastore.SetString(pageFigureImagePathKey, path); err != nil {
+		return err
+	}
+	return r.datastore.SetString(pageFigureImageUniquenessKey, uniqueness)
+}

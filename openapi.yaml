@@ -4210,6 +4210,11 @@ components:
           description: Whether users must authenticate before sending chat messages
         entryGate:
           $ref: '#/components/schemas/EntryGate'
+        chatMuted:
+          type: boolean
+          description: When true, viewers cannot send chat. Moderators still can.
+        pageFigure:
+          $ref: '#/components/schemas/PageFigure'
         nsfw:
           type: boolean
         autoplay:
@@ -4291,6 +4296,16 @@ components:
         footer:
           type: string
         crest:
+          type: string
+    PageFigure:
+      type: object
+      description: Title, description, and image shown under the page body.
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        image:
           type: string
     YPDetails:
       type: object
@@ -4879,6 +4894,9 @@ components:
           type: boolean
         entryGate:
           $ref: '#/components/schemas/EntryGate'
+        chatMuted:
+          type: boolean
+          description: When true, viewers cannot send chat. Moderators still can.
         disableSearchIndexing:
           type: boolean
         streamKeyOverridden:

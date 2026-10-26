@@ -40,6 +40,7 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 			Summary:             configRepository.GetServerSummary(),
 			Tags:                configRepository.GetServerMetadataTags(),
 			ExtraPageContent:    configRepository.GetExtraPageBodyContent(),
+			PageFigure:          configRepository.GetPageFigure().Public(),
 			StreamTitle:         configRepository.GetStreamTitle(),
 			WelcomeMessage:      configRepository.GetServerWelcomeMessage(),
 			OfflineMessage:      configRepository.GetCustomOfflineMessage(),
@@ -61,6 +62,7 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 		RTMPServerPort:            configRepository.GetRTMPPortNumber(),
 		RTMPServerAddress:         configRepository.GetRTMPBindAddress(),
 		ChatDisabled:              configRepository.GetChatDisabled(),
+		ChatMuted:                 configRepository.GetChatMuted(),
 		ChatJoinMessagesEnabled:   configRepository.GetChatJoinPartMessagesEnabled(),
 		SocketHostOverride:        configRepository.GetWebsocketOverrideHost(),
 		VideoServingEndpoint:      configRepository.GetVideoServingEndpoint(),
@@ -148,6 +150,7 @@ type serverConfigAdminResponse struct {
 	RTMPServerAddress         string                      `json:"rtmpServerAddress"`
 	WebServerPort             int                         `json:"webServerPort"`
 	ChatDisabled              bool                        `json:"chatDisabled"`
+	ChatMuted                 bool                        `json:"chatMuted"`
 	ChatJoinMessagesEnabled   bool                        `json:"chatJoinMessagesEnabled"`
 	ChatEstablishedUserMode   bool                        `json:"chatEstablishedUserMode"`
 	ChatSpamProtectionEnabled bool                        `json:"chatSpamProtectionEnabled"`
@@ -173,6 +176,7 @@ type webConfigResponse struct {
 	SharePreview        string                `json:"sharePreview"`
 	Name                string                `json:"name"`
 	ExtraPageContent    string                `json:"extraPageContent"`
+	PageFigure          models.PageFigure     `json:"pageFigure"`
 	StreamTitle         string                `json:"streamTitle"` // What's going on with the current stream
 	CustomStyles        string                `json:"customStyles"`
 	CustomJavascript    string                `json:"customJavascript"`

@@ -75,4 +75,9 @@ const (
 	entryGateFooterKey                   = "entry_gate_footer"
 	entryGateCrestPathKey                = "entry_gate_crest_path"
 	entryGateCrestUniquenessKey          = "entry_gate_crest_uniqueness"
+	chatMutedKey                         = "chat_muted"
+	pageFigureTitleKey                   = "page_figure_title"
+	pageFigureBodyKey                    = "page_figure_body"
+	pageFigureImagePathKey               = "page_figure_image_path"
+	pageFigureImageUniquenessKey         = "page_figure_image_uniqueness"
 )
