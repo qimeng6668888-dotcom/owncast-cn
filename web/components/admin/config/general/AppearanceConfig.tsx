@@ -13,6 +13,7 @@ import {
 } from '../../../../utils/input-statuses';
 import { Localization } from '../../../../types/localization';
 import { ServerStatusContext } from '../../../../utils/server-status-context';
+import { useAdminText } from '../../../../utils/adminText';
 import { FormStatusIndicator } from '../../FormStatusIndicator';
 
 const { Panel } = Collapse;
@@ -95,18 +96,19 @@ const ColorPicker = React.memo(
     onChange: (name: string, value: string, description: string) => void;
   }) => {
     const { t } = useTranslation();
+    const tx = useAdminText();
     return (
       <Col span={3} key={name}>
         <input
           type="color"
           id={name}
           name={description}
-          title={description}
+          title={tx(description)}
           value={value}
           className={s.colorPicker}
           onChange={e => onChange(name, e.target.value, description)}
         />
-        <div style={{ padding: '2px' }}>{description}</div>
+        <div style={{ padding: '2px' }}>{tx(description)}</div>
         {alsoSetBy && alsoSetBy.length > 0 && (
           <Tooltip
             title={t(Localization.Admin.Appearance.alsoSetByPluginTooltip, {
@@ -145,6 +147,7 @@ const ColorCollection: FC<ColorCollectionProps> = ({ variables, overrides, updat
 // eslint-disable-next-line react/function-component-definition
 export default function Appearance() {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig, setFieldInConfigState } = serverStatusData;
   const { instanceDetails, styleContributors = [] } = serverConfig;
@@ -280,8 +283,8 @@ export default function Appearance() {
   return (
     <>
       <Space direction="vertical">
-        <Title>Customize Appearance</Title>
-        <Paragraph>The following colors are used across the user interface.</Paragraph>
+        <Title>{tx('Customize Appearance')}</Title>
+        <Paragraph>{tx('The following colors are used across the user interface.')}</Paragraph>
         {styleContributors.length > 0 && (
           <Alert
             type="info"
@@ -294,10 +297,11 @@ export default function Appearance() {
         )}
         <div>
           <Collapse defaultActiveKey={['1']}>
-            <Panel header={<strong>Section Colors</strong>} key="1">
+            <Panel header={<strong>{tx('Section Colors')}</strong>} key="1">
               <p>
-                Certain sections of the interface can be customized by selecting new colors for
-                them.
+                {tx(
+                  'Certain sections of the interface can be customized by selecting new colors for them.',
+                )}
               </p>
               <Row gutter={[16, 16]}>
                 <ColorCollection
@@ -307,7 +311,7 @@ export default function Appearance() {
                 />
               </Row>
             </Panel>
-            <Panel header={<strong>Chat User Colors</strong>} key="2">
+            <Panel header={<strong>{tx('Chat User Colors')}</strong>} key="2">
               <Row gutter={[16, 16]}>
                 <ColorCollection
                   variables={transformToColorMap(chatColorVariables)}
@@ -316,8 +320,8 @@ export default function Appearance() {
                 />
               </Row>
             </Panel>
-            <Panel header={<strong>Other Settings</strong>} key="4">
-              How rounded should corners be?
+            <Panel header={<strong>{tx('Other Settings')}</strong>} key="4">
+              {tx('How rounded should corners be?')}
               <Row gutter={[16, 16]}>
                 <Col span={12}>
                   <Slider

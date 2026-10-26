@@ -63,13 +63,3 @@ $vert-spacing: 0.75rem;
     margin: $vert-spacing 0;
   }
 }
-
-.tagList {
-  color: var(--theme-color-palette-10);
-
-  span {
-    display: inline-block;
-    margin-right: 0.5rem;
-    font-weight: 400;
-  }
-}

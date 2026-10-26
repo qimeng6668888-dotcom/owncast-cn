@@ -15,6 +15,7 @@ import (
 	"github.com/teris-io/shortid"
 
 	"github.com/owncast/owncast/models"
+	"github.com/owncast/owncast/static"
 	"github.com/owncast/owncast/utils"
 	"github.com/owncast/owncast/webserver/handlers/generated"
 	webutils "github.com/owncast/owncast/webserver/utils"
@@ -246,36 +247,50 @@ func (a *Admin) SetLogo(w http.ResponseWriter, r *http.Request) {
 		webutils.WriteSimpleResponse(w, false, "unable to find image data")
 		return
 	}
-	bytes, extension, err := utils.DecodeBase64Image(value)
-	if err != nil {
+
+	if err := a.saveLogo(value); err != nil {
 		webutils.WriteSimpleResponse(w, false, err.Error())
 		return
+	}
+
+	if err := a.configRepository.SetLogoUniquenessString(shortid.MustGenerate()); err != nil {
+		log.Error("Error saving logo uniqueness string: ", err)
+	}
+
+	// Update Fediverse followers about this change. Nil in unit tests that
+	// only exercise the logo file.
+	if a.activitypub != nil {
+		if err := a.activitypub.UpdateFollowersWithAccountUpdates(); err != nil {
+			webutils.WriteSimpleResponse(w, false, err.Error())
+			return
+		}
+	}
+
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+// saveLogo writes an uploaded logo, or restores the built-in logo when value
+// is empty (the admin "delete logo" action).
+func (a *Admin) saveLogo(value string) error {
+	if strings.TrimSpace(value) == "" {
+		logo := static.GetLogo()
+		if err := os.WriteFile(filepath.Join("data", "logo.png"), logo, 0o600); err != nil {
+			return err
+		}
+		return a.configRepository.SetLogoPath("logo.png")
+	}
+
+	bytes, extension, err := utils.DecodeBase64Image(value)
+	if err != nil {
+		return err
 	}
 
 	imgPath := filepath.Join("data", "logo"+extension)
 	if err := os.WriteFile(imgPath, bytes, 0o600); err != nil {
-		webutils.WriteSimpleResponse(w, false, err.Error())
-		return
+		return err
 	}
 
-	configRepository := a.configRepository
-
-	if err := configRepository.SetLogoPath("logo" + extension); err != nil {
-		webutils.WriteSimpleResponse(w, false, err.Error())
-		return
-	}
-
-	if err := configRepository.SetLogoUniquenessString(shortid.MustGenerate()); err != nil {
-		log.Error("Error saving logo uniqueness string: ", err)
-	}
-
-	// Update Fediverse followers about this change.
-	if err := a.activitypub.UpdateFollowersWithAccountUpdates(); err != nil {
-		webutils.WriteSimpleResponse(w, false, err.Error())
-		return
-	}
-
-	webutils.WriteSimpleResponse(w, true, "changed")
+	return a.configRepository.SetLogoPath("logo" + extension)
 }
 
 // SetFavicon will handle a new favicon image being set via base64 data.
@@ -364,6 +379,101 @@ func (a *Admin) ResetFavicon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	webutils.WriteSimpleResponse(w, true, "favicon reset to default")
+}
+
+const maxSharePreviewSize = 2 * 1024 * 1024
+
+// SetSharePreview stores an uploaded Open Graph / WeChat share image.
+func (a *Admin) SetSharePreview(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, 3*1024*1024)
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		return
+	}
+
+	value, ok := configValue.Value.(string)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to find image data")
+		return
+	}
+
+	if strings.TrimSpace(value) == "" {
+		a.resetSharePreview()
+		webutils.WriteSimpleResponse(w, true, "changed")
+		return
+	}
+
+	imageBytes, extension, err := utils.DecodeBase64Image(value)
+	if err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	if extension != ".png" && extension != ".jpeg" && extension != ".gif" {
+		webutils.WriteSimpleResponse(w, false, "share preview must be PNG, JPEG, or GIF")
+		return
+	}
+
+	if len(imageBytes) > maxSharePreviewSize {
+		webutils.WriteSimpleResponse(w, false, "file too large, max 2MB")
+		return
+	}
+
+	a.removeSharePreviewFiles()
+
+	filename := "share-preview" + extension
+	if err := os.WriteFile(filepath.Join("data", filename), imageBytes, 0o600); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	if err := a.configRepository.SetSharePreviewPath(filename); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	if err := a.configRepository.SetSharePreviewUniquenessString(shortid.MustGenerate()); err != nil {
+		log.Error("Error saving share preview uniqueness string: ", err)
+	}
+
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+// ResetSharePreview removes the custom Open Graph / WeChat share image.
+func (a *Admin) ResetSharePreview(w http.ResponseWriter, r *http.Request) {
+	a.resetSharePreview()
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+func (a *Admin) resetSharePreview() {
+	a.removeSharePreviewFiles()
+	if err := a.configRepository.SetSharePreviewPath(""); err != nil {
+		log.Debugln("error clearing share preview path:", err)
+	}
+	if err := a.configRepository.SetSharePreviewUniquenessString(""); err != nil {
+		log.Debugln("error clearing share preview uniqueness:", err)
+	}
+}
+
+func (a *Admin) removeSharePreviewFiles() {
+	current := a.configRepository.GetSharePreviewPath()
+	if current != "" {
+		if err := os.Remove(filepath.Join("data", current)); err != nil && !os.IsNotExist(err) {
+			log.Debugln("error removing share preview file:", err)
+		}
+	}
+
+	for _, ext := range []string{".png", ".jpeg", ".jpg", ".gif"} {
+		path := filepath.Join("data", "share-preview"+ext)
+		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+			log.Debugln("error removing share preview file:", err)
+		}
+	}
 }
 
 // SetNSFW will handle the web config request to set the NSFW flag.

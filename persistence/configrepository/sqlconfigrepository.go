@@ -139,6 +139,38 @@ func (r *SqlConfigRepository) SetFaviconPath(favicon string) error {
 	return r.datastore.SetString(faviconPathKey, favicon)
 }
 
+// GetSharePreviewPath returns the share/OG preview image filename in the data directory.
+func (r *SqlConfigRepository) GetSharePreviewPath() string {
+	path, err := r.datastore.GetString(sharePreviewPathKey)
+	if err != nil {
+		log.Traceln(sharePreviewPathKey, err)
+		return ""
+	}
+
+	return path
+}
+
+// SetSharePreviewPath stores the share/OG preview image filename in the data directory.
+func (r *SqlConfigRepository) SetSharePreviewPath(path string) error {
+	return r.datastore.SetString(sharePreviewPathKey, path)
+}
+
+// GetSharePreviewUniquenessString returns the cache-busting string for the share preview image.
+func (r *SqlConfigRepository) GetSharePreviewUniquenessString() string {
+	uniqueness, err := r.datastore.GetString(sharePreviewUniquenessKey)
+	if err != nil {
+		log.Traceln(sharePreviewUniquenessKey, err)
+		return ""
+	}
+
+	return uniqueness
+}
+
+// SetSharePreviewUniquenessString stores the cache-busting string for the share preview image.
+func (r *SqlConfigRepository) SetSharePreviewUniquenessString(uniqueness string) error {
+	return r.datastore.SetString(sharePreviewUniquenessKey, uniqueness)
+}
+
 // GetServerSummary will return the server summary text.
 func (r *SqlConfigRepository) GetServerSummary() string {
 	summary, err := r.datastore.GetString(serverSummaryKey)
@@ -1088,4 +1120,107 @@ func (r *SqlConfigRepository) GetVideoServingEndpoint() string {
 // SetVideoServingEndpoint sets the custom video endpoint.
 func (r *SqlConfigRepository) SetVideoServingEndpoint(message string) error {
 	return r.datastore.SetString(videoServingEndpointKey, message)
+}
+
+func (r *SqlConfigRepository) entryGateText(key, fallback string) string {
+	value, err := r.datastore.GetString(key)
+	if err != nil || strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
+}
+
+// GetEntryGate returns the viewer entry card. A missing switch defaults to on.
+func (r *SqlConfigRepository) GetEntryGate() models.EntryGate {
+	enabled := true
+	if value, err := r.datastore.GetBool(entryGateEnabledKey); err == nil {
+		enabled = value
+	}
+	crestPath, _ := r.datastore.GetString(entryGateCrestPathKey)
+	crestUniqueness, _ := r.datastore.GetString(entryGateCrestUniquenessKey)
+	return models.EntryGate{
+		Enabled:         enabled,
+		Title:           r.entryGateText(entryGateTitleKey, models.DefaultEntryGateTitle),
+		Body:            r.entryGateText(entryGateBodyKey, models.DefaultEntryGateBody),
+		Placeholder:     r.entryGateText(entryGatePlaceholderKey, models.DefaultEntryGatePlaceholder),
+		Button:          r.entryGateText(entryGateButtonKey, models.DefaultEntryGateButton),
+		Footer:          r.entryGateText(entryGateFooterKey, models.DefaultEntryGateFooter),
+		CrestPath:       crestPath,
+		CrestUniqueness: crestUniqueness,
+	}
+}
+
+// SetEntryGate stores the switch and the editable copy. The crest file is separate.
+func (r *SqlConfigRepository) SetEntryGate(gate models.EntryGate) error {
+	if err := r.datastore.SetBool(entryGateEnabledKey, gate.Enabled); err != nil {
+		return err
+	}
+	fields := []struct {
+		key   string
+		value string
+	}{
+		{entryGateTitleKey, gate.Title},
+		{entryGateBodyKey, gate.Body},
+		{entryGatePlaceholderKey, gate.Placeholder},
+		{entryGateButtonKey, gate.Button},
+		{entryGateFooterKey, gate.Footer},
+	}
+	for _, field := range fields {
+		if err := r.datastore.SetString(field.key, field.value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// SetEntryGateCrest stores the crest filename and a cache-busting token.
+func (r *SqlConfigRepository) SetEntryGateCrest(path, uniqueness string) error {
+	if err := r.datastore.SetString(entryGateCrestPathKey, path); err != nil {
+		return err
+	}
+	return r.datastore.SetString(entryGateCrestUniquenessKey, uniqueness)
+}
+
+// GetChatMuted reports whether viewers are muted. Moderators can still speak.
+func (r *SqlConfigRepository) GetChatMuted() bool {
+	muted, err := r.datastore.GetBool(chatMutedKey)
+	if err != nil {
+		return false
+	}
+	return muted
+}
+
+// SetChatMuted stores the live mute-all switch.
+func (r *SqlConfigRepository) SetChatMuted(muted bool) error {
+	return r.datastore.SetBool(chatMutedKey, muted)
+}
+
+// GetPageFigure returns the poster under the page body.
+func (r *SqlConfigRepository) GetPageFigure() models.PageFigure {
+	title, _ := r.datastore.GetString(pageFigureTitleKey)
+	body, _ := r.datastore.GetString(pageFigureBodyKey)
+	imagePath, _ := r.datastore.GetString(pageFigureImagePathKey)
+	uniqueness, _ := r.datastore.GetString(pageFigureImageUniquenessKey)
+	return models.PageFigure{
+		Title:           title,
+		Body:            body,
+		ImagePath:       imagePath,
+		ImageUniqueness: uniqueness,
+	}
+}
+
+// SetPageFigure stores the poster title and description. The image file is separate.
+func (r *SqlConfigRepository) SetPageFigure(figure models.PageFigure) error {
+	if err := r.datastore.SetString(pageFigureTitleKey, figure.Title); err != nil {
+		return err
+	}
+	return r.datastore.SetString(pageFigureBodyKey, figure.Body)
+}
+
+// SetPageFigureImage stores the poster filename and a cache-busting token.
+func (r *SqlConfigRepository) SetPageFigureImage(path, uniqueness string) error {
+	if err := r.datastore.SetString(pageFigureImagePathKey, path); err != nil {
+		return err
+	}
+	return r.datastore.SetString(pageFigureImageUniquenessKey, uniqueness)
 }

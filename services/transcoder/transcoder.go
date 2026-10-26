@@ -119,17 +119,33 @@ func (v *HLSVariant) getBufferSize() int {
 	return int(float64(v.getMaxVideoBitrate()))
 }
 
+// alignToMacroblock snaps a dimension to a multiple of 16. Android hardware
+// decoders reject widths such as 1282 even though they accept 1280.
+func alignToMacroblock(value int) int {
+	if value <= 0 {
+		return value
+	}
+	aligned := (value / 16) * 16
+	if aligned < 16 {
+		return 16
+	}
+	return aligned
+}
+
 // getString returns a WxH formatted getString for scaling video output.
 func (v *VideoSize) getString() string {
-	widthString := strconv.Itoa(v.Width)
-	heightString := strconv.Itoa(v.Height)
+	width := alignToMacroblock(v.Width)
+	height := alignToMacroblock(v.Height)
 
-	if widthString != "0" && heightString != "0" {
-		return widthString + ":" + heightString
-	} else if widthString != "0" {
-		return widthString + ":-2"
-	} else if heightString != "0" {
-		return "-2:" + heightString
+	if v.Width != 0 && v.Height != 0 {
+		return fmt.Sprintf("%d:%d", width, height)
+	} else if v.Width != 0 {
+		return fmt.Sprintf("%d:-2", width)
+	} else if v.Height != 0 {
+		// Keep the aspect ratio, then round the computed width down to a
+		// multiple of 16. -2 only guarantees a multiple of 2, which still
+		// produced 1282x720 and the Android playlist error.
+		return fmt.Sprintf("trunc(oh*a/16)*16:%d", height)
 	}
 
 	return ""
@@ -452,6 +468,14 @@ func (v *HLSVariant) getVideoQualityString(t *Transcoder) []string {
 		fmt.Sprintf("-r:v:%d", v.index), fmt.Sprintf("%d", v.framerate),
 	)
 	cmd = append(cmd, t.codec.VariantFlags(v)...)
+	// -g is only a hint. x264 clamps the minimum keyframe distance, so the
+	// HLS muxer was waiting for the following keyframe and emitting segments
+	// about twice the configured duration. Force one at each segment boundary.
+	cmd = append(
+		cmd,
+		fmt.Sprintf("-force_key_frames:v:%d", v.index),
+		fmt.Sprintf("expr:gte(t,n_forced*%d)", t.currentLatencyLevel.SecondsPerSegment),
+	)
 
 	return cmd
 }

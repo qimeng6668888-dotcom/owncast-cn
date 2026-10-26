@@ -24,6 +24,7 @@ import { TextField } from '../../TextField';
 import { FormStatusIndicator } from '../../FormStatusIndicator';
 import { isValidUrl } from '../../../../utils/validators';
 import { ToggleSwitch } from '../../ToggleSwitch';
+import { useAdminText } from '../../../../utils/adminText';
 
 const { Panel } = Collapse;
 
@@ -59,6 +60,7 @@ function checkSaveable(formValues: any, currentValues: any) {
 // eslint-disable-next-line react/function-component-definition
 export default function EditStorage() {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const [formDataValues, setFormDataValues] = useState(null);
   const [submitStatus, setSubmitStatus] = useState<StatusState>(null);
 
@@ -219,7 +221,7 @@ export default function EditStorage() {
         </div>
 
         <Collapse className="advanced-section">
-          <Panel header="Optional Settings" key="1">
+          <Panel header={tx('Optional Settings')} key="1">
             <div className="field-container">
               <TextField
                 {...S3_TEXT_FIELDS_INFO.acl}

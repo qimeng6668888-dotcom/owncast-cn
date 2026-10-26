@@ -6,13 +6,17 @@ export interface ClientConfig {
   summary: string;
   offlineMessage?: string;
   logo: string;
+  sharePreview?: string;
   tags: string[];
   nsfw: boolean;
   autoplay: AutoplaySetting;
   extraPageContent: string;
   socialHandles: SocialHandle[];
   chatDisabled: boolean;
+  chatMuted?: boolean;
   chatRequireAuthentication: boolean;
+  entryGate?: EntryGateConfig;
+  pageFigure?: PageFigureConfig;
   externalActions: any[];
   // customStyles is the admin's custom CSS. Theme.tsx renders it last
   // in the appearance cascade (after pluginStyles and the appearance
@@ -35,6 +39,22 @@ export interface ClientConfig {
   notifications: Notifications;
   authentication: Authentication;
   socketHostOverride?: string;
+}
+
+export interface PageFigureConfig {
+  title: string;
+  body: string;
+  image?: string;
+}
+
+export interface EntryGateConfig {
+  enabled: boolean;
+  title: string;
+  body: string;
+  placeholder: string;
+  button: string;
+  footer: string;
+  crest?: string;
 }
 
 interface Authentication {
@@ -80,6 +100,7 @@ export function makeEmptyClientConfig(): ClientConfig {
     summary: '',
     offlineMessage: '',
     logo: '',
+    sharePreview: '',
     tags: [],
     nsfw: false,
     autoplay: AutoplaySetting.Off,

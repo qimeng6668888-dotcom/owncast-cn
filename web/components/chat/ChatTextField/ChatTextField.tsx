@@ -6,7 +6,11 @@ import Graphemer from 'graphemer';
 
 import dynamic from 'next/dynamic';
 import classNames from 'classnames';
+import { useTranslation } from 'next-export-i18n';
+
 import ContentEditable from './ContentEditable';
+import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 import { websocketServiceAtom, chatInputDraftAtom } from '../../stores/ClientConfigStore';
 import { MessageType } from '../../../interfaces/socket-events';
 import styles from './ChatTextField.module.scss';
@@ -14,10 +18,6 @@ import styles from './ChatTextField.module.scss';
 // Lazy loaded components
 
 const EmojiPicker = dynamic(() => import('./EmojiPicker').then(mod => mod.EmojiPicker), {
-  ssr: false,
-});
-
-const SendOutlined = dynamic(() => import('@ant-design/icons/SendOutlined'), {
   ssr: false,
 });
 
@@ -125,6 +125,7 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
   focusInput,
   disabledPlaceholder,
 }) => {
+  const { t } = useTranslation();
   const [inputDraft, setInputDraft] = useAtom(chatInputDraftAtom);
   const [characterCount, setCharacterCount] = useState(defaultText?.length);
   const websocketService = useAtomValue(websocketServiceAtom);
@@ -153,6 +154,7 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
     websocketService.send({ type: MessageType.CHAT, body: message });
     contentEditable.innerHTML = '';
     setInputDraft('');
+    contentEditable.blur();
   };
 
   const insertTextAtEnd = (textToInsert: string) => {
@@ -170,6 +172,10 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
+    const native = e.nativeEvent as KeyboardEvent;
+    if (native.isComposing || native.keyCode === 229) {
+      return;
+    }
     if (e.key === 'Enter' && !(e.shiftKey || e.metaKey || e.ctrlKey || e.altKey)) {
       e.preventDefault();
       sendMessage();
@@ -282,7 +288,10 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
           id="chat-input-content-editable"
           html={defaultText || ''}
           placeholder={
-            enabled ? 'Send a message to chat' : disabledPlaceholder || 'Chat is disabled'
+            enabled
+              ? translated(t, Localization.Frontend.Chat.sendPlaceholder, '发送一条聊天消息')
+              : disabledPlaceholder ||
+                translated(t, Localization.Frontend.chatDisabled, '聊天已关闭')
           }
           disabled={!enabled}
           onKeyDown={onKeyDown}
@@ -291,10 +300,12 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
           onRootRef={onRootRef}
           style={{ whiteSpace: 'pre-wrap', width: '100%' }}
           role="textbox"
-          aria-label="Chat text input"
+          enterKeyHint="send"
+          inputMode="text"
+          aria-label={translated(t, Localization.Frontend.Chat.inputLabel, '聊天输入框')}
         />
         {enabled && (
-          <div style={{ display: 'flex', paddingLeft: '5px' }}>
+          <div className={styles.actions}>
             <Popover
               content={
                 <div className={styles.emojiPickerContainer}>
@@ -306,23 +317,23 @@ export const ChatTextField: FC<ChatTextFieldProps> = ({
             >
               <button
                 type="button"
-                aria-label="Emoji picker"
+                aria-label={translated(t, Localization.Frontend.Chat.emojiButton, '表情')}
                 id="owncast-emoji-picker-button"
                 className={styles.emojiButton}
-                title="Emoji picker button"
+                title={translated(t, Localization.Frontend.Chat.emojiButton, '表情')}
               >
                 <SmileOutlined />
               </button>
             </Popover>
             <button
               type="button"
-              aria-label="Send message"
+              aria-label={translated(t, Localization.Frontend.Chat.sendButton, '发送')}
               id="owncast-send-message-button"
               className={styles.sendButton}
-              title="Send message Button"
+              title={translated(t, Localization.Frontend.Chat.sendButton, '发送')}
               onClick={sendMessage}
             >
-              <SendOutlined />
+              {translated(t, Localization.Frontend.Chat.sendButton, '发送')}
             </button>
           </div>
         )}

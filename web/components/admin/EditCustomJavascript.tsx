@@ -18,11 +18,13 @@ import {
   STATUS_SUCCESS,
 } from '../../utils/input-statuses';
 import { FormStatusIndicator } from './FormStatusIndicator';
+import { useAdminText } from '../../utils/adminText';
 
 const { Title } = Typography;
 
 // eslint-disable-next-line import/prefer-default-export
 export const EditCustomJavascript: FC = () => {
+  const tx = useAdminText();
   const [content, setContent] = useState('/* Enter custom Javascript here */');
   const [submitStatus, setSubmitStatus] = useState<StatusState>(null);
   const [hasChanged, setHasChanged] = useState(false);
@@ -80,22 +82,22 @@ export const EditCustomJavascript: FC = () => {
   return (
     <div className="edit-custom-css">
       <Title level={3} className="section-title">
-        Customize your page with Javascript
+        {tx('Customize your page with Javascript')}
       </Title>
 
       <p className="description">
-        Insert custom Javascript into your Owncast page to add your own functionality or to add 3rd
-        party scripts. Read more about how to use this feature in the{' '}
+        {tx(
+          'Insert custom Javascript into your Owncast page to add your own functionality or to add 3rd party scripts. Read more about how to use this feature in the',
+        )}{' '}
         <a href="https://owncast.online/docs/website/" rel="noopener noreferrer" target="_blank">
-          Web page documentation.
+          {tx('Web page documentation.')}
         </a>
-        .
       </p>
-      <p className="description">Please use raw Javascript, no HTML or any script tags.</p>
+      <p className="description">{tx('Please use raw Javascript, no HTML or any script tags.')}</p>
 
       <CodeMirror
         value={content}
-        placeholder="/* Enter custom Javascript here */"
+        placeholder={tx('/* Enter custom Javascript here */')}
         theme={bbedit}
         height="200px"
         extensions={[javascript(), EditorView.lineWrapping]}
@@ -106,7 +108,7 @@ export const EditCustomJavascript: FC = () => {
       <div className="page-content-actions">
         {hasChanged && (
           <Button type="primary" onClick={handleSave}>
-            Save
+            {tx('Save')}
           </Button>
         )}
         <FormStatusIndicator status={submitStatus} />

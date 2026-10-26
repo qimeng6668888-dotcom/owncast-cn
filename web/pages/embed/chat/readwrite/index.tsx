@@ -31,7 +31,7 @@ export default function ReadWriteChatEmbed() {
   const isChatAvailable = useAtomValue(isChatAvailableSelector);
   const isUserAuthenticated = useAtomValue(chatAuthenticatedAtom);
 
-  const { name, chatDisabled, chatRequireAuthentication } = clientConfig;
+  const { name, chatDisabled, chatRequireAuthentication, logo } = clientConfig;
 
   // Determine if chat input should be enabled based on authentication requirements.
   // Moderators bypass the authentication requirement.
@@ -102,6 +102,7 @@ export default function ReadWriteChatEmbed() {
             chatAvailable
             chatDisabled={chatDisabled}
             online={videoAvailable}
+            logo={logo || '/logo'}
           />
           {currentUser && (
             <div id="chat-container">

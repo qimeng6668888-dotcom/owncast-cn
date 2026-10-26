@@ -3,9 +3,10 @@
 import { Divider } from 'antd';
 import React, { FC } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import dynamic from 'next/dynamic';
 import classNames from 'classnames';
-import { useTranslation } from 'next-export-i18n';
+import { useSelectedLanguage, useTranslation } from 'next-export-i18n';
 import { Translation } from '../Translation/Translation';
 import { Localization } from '../../../types/localization';
 import styles from './OfflineBanner.module.scss';
@@ -40,6 +41,8 @@ export const OfflineBanner: FC<OfflineBannerProps> = ({
   className,
 }) => {
   const { t } = useTranslation();
+  const { lang } = useSelectedLanguage();
+  const dateLocale = lang === 'en' ? undefined : zhCN;
 
   const handleSpanClick = (event: React.MouseEvent<HTMLSpanElement>) => {
     const target = event.target as HTMLSpanElement;
@@ -112,7 +115,9 @@ export const OfflineBanner: FC<OfflineBannerProps> = ({
           <div className={styles.lastLiveDate}>
             <ClockCircleOutlined className={styles.clockIcon} />
             <span id="owncast-offline-last-live-text">
-              {`${t(Localization.Frontend.lastLiveAgo, { timeAgo: formatDistanceToNow(new Date(lastLive)) })}`}
+              {`${t(Localization.Frontend.lastLiveAgo, {
+                timeAgo: formatDistanceToNow(new Date(lastLive), { locale: dateLocale }),
+              })}`}
             </span>
           </div>
         )}

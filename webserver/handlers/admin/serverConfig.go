@@ -40,10 +40,12 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 			Summary:             configRepository.GetServerSummary(),
 			Tags:                configRepository.GetServerMetadataTags(),
 			ExtraPageContent:    configRepository.GetExtraPageBodyContent(),
+			PageFigure:          configRepository.GetPageFigure().Public(),
 			StreamTitle:         configRepository.GetStreamTitle(),
 			WelcomeMessage:      configRepository.GetServerWelcomeMessage(),
 			OfflineMessage:      configRepository.GetCustomOfflineMessage(),
 			Logo:                configRepository.GetLogoPath(),
+			SharePreview:        configRepository.GetSharePreviewPath(),
 			SocialHandles:       configRepository.GetSocialHandles(),
 			NSFW:                configRepository.GetNSFW(),
 			Autoplay:            configRepository.GetAutoplay(),
@@ -60,6 +62,7 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 		RTMPServerPort:            configRepository.GetRTMPPortNumber(),
 		RTMPServerAddress:         configRepository.GetRTMPBindAddress(),
 		ChatDisabled:              configRepository.GetChatDisabled(),
+		ChatMuted:                 configRepository.GetChatMuted(),
 		ChatJoinMessagesEnabled:   configRepository.GetChatJoinPartMessagesEnabled(),
 		SocketHostOverride:        configRepository.GetWebsocketOverrideHost(),
 		VideoServingEndpoint:      configRepository.GetVideoServingEndpoint(),
@@ -67,6 +70,7 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 		ChatSpamProtectionEnabled: configRepository.GetChatSpamProtectionEnabled(),
 		ChatSlurFilterEnabled:     configRepository.GetChatSlurFilterEnabled(),
 		ChatRequireAuthentication: configRepository.GetChatRequireAuthentication(),
+		EntryGate:                 configRepository.GetEntryGate().Public(),
 		HideViewerCount:           configRepository.GetHideViewerCount(),
 		DisableSearchIndexing:     configRepository.GetDisableSearchIndexing(),
 		VideoSettings: videoSettings{
@@ -146,11 +150,13 @@ type serverConfigAdminResponse struct {
 	RTMPServerAddress         string                      `json:"rtmpServerAddress"`
 	WebServerPort             int                         `json:"webServerPort"`
 	ChatDisabled              bool                        `json:"chatDisabled"`
+	ChatMuted                 bool                        `json:"chatMuted"`
 	ChatJoinMessagesEnabled   bool                        `json:"chatJoinMessagesEnabled"`
 	ChatEstablishedUserMode   bool                        `json:"chatEstablishedUserMode"`
 	ChatSpamProtectionEnabled bool                        `json:"chatSpamProtectionEnabled"`
 	ChatSlurFilterEnabled     bool                        `json:"chatSlurFilterEnabled"`
 	ChatRequireAuthentication bool                        `json:"chatRequireAuthentication"`
+	EntryGate                 models.EntryGate            `json:"entryGate"`
 	DisableSearchIndexing     bool                        `json:"disableSearchIndexing"`
 	StreamKeyOverridden       bool                        `json:"streamKeyOverridden"`
 	HideViewerCount           bool                        `json:"hideViewerCount"`
@@ -167,8 +173,10 @@ type webConfigResponse struct {
 	WelcomeMessage      string                `json:"welcomeMessage"`
 	OfflineMessage      string                `json:"offlineMessage"`
 	Logo                string                `json:"logo"`
+	SharePreview        string                `json:"sharePreview"`
 	Name                string                `json:"name"`
 	ExtraPageContent    string                `json:"extraPageContent"`
+	PageFigure          models.PageFigure     `json:"pageFigure"`
 	StreamTitle         string                `json:"streamTitle"` // What's going on with the current stream
 	CustomStyles        string                `json:"customStyles"`
 	CustomJavascript    string                `json:"customJavascript"`

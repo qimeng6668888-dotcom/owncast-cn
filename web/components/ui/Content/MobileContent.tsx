@@ -5,26 +5,26 @@ import type { TabsProps } from 'antd';
 import { useTranslation } from 'next-export-i18n';
 import { ErrorBoundary } from 'react-error-boundary';
 import classNames from 'classnames';
-import { SocialLink } from '../../../interfaces/social-link.model';
-import { PluginTab } from '../../../interfaces/client-config.model';
+import { PageFigureConfig, PluginTab } from '../../../interfaces/client-config.model';
 import { Localization } from '../../../types/localization';
 import styles from './Content.module.scss';
 import { CustomPageContent } from '../CustomPageContent/CustomPageContent';
 import { PluginTabFrame } from '../PluginTabFrame/PluginTabFrame';
 import { ContentHeader } from '../../common/ContentHeader/ContentHeader';
+import { PageFigure } from '../PageFigure/PageFigure';
 import { ComponentError } from '../ComponentError/ComponentError';
 
 export type MobileContentProps = {
   name: string;
   summary: string;
-  tags: string[];
-  socialHandles: SocialLink[];
   extraPageContent: string;
+  pageFigure?: PageFigureConfig;
   pluginTabs: PluginTab[];
   setShowFollowModal: (show: boolean) => void;
   showFollowersTab: boolean;
   online: boolean;
   federatedServers?: any[]; // Will be properly typed when API is implemented
+  logo?: string;
 };
 
 // lazy loaded components
@@ -62,26 +62,27 @@ const ComponentErrorFallback = ({ error, resetErrorBoundary }) => (
 export const MobileContent: FC<MobileContentProps> = ({
   name,
   summary,
-  tags,
-  socialHandles,
   extraPageContent,
+  pageFigure,
   pluginTabs,
   setShowFollowModal,
   showFollowersTab,
   online,
   federatedServers = [],
+  logo = '/logo',
 }) => {
   const { t } = useTranslation();
   const [activeKey, setActiveKey] = useState('0');
 
   const aboutTabContent = (
     <>
-      <ContentHeader name={name} summary={summary} tags={tags} links={socialHandles} logo="/logo" />
+      <ContentHeader name={name} summary={summary} logo={logo} />
       {!!extraPageContent && (
         <div className={styles.bottomPageContentContainer}>
           <CustomPageContent content={extraPageContent} />
         </div>
       )}
+      <PageFigure figure={pageFigure} />
     </>
   );
   const followersTabContent = (

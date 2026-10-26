@@ -125,7 +125,7 @@ func (h *Handler) VerifyFediverseOTPRequest(w http.ResponseWriter, r *http.Reque
 		displayName := utils.MakeSafeStringOfLength(authRegistration.UserDisplayName, config.MaxChatDisplayNameLength)
 		authenticatedDisplayName := utils.MakeSafeStringOfLength(u.DisplayName, config.MaxChatDisplayNameLength)
 		if displayName != authenticatedDisplayName {
-			loginMessage := fmt.Sprintf("**%s** is now authenticated as **%s**", displayName, authenticatedDisplayName)
+			loginMessage := fmt.Sprintf("**%s** 已验证为 **%s**", displayName, authenticatedDisplayName)
 			if err := h.chat.SendSystemAction(loginMessage, true); err != nil {
 				log.Errorln(err)
 			}

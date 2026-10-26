@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -12,6 +14,11 @@ import (
 	"github.com/owncast/owncast/webserver/handlers/generated"
 	"github.com/owncast/owncast/webserver/router/middleware"
 	webutils "github.com/owncast/owncast/webserver/utils"
+)
+
+var (
+	errEntryNameRequired  = errors.New("请填写真实姓名")
+	errEntryNameForbidden = errors.New("这个姓名不能使用")
 )
 
 // ExternalGetChatMessages gets all of the chat messages.
@@ -78,17 +85,10 @@ func (h *Handlers) RegisterAnonymousChatUser(w http.ResponseWriter, r *http.Requ
 		proposedNewDisplayName = *request.DisplayName
 	}
 
-	// Sanitize before the empty check so a proposed name that sanitizes to
-	// nothing (e.g. only HTML tags or whitespace) still falls back to a
-	// generated name instead of failing registration.
-	proposedNewDisplayName = utils.MakeSafeStringOfLength(proposedNewDisplayName, config.MaxChatDisplayNameLength)
-	if proposedNewDisplayName == "" {
-		proposedNewDisplayName = utils.MakeSafeStringOfLength(h.generateDisplayName(), config.MaxChatDisplayNameLength)
-	}
-	if proposedNewDisplayName == "" {
-		// An admin-configured suggested username can itself sanitize to
-		// empty; GeneratePhrase always yields a usable word-word name.
-		proposedNewDisplayName = utils.MakeSafeStringOfLength(utils.GeneratePhrase(), config.MaxChatDisplayNameLength)
+	proposedNewDisplayName, err := h.chooseAnonymousDisplayName(proposedNewDisplayName)
+	if err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
 	}
 	newUser, accessToken, err := h.userRepository.CreateAnonymousUser(proposedNewDisplayName)
 	if err != nil {
@@ -112,6 +112,37 @@ func (h *Handlers) RegisterAnonymousChatUser(w http.ResponseWriter, r *http.Requ
 	webutils.WriteResponse(w, response)
 }
 
+func (h *Handlers) chooseAnonymousDisplayName(proposed string) (string, error) {
+	proposed = utils.MakeSafeStringOfLength(proposed, config.MaxChatDisplayNameLength)
+	if proposed == "" {
+		if h.configRepository.GetEntryGate().Enabled {
+			return "", errEntryNameRequired
+		}
+		proposed = utils.MakeSafeStringOfLength(h.generateDisplayName(), config.MaxChatDisplayNameLength)
+	}
+	if proposed == "" {
+		proposed = utils.GenerateChinesePhrase()
+	}
+	if displayNameForbidden(proposed, h.configRepository.GetForbiddenUsernameList()) {
+		return "", errEntryNameForbidden
+	}
+	return proposed, nil
+}
+
+func displayNameForbidden(name string, blocklist []string) bool {
+	candidate := strings.ToLower(strings.TrimSpace(name))
+	if candidate == "" {
+		return false
+	}
+	for _, blockedName := range blocklist {
+		normalizedName := strings.ToLower(strings.TrimSpace(blockedName))
+		if normalizedName != "" && strings.Contains(normalizedName, candidate) {
+			return true
+		}
+	}
+	return false
+}
+
 func (h *Handlers) generateDisplayName() string {
 	suggestedUsernamesList := h.configRepository.GetSuggestedUsernamesList()
 	minSuggestedUsernamePoolLength := 10
@@ -119,7 +150,6 @@ func (h *Handlers) generateDisplayName() string {
 	if len(suggestedUsernamesList) >= minSuggestedUsernamePoolLength {
 		index := utils.RandomIndex(len(suggestedUsernamesList))
 		return suggestedUsernamesList[index]
-	} else {
-		return utils.GeneratePhrase()
 	}
+	return utils.GenerateChinesePhrase()
 }

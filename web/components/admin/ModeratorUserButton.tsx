@@ -4,6 +4,7 @@ import { FC } from 'react';
 import dynamic from 'next/dynamic';
 import { USER_SET_MODERATOR, fetchData } from '../../utils/apis';
 import { User } from '../../types/chat';
+import { useAdminText } from '../../utils/adminText';
 
 // Lazy loaded components
 
@@ -32,6 +33,7 @@ export type ModeratorUserButtonProps = {
 };
 
 export const ModeratorUserButton: FC<ModeratorUserButtonProps> = ({ user, onClick = null }) => {
+  const tx = useAdminText();
   async function buttonClicked({ id }, setAsModerator: Boolean): Promise<Boolean> {
     const data = {
       userId: id,
@@ -52,7 +54,7 @@ export const ModeratorUserButton: FC<ModeratorUserButtonProps> = ({ user, onClic
   }
 
   const isModerator = user.scopes?.includes('MODERATOR');
-  const actionString = isModerator ? 'remove moderator' : 'add moderator';
+  const actionString = isModerator ? tx('remove moderator') : tx('add moderator');
   const icon = isModerator ? (
     <ExclamationCircleFilled style={{ color: 'var(--ant-error)' }} />
   ) : (
@@ -61,13 +63,16 @@ export const ModeratorUserButton: FC<ModeratorUserButtonProps> = ({ user, onClic
 
   const content = (
     <>
-      Are you sure you want to {actionString} <strong>{user.displayName}</strong>?
+      {isModerator
+        ? tx('Are you sure you want to remove moderator')
+        : tx('Are you sure you want to add moderator')}{' '}
+      <strong>{user.displayName}</strong>?
     </>
   );
 
   const confirmBlockAction = () => {
     Modal.confirm({
-      title: `Confirm ${actionString}`,
+      title: isModerator ? tx('Confirm remove moderator') : tx('Confirm add moderator'),
       content,
       onCancel: () => {},
       onOk: () =>
@@ -85,7 +90,7 @@ export const ModeratorUserButton: FC<ModeratorUserButtonProps> = ({ user, onClic
           }
         }),
       okType: 'danger',
-      okText: isModerator ? 'Yup!' : null,
+      okText: isModerator ? tx('Yup!') : null,
       icon,
     });
   };

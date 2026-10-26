@@ -13,10 +13,12 @@ import {
 } from '../../utils/input-statuses';
 import { Localization } from '../../types/localization';
 import { FormStatusIndicator } from './FormStatusIndicator';
+import { useAdminText } from '../../utils/adminText';
 
 // eslint-disable-next-line import/prefer-default-export
 export const ResetYP: FC = () => {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const { setMessage } = useContext(AlertMessageContext);
 
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -48,22 +50,22 @@ export const ResetYP: FC = () => {
   return (
     <>
       <Typography.Title level={3} className="section-title">
-        Reset Directory
+        {tx('Reset Directory')}
       </Typography.Title>
       <p className="description">
-        If you are experiencing issues with your listing on the Owncast Directory and were asked to
-        &quot;reset&quot; your connection to the service, you can do that here. The next time you go
-        live it will try and re-register your server with the directory from scratch.
+        {tx(
+          'If you are experiencing issues with your listing on the Owncast Directory and were asked to "reset" your connection to the service, you can do that here. The next time you go live it will try and re-register your server with the directory from scratch.',
+        )}
       </p>
 
       <Popconfirm
         placement="topLeft"
-        title="Are you sure you want to reset your connection to the Owncast directory?"
+        title={tx('Are you sure you want to reset your connection to the Owncast directory?')}
         onConfirm={resetDirectoryRegistration}
-        okText="Yes"
-        cancelText="No"
+        okText={tx('Yes')}
+        cancelText={tx('No')}
       >
-        <Button type="primary">Reset Directory Connection</Button>
+        <Button type="primary">{tx('Reset Directory Connection')}</Button>
       </Popconfirm>
       <p>
         <FormStatusIndicator status={submitStatus} />

@@ -5,7 +5,7 @@ import { act, render, screen } from '@testing-library/react';
 // depends on: the library only flips language when its query effect re-runs
 // AND the catalog for router.query.lang is already present in the shared
 // translations object. A library upgrade that changes any of this would
-// silently leave non-English viewers on English, so it must fail here first.
+// silently leave viewers on the wrong language, so it must fail here first.
 
 // The library reads the shared catalog singleton (web/i18n) at module scope
 // and the tests below mutate it, so both modules come fresh out of
@@ -27,9 +27,10 @@ jest.mock('next/router', () => ({
   useRouter: () => ({ query: { ...mockRouterState.query } }),
 }));
 
-/* eslint-disable global-require, @typescript-eslint/no-var-requires */
+/* eslint-disable global-require, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
 const enCatalog = require('../i18n/en/translation.json');
 const deCatalog = require('../i18n/de/translation.json');
+const zhCNCatalog = require('../i18n/zh-CN/translation.json');
 /* eslint-enable global-require, @typescript-eslint/no-var-requires */
 
 // Assert against the real catalog files, not hardcoded strings, so a
@@ -37,6 +38,7 @@ const deCatalog = require('../i18n/de/translation.json');
 const KEY = 'Admin.AccessTokens.selectAll';
 const EN_VALUE: string = enCatalog.Admin.AccessTokens.selectAll;
 const DE_VALUE: string = deCatalog.Admin.AccessTokens.selectAll;
+const ZH_CN_VALUE: string = zhCNCatalog.Admin.AccessTokens.selectAll;
 
 interface I18nShape {
   translations: Record<string, Record<string, unknown>>;
@@ -48,7 +50,7 @@ const freshHarness = (): { i18n: I18nShape; Probe: () => React.ReactElement } =>
   let i18n!: I18nShape;
   let Probe!: () => React.ReactElement;
   jest.isolateModules(() => {
-    /* eslint-disable global-require, @typescript-eslint/no-var-requires */
+    /* eslint-disable global-require, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
     i18n = require('../i18n');
     const { useTranslation } = require('next-export-i18n');
     /* eslint-enable global-require, @typescript-eslint/no-var-requires */
@@ -76,10 +78,13 @@ describe('next-export-i18n semantics the lazy locale loader depends on', () => {
     // below would go vacuous. Fail loudly instead.
     expect(typeof EN_VALUE).toBe('string');
     expect(typeof DE_VALUE).toBe('string');
+    expect(typeof ZH_CN_VALUE).toBe('string');
     expect(EN_VALUE).not.toBe(DE_VALUE);
+    expect(ZH_CN_VALUE).not.toBe(EN_VALUE);
+    expect(ZH_CN_VALUE).not.toBe(DE_VALUE);
   });
 
-  test('stays English when ?lang=de names a catalog that is not loaded', () => {
+  test('stays on bundled zh-CN when ?lang=de names a catalog that is not loaded', () => {
     const { Probe } = freshHarness();
     setQueryLang('de');
     render(<Probe />);
@@ -87,13 +92,13 @@ describe('next-export-i18n semantics the lazy locale loader depends on', () => {
     // The query effect ran on mount, saw translations.de missing, and its
     // guard refused the flip. This is what makes the loader's
     // fetch-catalog-BEFORE-touching-the-query ordering mandatory.
-    expect(probeText()).toBe(EN_VALUE);
+    expect(probeText()).toBe(ZH_CN_VALUE);
   });
 
   test('flips to German once the catalog is patched in and ?lang=de arrives', () => {
     const { Probe, i18n } = freshHarness();
     const { rerender } = render(<Probe />);
-    expect(probeText()).toBe(EN_VALUE);
+    expect(probeText()).toBe(ZH_CN_VALUE);
 
     // Exactly what loadViewerLocale does: mutate the shared translations
     // object, then activate through the query channel.
@@ -133,17 +138,17 @@ describe('next-export-i18n semantics the lazy locale loader depends on', () => {
     const { Probe, i18n } = freshHarness();
     setQueryLang('de');
     const { rerender } = render(<Probe />);
-    expect(probeText()).toBe(EN_VALUE);
+    expect(probeText()).toBe(ZH_CN_VALUE);
 
     // FINDING, pinned on purpose: patching the catalog alone changes no
     // effect dep (lang, router.query.lang, and the translations object
     // REFERENCE are all unchanged), so the effect never re-runs and the
-    // language stays stuck on English.
+    // language stays stuck on the default.
     i18n.translations.de = deCatalog;
     act(() => {
       rerender(<Probe />);
     });
-    expect(probeText()).toBe(EN_VALUE);
+    expect(probeText()).toBe(ZH_CN_VALUE);
 
     // The loader recovers by bouncing the query param off and back on,
     // which is why loadViewerLocale does the replace-without-lang /

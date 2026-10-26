@@ -1,5 +1,5 @@
-import { FC, useContext, useEffect } from 'react';
-import { atom, useAtom, useSetAtom } from 'jotai';
+import { FC, useContext, useEffect, useRef } from 'react';
+import { atom, useAtom, useSetAtom, type PrimitiveAtom } from 'jotai';
 import { useMachine } from '@xstate/react';
 import { makeEmptyClientConfig, ClientConfig } from '../../interfaces/client-config.model';
 import { ClientConfigServiceContext } from '../../services/client-config-service';
@@ -30,6 +30,7 @@ import { handleNameChangeEvent } from './eventhandlers/handleNameChangeEvent';
 import { DisplayableError } from '../../types/displayable-error';
 
 const SERVER_STATUS_POLL_DURATION = 5000;
+const CLIENT_CONFIG_POLL_DURATION = 15000;
 
 // Helper to safely parse hydration data injected into the page by the Owncast
 // server (see ServerRenderedHydration). Read from a mount effect, never during
@@ -37,10 +38,27 @@ const SERVER_STATUS_POLL_DURATION = 5000;
 // initializing state from this data during hydration makes React's first
 // render differ from the server HTML (React errors #418/#423/#425).
 // Returns both the config and whether parsing succeeded.
+// The Go index template injects a JSON object literal
+// (`window.configHydration = {...}`), not a quoted string. JSON.parse on that
+// object throws, which used to discard the payload and wait on /api/config
+// before the player could mount.
+const parseHydration = <T,>(raw: unknown): T | null => {
+  if (raw == null || raw === '') {
+    return null;
+  }
+  if (typeof raw === 'string') {
+    return JSON.parse(raw) as T;
+  }
+  if (typeof raw === 'object') {
+    return raw as T;
+  }
+  return null;
+};
+
 const getInitialConfig = (): { config: ClientConfig; success: boolean } => {
   if (typeof window !== 'undefined' && (window as any).configHydration) {
     try {
-      const parsed = JSON.parse((window as any).configHydration);
+      const parsed = parseHydration<ClientConfig>((window as any).configHydration);
       if (parsed) {
         return { config: parsed, success: true };
       }
@@ -54,7 +72,7 @@ const getInitialConfig = (): { config: ClientConfig; success: boolean } => {
 const getInitialStatus = (): { status: ServerStatus; success: boolean } => {
   if (typeof window !== 'undefined' && (window as any).statusHydration) {
     try {
-      const parsed = JSON.parse((window as any).statusHydration);
+      const parsed = parseHydration<ServerStatus>((window as any).statusHydration);
       if (parsed) {
         return { status: parsed, success: true };
       }
@@ -67,9 +85,25 @@ const getInitialStatus = (): { status: ServerStatus; success: boolean } => {
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 
+// A holder, not a bare function: jotai treats a function stored in an atom as
+// the read function, and a function passed to the setter as an updater.
+export type EntryNameSubmitter = {
+  submit: (name: string) => Promise<void>;
+};
+
+const emptyEntryNameSubmitter = null as EntryNameSubmitter | null;
+
+export const submitEntryNameAtom: PrimitiveAtom<EntryNameSubmitter | null> =
+  atom(emptyEntryNameSubmitter);
+
 let serverStatusRefreshPoll: ReturnType<typeof setInterval>;
+let clientConfigRefreshPoll: ReturnType<typeof setInterval>;
 let hasBeenModeratorNotified = false;
-let hasWebsocketDisconnected = false;
+
+// True after the live chat socket drops, until the next successful open.
+// An atom (not a module flag) so the chat panel re-renders as soon as the
+// socket recovers, instead of waiting for the next status poll.
+const chatSocketDisconnectedAtom = atom(false);
 
 const serverConnectivityError = `Cannot connect to the Owncast service. Please check your internet connection and verify this Owncast server is running.`;
 
@@ -123,8 +157,17 @@ const removedMessageIdsAtom = atom<string[]>([]);
 export const isChatAvailableSelector = atom(get => {
   const state: AppStateOptions = get(appStateAtom);
   const accessToken: string = get(accessTokenAtom);
-  return Boolean(accessToken && state.chatAvailable && !hasWebsocketDisconnected);
+  const disconnected = get(chatSocketDisconnectedAtom);
+  return Boolean(accessToken && state.chatAvailable && !disconnected);
 });
+
+// Where the chat socket should connect. The override wins so a viewer who
+// opened the site on the video CDN still reaches the origin; the CDN does
+// not forward the websocket upgrade.
+function chatSocketHost(socketHostOverride: string | undefined, pageLocation: string): string {
+  const override = socketHostOverride?.trim();
+  return override || pageLocation;
+}
 
 // The requested state of chat in the UI
 export enum ChatState {
@@ -177,8 +220,8 @@ export const ClientConfigStore: FC = () => {
   const setWebsocketService = useSetAtom(websocketServiceAtom);
   const setHiddenMessageIds = useSetAtom(removedMessageIdsAtom);
   const [hasLoadedConfig, setHasLoadedConfig] = useAtom(isClientConfigLoadedAtom);
-
-  let ws: WebsocketService;
+  const setChatSocketDisconnected = useSetAtom(chatSocketDisconnectedAtom);
+  const socketRef = useRef<WebsocketService | null>(null);
 
   const setGlobalFatalError = (title: string, message: string) => {
     setGlobalFatalErrorMessage({
@@ -210,15 +253,17 @@ export const ClientConfigStore: FC = () => {
     }
   };
 
-  const updateClientConfig = async () => {
+  const updateClientConfig = async (): Promise<ClientConfig | undefined> => {
     try {
       const config = await ClientConfigService.getConfig();
       setClientConfig(config);
       setGlobalFatalErrorMessage(null);
       setHasLoadedConfig(true);
+      return config;
     } catch (error) {
       setGlobalFatalError('Unable to reach Owncast server', serverConnectivityError);
       console.error(`ClientConfigService -> getConfig() ERROR: \n`, error);
+      return undefined;
     }
   };
 
@@ -254,7 +299,7 @@ export const ClientConfigStore: FC = () => {
       const response = await ChatService.registerUser(optionalDisplayName);
       const { accessToken: newAccessToken, displayName: newDisplayName, displayColor } = response;
       if (!newAccessToken) {
-        return;
+        throw new Error('注册没有成功，请重试');
       }
 
       setCurrentUser({
@@ -268,14 +313,30 @@ export const ClientConfigStore: FC = () => {
     } catch (e) {
       sendEvent([AppStateEvent.Fail]);
       console.error(`ChatService -> registerUser() ERROR: \n${e}`);
+      throw e;
     }
   };
+
+  const gateEnabledRef = useRef(false);
+  const submitEntryNameRef = useRef<(name: string) => Promise<void>>(async () => {
+    throw new Error('进房姓名还没准备好');
+  });
+  const setSubmitEntryName = useSetAtom(submitEntryNameAtom);
+
+  useEffect(() => {
+    gateEnabledRef.current = !!clientConfig.entryGate?.enabled;
+    submitEntryNameRef.current = (name: string) => handleUserRegistration(name);
+  });
 
   const resetAndReAuth = () => {
     setLocalStorage(ACCESS_TOKEN_KEY, '');
     setAccessToken(null);
-    ws?.shutdown();
-    handleUserRegistration();
+    socketRef.current?.shutdown();
+    socketRef.current = null;
+    if (gateEnabledRef.current) {
+      return;
+    }
+    handleUserRegistration().catch(() => {});
   };
 
   const handleMessageVisibilityChange = (message: MessageVisibilityEvent) => {
@@ -288,11 +349,11 @@ export const ClientConfigStore: FC = () => {
   };
 
   const handleSocketDisconnect = () => {
-    hasWebsocketDisconnected = true;
+    setChatSocketDisconnected(true);
   };
 
   const handleSocketConnected = () => {
-    hasWebsocketDisconnected = false;
+    setChatSocketDisconnected(false);
   };
 
   const handleMessage = (message: SocketEvent) => {
@@ -333,6 +394,12 @@ export const ClientConfigStore: FC = () => {
       case MessageType.CHAT_ACTION:
         setChatMessages(currentState => [...currentState, message as ChatEvent]);
         break;
+      case MessageType.CHAT_MUTE:
+        setClientConfig(current => ({
+          ...current,
+          chatMuted: !!(message as { muted?: boolean }).muted,
+        }));
+        break;
       case MessageType.FEDIVERSE_ENGAGEMENT_FOLLOW:
         setChatMessages(currentState => [...currentState, message as unknown as ChatMessage]);
         break;
@@ -365,25 +432,23 @@ export const ClientConfigStore: FC = () => {
     }
   };
 
-  const startChat = async () => {
+  const startChat = () => {
     try {
-      if (ws) {
-        ws?.shutdown();
-        setWebsocketService(null);
-        ws = null;
-      }
-
-      const { socketHostOverride } = clientConfig;
-
-      // Get a copy of the browser location without #fragments.
       const location = window.location.origin + window.location.pathname;
-      const host = socketHostOverride || location;
+      const host = chatSocketHost(clientConfig.socketHostOverride, location);
+      const current = socketRef.current;
+      if (current && !current.isShutdown && current.host === host) {
+        return;
+      }
+      current?.shutdown();
+      socketRef.current = null;
 
-      ws = new WebsocketService(accessToken, '/ws', host);
-      ws.handleMessage = handleMessage;
-      ws.socketDisconnected = handleSocketDisconnect;
-      ws.socketConnected = handleSocketConnected;
-      setWebsocketService(ws);
+      const next = new WebsocketService(accessToken, '/ws', host);
+      next.handleMessage = handleMessage;
+      next.socketDisconnected = handleSocketDisconnect;
+      next.socketConnected = handleSocketConnected;
+      socketRef.current = next;
+      setWebsocketService(next);
     } catch (error) {
       console.error(`ChatService -> startChat() ERROR: \n${error}`);
       sendEvent([AppStateEvent.ChatUserDisabled]);
@@ -398,18 +463,37 @@ export const ClientConfigStore: FC = () => {
     const { config, success: hasHydratedConfig } = getInitialConfig();
     const { status, success: hasHydratedStatus } = getInitialStatus();
 
+    const beginChatIdentity = (loaded: ClientConfig) => {
+      const savedAccessToken = getLocalStorage(ACCESS_TOKEN_KEY);
+      if (savedAccessToken) {
+        setAccessToken(savedAccessToken);
+        return;
+      }
+      if (loaded.entryGate?.enabled) {
+        return;
+      }
+      handleUserRegistration(getDisplayNameFromQuery(window.location.search)).catch(() => {});
+    };
+
     if (hasHydratedConfig) {
       setClientConfig(config);
       setHasLoadedConfig(true);
     } else {
-      updateClientConfig();
+      updateClientConfig().then(loaded => {
+        if (loaded) {
+          beginChatIdentity(loaded);
+        }
+      });
     }
 
-    // If the URL includes a ?displayname=xyz query param, use it as the
-    // proposed display name when registering a new chat user (the server may
-    // sanitize or override it). It has no effect if the visitor has
-    // previously registered (an access token is already saved).
-    handleUserRegistration(getDisplayNameFromQuery(window.location.search));
+    // Chat signup can wait a tick so the player chunk and HLS playlist get
+    // the first network slot on a live open. A saved token still restores
+    // immediately. The entry card holds registration until a name is typed.
+    const chatAuthTimer = window.setTimeout(() => {
+      if (hasHydratedConfig) {
+        beginChatIdentity(config);
+      }
+    }, 0);
 
     if (hasHydratedStatus) {
       handleStatusChange(status);
@@ -427,30 +511,46 @@ export const ClientConfigStore: FC = () => {
       updateServerStatus();
     }, SERVER_STATUS_POLL_DURATION);
 
+    clearInterval(clientConfigRefreshPoll);
+    clientConfigRefreshPoll = setInterval(() => {
+      updateClientConfig();
+    }, CLIENT_CONFIG_POLL_DURATION);
+
     return () => {
+      window.clearTimeout(chatAuthTimer);
       clearInterval(serverStatusRefreshPoll);
+      clearInterval(clientConfigRefreshPoll);
     };
   }, []);
 
   useEffect(() => {
+    setSubmitEntryName({
+      submit: (name: string) => submitEntryNameRef.current(name),
+    });
+    return () => {
+      setSubmitEntryName(null);
+    };
+  }, [setSubmitEntryName]);
+
+  useEffect(() => {
     if (clientConfig.chatDisabled) {
-      return;
+      return undefined;
     }
 
     if (!accessToken) {
-      return;
+      return undefined;
     }
 
     if (!hasLoadedConfig) {
-      return;
+      return undefined;
     }
 
-    if (ws) {
-      return;
-    }
-
+    // Re-run when the socket host override arrives. A page opened on the
+    // video CDN starts without it (stale HTML) and must move the socket to
+    // the origin once /api/config reports the override.
     startChat();
-  }, [hasLoadedConfig, accessToken]);
+    return undefined;
+  }, [hasLoadedConfig, accessToken, clientConfig.socketHostOverride, clientConfig.chatDisabled]);
 
   useEffect(() => {
     if (accessToken) {

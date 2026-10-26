@@ -1,5 +1,6 @@
 import { FC, ReactNode, useEffect, useMemo } from 'react';
 import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
 import type { ThemeConfig } from 'antd';
 import { useAtomValue } from 'jotai';
 import { clientConfigStateAtom } from '../stores/ClientConfigStore';
@@ -146,7 +147,11 @@ function buildTheme(appearanceVariables: Record<string, string>): ThemeConfig {
 // after an appearance change pick up the latest tokens.
 let staticsTheme: ThemeConfig = buildTheme({});
 ConfigProvider.config({
-  holderRender: node => <ConfigProvider theme={staticsTheme}>{node}</ConfigProvider>,
+  holderRender: node => (
+    <ConfigProvider locale={zhCN} theme={staticsTheme}>
+      {node}
+    </ConfigProvider>
+  ),
 });
 
 export type AntdProviderProps = {
@@ -165,5 +170,9 @@ export const AntdProvider: FC<AntdProviderProps> = ({ children }) => {
     staticsTheme = theme;
   }, [theme]);
 
-  return <ConfigProvider theme={theme}>{children}</ConfigProvider>;
+  return (
+    <ConfigProvider locale={zhCN} theme={theme}>
+      {children}
+    </ConfigProvider>
+  );
 };

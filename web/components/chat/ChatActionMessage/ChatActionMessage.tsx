@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { localizeChatSystemBody } from '../../../utils/chatSystemCopy';
 import styles from './ChatActionMessage.module.scss';
 
 /* eslint-disable react/no-danger */
@@ -11,7 +12,7 @@ export const ChatActionMessage: FC<ChatActionMessageProps> = ({ body }) => (
   <div className={styles.chatActionPadding}>
     <div
       id="owncast-chat-action-message-text"
-      dangerouslySetInnerHTML={{ __html: body }}
+      dangerouslySetInnerHTML={{ __html: localizeChatSystemBody(body) }}
       className={styles.chatAction}
     />
   </div>

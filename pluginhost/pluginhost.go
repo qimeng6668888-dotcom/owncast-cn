@@ -1964,7 +1964,7 @@ func validateProfileURL(profileURL string) error {
 
 func generatedDisplayName(displayName string) string {
 	if displayName == "" {
-		return utils.GeneratePhrase()
+		return utils.GenerateChinesePhrase()
 	}
 	return displayName
 }

@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/owncast/owncast/webserver/handlers/generated"
 	"github.com/owncast/owncast/webserver/router/middleware"
 )
@@ -27,7 +29,23 @@ func New(h *Handlers) *ServerInterfaceImpl {
 }
 
 func (s *ServerInterfaceImpl) Handler() http.Handler {
-	return generated.Handler(s)
+	r := chi.NewRouter()
+	r.Post("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.SetSharePreview))
+	r.Options("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.SetSharePreview))
+	r.Delete("/admin/config/sharepreview", s.h.middleware.RequireAdminAuth(s.h.admin.ResetSharePreview))
+	r.Post("/admin/config/chat/entrygate", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGate))
+	r.Options("/admin/config/chat/entrygate", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGate))
+	r.Post("/admin/config/chat/entrygate/crest", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGateCrest))
+	r.Options("/admin/config/chat/entrygate/crest", s.h.middleware.RequireAdminAuth(s.h.admin.SetEntryGateCrest))
+	r.Post("/admin/config/chat/muted", s.h.middleware.RequireAdminAuth(s.h.admin.SetChatMuted))
+	r.Options("/admin/config/chat/muted", s.h.middleware.RequireAdminAuth(s.h.admin.SetChatMuted))
+	r.Post("/admin/chat/users/ban", s.h.middleware.RequireAdminAuth(s.h.admin.BanChatUsers))
+	r.Options("/admin/chat/users/ban", s.h.middleware.RequireAdminAuth(s.h.admin.BanChatUsers))
+	r.Post("/admin/config/pagefigure", s.h.middleware.RequireAdminAuth(s.h.admin.SetPageFigure))
+	r.Options("/admin/config/pagefigure", s.h.middleware.RequireAdminAuth(s.h.admin.SetPageFigure))
+	r.Post("/admin/config/pagefigure/image", s.h.middleware.RequireAdminAuth(s.h.admin.SetPageFigureImage))
+	r.Options("/admin/config/pagefigure/image", s.h.middleware.RequireAdminAuth(s.h.admin.SetPageFigureImage))
+	return generated.HandlerFromMux(s, r)
 }
 
 func (s *ServerInterfaceImpl) GetStatus(w http.ResponseWriter, r *http.Request) {

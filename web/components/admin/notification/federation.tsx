@@ -2,10 +2,12 @@ import { Button, Typography } from 'antd';
 import { useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
 import { ServerStatusContext } from '../../../utils/server-status-context';
+import { useAdminText } from '../../../utils/adminText';
 
 const { Title } = Typography;
 
 export const FediverseNotify = () => {
+  const tx = useAdminText();
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig } = serverStatusData || {};
   const { federation } = serverConfig || {};
@@ -21,15 +23,16 @@ export const FediverseNotify = () => {
 
   return (
     <>
-      <Title>Fediverse Social</Title>
+      <Title>{tx('Fediverse Social')}</Title>
       <p className="description">
-        Enabling the Fediverse social features will not just alert people to when you go live, but
-        also enable other functionality.
+        {tx(
+          'Enabling the Fediverse social features will not just alert people to when you go live, but also enable other functionality.',
+        )}
       </p>
       <p>
-        Fediverse social features:{' '}
+        {tx('Fediverse social features:')}{' '}
         <span style={{ color: federation.enabled ? 'green' : 'red' }}>
-          {formDataValues.enabled ? 'Enabled' : 'Disabled'}
+          {formDataValues.enabled ? tx('Enabled') : tx('Disabled')}
         </span>
       </p>
 
@@ -43,7 +46,7 @@ export const FediverseNotify = () => {
             marginTop: '20px',
           }}
         >
-          Configure
+          {tx('Configure')}
         </Button>
       </Link>
     </>

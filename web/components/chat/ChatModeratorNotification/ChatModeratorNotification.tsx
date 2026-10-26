@@ -8,7 +8,7 @@ export const ChatModeratorNotification = () => (
     <Icon className={styles.icon} />
     <Translation
       translationKey={Localization.Frontend.Chat.moderatorNotification}
-      defaultText="You are now a moderator."
+      defaultText="你现在是主持人。"
     />
   </div>
 );

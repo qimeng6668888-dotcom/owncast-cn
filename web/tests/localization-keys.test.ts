@@ -173,6 +173,18 @@ describe('Localization Keys Cross-Language Validation', () => {
 
   describe('Admin Component Keys', () => {
     const adminTestKeys = [
+      {
+        key: Localization.Admin.Branding.summaryLabel,
+        name: 'Admin.Branding.summaryLabel',
+      },
+      {
+        key: Localization.Admin.Branding.extraPageLabel,
+        name: 'Admin.Branding.extraPageLabel',
+      },
+      {
+        key: Localization.Admin.Branding.sharePreviewLabel,
+        name: 'Admin.Branding.sharePreviewLabel',
+      },
       // EditInstanceDetails
       {
         key: Localization.Admin.EditInstanceDetails.offlineMessageDescription,

@@ -376,6 +376,14 @@ func (s *Service) HandleClientConnection(w http.ResponseWriter, r *http.Request)
 	s.Addclient(conn, user, accessToken, userAgent, ipAddress)
 }
 
+// BroadcastChatMuted tells every connected client the mute-all switch changed.
+func (s *Service) BroadcastChatMuted(muted bool) {
+	_ = s.Broadcast(events.EventPayload{
+		"type":  events.ChatMuted,
+		"muted": muted,
+	})
+}
+
 // Broadcast sends message to all connected clients.
 func (s *Service) Broadcast(payload events.EventPayload) error {
 	data, err := json.Marshal(payload)
@@ -488,14 +496,14 @@ func (s *Service) eventReceived(event chatClientEvent) {
 	// If established chat user only mode is enabled and the user is not old
 	// enough then reject this event and send them an informative message.
 	if u != nil && s.configRepository.GetChatEstbalishedUsersOnlyMode() && time.Since(event.client.User.CreatedAt) < config.GetDefaults().ChatEstablishedUserModeTimeDuration && !u.IsModerator() {
-		s.sendActionToClient(c, "You have not been an established chat participant long enough to take part in chat. Please enjoy the stream and try again later.")
+		s.sendActionToClient(c, "你加入聊天的时间还不够，暂时不能发言。请先看直播，稍后再试。")
 		return
 	}
 
 	// Check if authentication is required for chat
 	if s.configRepository.GetChatRequireAuthentication() {
 		if u == nil || (!u.Authenticated && !u.IsModerator()) {
-			s.sendActionToClient(c, "Authentication is required to participate in chat.")
+			s.sendActionToClient(c, "需要先验证身份才能发言。")
 			return
 		}
 	}

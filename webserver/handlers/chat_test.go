@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/owncast/owncast/config"
+	"github.com/owncast/owncast/models"
 )
 
 // A proposed display name that sanitizes to an empty string (e.g. only HTML
@@ -28,6 +29,12 @@ func TestRegisterAnonymousChatUserEmptyAfterSanitizationFallsBack(t *testing.T) 
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			gate := testHandlers.configRepository.GetEntryGate()
+			gate.Enabled = false
+			if err := testHandlers.configRepository.SetEntryGate(gate); err != nil {
+				t.Fatal(err)
+			}
+
 			req := httptest.NewRequest(http.MethodPost, "/api/chat/register", strings.NewReader(tc.body))
 			for k, v := range tc.headers {
 				req.Header.Set(k, v)
@@ -52,6 +59,9 @@ func TestRegisterAnonymousChatUserEmptyAfterSanitizationFallsBack(t *testing.T) 
 			if response.DisplayName == "" {
 				t.Error("expected a non-empty generated display name")
 			}
+			if tc.wantExactly == "" && strings.ContainsAny(response.DisplayName, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-") {
+				t.Errorf("expected a Simplified Chinese display name, got %q", response.DisplayName)
+			}
 			if utf8.RuneCountInString(response.DisplayName) > config.MaxChatDisplayNameLength {
 				t.Errorf("display name %q exceeds max length %d", response.DisplayName, config.MaxChatDisplayNameLength)
 			}
@@ -62,5 +72,55 @@ func TestRegisterAnonymousChatUserEmptyAfterSanitizationFallsBack(t *testing.T) 
 				t.Error("expected a non-empty access token")
 			}
 		})
+	}
+}
+
+func TestRegisterAnonymousChatUserRequiresNameWhenEntryGateEnabled(t *testing.T) {
+	gate := testHandlers.configRepository.GetEntryGate()
+	gate.Enabled = true
+	if err := testHandlers.configRepository.SetEntryGate(gate); err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/api/chat/register", strings.NewReader(`{"displayName":"   "}`))
+	w := httptest.NewRecorder()
+	testHandlers.RegisterAnonymousChatUser(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", resp.StatusCode)
+	}
+	var response models.BaseAPIResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		t.Fatal(err)
+	}
+	if response.Message != "请填写真实姓名" {
+		t.Fatalf("message = %q", response.Message)
+	}
+}
+
+func TestRegisterAnonymousChatUserKeepsTypedChineseName(t *testing.T) {
+	gate := testHandlers.configRepository.GetEntryGate()
+	gate.Enabled = true
+	if err := testHandlers.configRepository.SetEntryGate(gate); err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/api/chat/register", strings.NewReader(`{"displayName":"张三"}`))
+	w := httptest.NewRecorder()
+	testHandlers.RegisterAnonymousChatUser(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", resp.StatusCode)
+	}
+	var response struct {
+		DisplayName string `json:"displayName"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		t.Fatal(err)
+	}
+	if response.DisplayName != "张三" {
+		t.Fatalf("display name = %q", response.DisplayName)
 	}
 }

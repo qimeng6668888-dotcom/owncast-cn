@@ -176,7 +176,7 @@ func (a *Admin) handleUserDisabling(userID string) error {
 	a.chat.DisconnectClients(clients)
 	disconnectedUser := a.userRepository.GetUserByID(userID)
 	displayName := utils.MakeSafeStringOfLength(disconnectedUser.DisplayName, config.MaxChatDisplayNameLength)
-	_ = a.chat.SendSystemAction(fmt.Sprintf("**%s** has been removed from chat.", displayName), true)
+	_ = a.chat.SendSystemAction(fmt.Sprintf("**%s** 已被移出聊天。", displayName), true)
 
 	localIP4Address := "127.0.0.1"
 	localIP6Address := "::1"

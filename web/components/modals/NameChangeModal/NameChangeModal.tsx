@@ -4,9 +4,10 @@ import { Input, Button, Select, Form } from 'antd';
 import { useTranslation } from 'next-export-i18n';
 import { MessageType } from '../../../interfaces/socket-events';
 import { websocketServiceAtom, currentUserAtom } from '../../stores/ClientConfigStore';
-import { validateDisplayName } from '../../../utils/displayNameValidation';
+import { DisplayNameErrorCode, validateDisplayName } from '../../../utils/displayNameValidation';
 import { Translation } from '../../ui/Translation/Translation';
 import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 import styles from './NameChangeModal.module.scss';
 
 const { Option } = Select;
@@ -93,6 +94,36 @@ export const NameChangeModal: FC<NameChangeModalProps> = ({ closeModal }) => {
     t(Localization.Frontend.NameChangeModal.placeholder) || 'Your chat display name';
 
   const validation = validateDisplayName(newName, displayName, characterLimit);
+  const validationMessage = (code: DisplayNameErrorCode | undefined) => {
+    switch (code) {
+      case 'required':
+        return translated(
+          t,
+          Localization.Frontend.Validation.displayNameRequired,
+          '请填写显示名称',
+        );
+      case 'whitespace':
+        return translated(
+          t,
+          Localization.Frontend.Validation.displayNameWhitespace,
+          '显示名称不能为空，也不能只包含空格',
+        );
+      case 'unchanged':
+        return translated(
+          t,
+          Localization.Frontend.Validation.displayNameUnchanged,
+          '新名称必须和当前名称不同',
+        );
+      case 'tooLong':
+        return translated(
+          t,
+          Localization.Frontend.Validation.displayNameTooLong,
+          '显示名称不能超过 {{characterLimit}} 个字符',
+        ).replace('{{characterLimit}}', String(characterLimit));
+      default:
+        return validation.errorMessage || '';
+    }
+  };
 
   const saveButton = (
     <Button
@@ -129,7 +160,7 @@ export const NameChangeModal: FC<NameChangeModalProps> = ({ closeModal }) => {
           className={styles.inputGroup}
         />
         {!validation.isValid && validation.errorMessage && (
-          <div className={styles.error}>{validation.errorMessage}</div>
+          <div className={styles.error}>{validationMessage(validation.errorCode)}</div>
         )}
       </Form>
       <Form.Item

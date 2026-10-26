@@ -1,6 +1,5 @@
 import { useAtom, useAtomValue } from 'jotai';
-import { Skeleton, Row, Button, Spin } from 'antd';
-import MessageFilled from '@ant-design/icons/MessageFilled';
+import { Skeleton, Row, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import classnames from 'classnames';
@@ -9,6 +8,7 @@ import ActionButtons from './ActionButtons';
 import { LOCAL_STORAGE_KEYS, getLocalStorage, setLocalStorage } from '../../../utils/localStorage';
 import { canPushNotificationsBeSupported } from '../../../utils/browserPushNotifications';
 import { Localization } from '../../../types/localization';
+import { translated } from '../../../utils/playerLanguage';
 
 import {
   clientConfigStateAtom,
@@ -33,7 +33,6 @@ import { ExternalAction } from '../../../interfaces/external-action';
 import { Modal } from '../Modal/Modal';
 import { DesktopContent } from './DesktopContent';
 import { MobileContent } from './MobileContent';
-import { Footer } from '../Footer/Footer';
 import { useFederatedServers } from '../../../hooks/useFederatedServers';
 
 // Lazy loaded components
@@ -66,17 +65,13 @@ const BrowserNotifyModal = dynamic(
 );
 
 const OwncastPlayer = dynamic(
-  () => import('../../video/OwncastPlayer/OwncastPlayer').then(mod => mod.OwncastPlayer),
+  () =>
+    import(/* webpackPrefetch: true */ '../../video/OwncastPlayer/OwncastPlayer').then(
+      mod => mod.OwncastPlayer,
+    ),
   {
     ssr: false,
     loading: () => <Skeleton loading active paragraph={{ rows: 12 }} />,
-  },
-);
-
-const ChatModal = dynamic(
-  () => import('../../modals/ChatModal/ChatModal').then(mod => mod.ChatModal),
-  {
-    ssr: false,
   },
 );
 
@@ -124,12 +119,13 @@ export const Content: FC = () => {
     extraPageContent,
     name,
     summary,
-    socialHandles,
-    tags,
+    logo,
     externalActions,
     offlineMessage,
     chatDisabled,
+    chatMuted,
     chatRequireAuthentication,
+    pageFigure,
     federation,
     notifications,
     pluginTabs,
@@ -151,9 +147,7 @@ export const Content: FC = () => {
   // social features: federation stays on (follow button, go-live posts,
   // engagement) but the public followers list is not shown.
   const showFollowersTab = fediverseEnabled && !hideFollowersTab;
-  const { servers: federatedServers } = useFederatedServers();
-
-  const [showChatModal, setShowChatModal] = useState(false);
+  const { servers: federatedServers } = useFederatedServers(false, supportFediverseFeatures);
 
   const externalActionSelected = (action: ExternalAction) => {
     const { openExternally, url } = action;
@@ -247,13 +241,17 @@ export const Content: FC = () => {
 
   // Determine if chat input should be enabled based on authentication requirements.
   // Moderators bypass the authentication requirement.
+  const viewerMuted = !!chatMuted && !currentUser?.isModerator;
   const chatInputEnabled = !!(
     isChatAvailable &&
+    !viewerMuted &&
     (!chatRequireAuthentication || isUserAuthenticated || currentUser?.isModerator)
   );
-  const chatInputDisabledMessage = chatRequireAuthentication
-    ? t(Localization.Frontend.Chat.authenticateToChat)
-    : t(Localization.Frontend.chatDisabled);
+  const chatInputDisabledMessage = viewerMuted
+    ? '全员禁言中'
+    : chatRequireAuthentication
+      ? t(Localization.Frontend.Chat.authenticateToChat)
+      : t(Localization.Frontend.chatDisabled);
 
   return (
     <div className={styles.main}>
@@ -263,7 +261,11 @@ export const Content: FC = () => {
             className={classnames([styles.topSectionElement, styles.centerSpinner])}
             style={{ height: '30vh' }}
           >
-            <Spin delay={2} size="large" tip="One moment..." />
+            <Spin
+              delay={2}
+              size="large"
+              tip={translated(t, Localization.Frontend.oneMoment, '请稍候…')}
+            />
           </div>
         )}
         <Row>
@@ -303,6 +305,25 @@ export const Content: FC = () => {
             />
           )}
         </Row>
+        {showChat && isMobile && currentUser && (
+          <section
+            id="mobile-inline-chat"
+            className={styles.mobileInlineChat}
+            aria-label={t(Localization.Frontend.openChat)}
+          >
+            <ChatContainer
+              messages={messages}
+              usernameToHighlight={currentUser.displayName}
+              chatUserId={currentUser.id}
+              isModerator={currentUser.isModerator}
+              chatAvailable={isChatAvailable}
+              showInput
+              inputEnabled={chatInputEnabled}
+              inputDisabledPlaceholder={chatInputDisabledMessage}
+              focusInput={false}
+            />
+          </section>
+        )}
         <Row>
           <ActionButtons
             supportFediverseFeatures={supportFediverseFeatures}
@@ -328,33 +349,31 @@ export const Content: FC = () => {
             <MobileContent
               name={name}
               summary={summary}
-              tags={tags}
-              socialHandles={socialHandles}
               extraPageContent={extraPageContent}
+              pageFigure={pageFigure}
               pluginTabs={pluginTabs}
               setShowFollowModal={setShowFollowModal}
               showFollowersTab={showFollowersTab}
               online={online}
               federatedServers={federatedServers}
+              logo={logo || '/logo'}
             />
           ) : (
             <div className={desktopStyles.bottomSectionContent}>
               <DesktopContent
                 name={name}
                 summary={summary}
-                tags={tags}
-                socialHandles={socialHandles}
                 extraPageContent={extraPageContent}
+                pageFigure={pageFigure}
                 pluginTabs={pluginTabs}
                 setShowFollowModal={setShowFollowModal}
                 showFollowersTab={showFollowersTab}
                 federatedServers={federatedServers}
+                logo={logo || '/logo'}
               />
             </div>
           )}
         </Row>
-        <div style={{ flex: '1 1' }} />
-        <Footer />
       </div>
       {showChat && !isMobile && currentUser && (
         <ChatContainer
@@ -382,25 +401,6 @@ export const Content: FC = () => {
           name={name}
           handleClose={() => setShowFollowModal(false)}
         />
-      )}
-      {isMobile && showChatModal && chatState === ChatState.VISIBLE && (
-        <ChatModal
-          messages={messages}
-          currentUser={currentUser}
-          handleClose={() => setShowChatModal(false)}
-          inputEnabled={chatInputEnabled}
-          inputDisabledPlaceholder={chatInputDisabledMessage}
-        />
-      )}
-      {isMobile && isChatAvailable && !chatDisabled && (
-        <Button
-          id="mobile-chat-button"
-          type="primary"
-          onClick={() => setShowChatModal(true)}
-          className={styles.floatingMobileChatModalButton}
-        >
-          Chat <MessageFilled />
-        </Button>
       )}
     </div>
   );

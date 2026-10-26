@@ -30,6 +30,7 @@ import {
 import { ServerStatusContext } from '../../utils/server-status-context';
 
 import { AdminLayout } from '../../components/layouts/AdminLayout';
+import { EntryGateConfig } from '../../components/admin/config/chat/EntryGateConfig';
 
 export default function ConfigChat() {
   const { Title } = Typography;
@@ -186,6 +187,7 @@ export default function ConfigChat() {
   return (
     <div className="config-server-details-form">
       <Title>Chat Settings</Title>
+      <EntryGateConfig />
       <Row gutter={[45, 16]}>
         <Col md={24} lg={12}>
           <div className="form-module">

@@ -24,7 +24,7 @@ const freshModules = (): {
   let shouldClean!: ShouldCleanUrlAfterFlip;
   let i18n!: I18nShape;
   jest.isolateModules(() => {
-    /* eslint-disable global-require, @typescript-eslint/no-var-requires */
+    /* eslint-disable global-require, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
     load = require('../utils/localeLoader').loadViewerLocale;
     shouldClean = require('../utils/localeLoader').shouldCleanUrlAfterFlip;
     i18n = require('../i18n');
@@ -54,18 +54,24 @@ const makeRouter = (query: Record<string, string>) => {
 
 describe('pickLocale', () => {
   test.each([
-    ['valid query wins over browser language', 'de', 'fr-FR', 'de'],
-    ['unknown query falls back to browser language', 'xx', 'de-DE', 'de'],
-    ['absent query uses browser language', undefined, 'de-DE', 'de'],
-    ['regional browser tag maps to its base locale', undefined, 'de-AT', 'de'],
-    ['browser tag is case-insensitive', undefined, 'DE-at', 'de'],
+    ['valid query loads that catalog', 'de', 'fr-FR', 'de'],
+    ['unknown query stays on the bundled default', 'xx', 'de-DE', null],
+    ['absent query ignores browser language', undefined, 'de-DE', null],
+    ['malay browser stays on Simplified Chinese', undefined, 'ms-MY', null],
     ['query is exact-match only, no case folding', 'DE', 'zz-ZZ', null],
     ['english from the query needs no catalog', 'en', 'de-DE', null],
-    ['english from the browser needs no catalog', undefined, 'en-US', null],
+    ['english from the browser stays on the bundled default', undefined, 'en-US', null],
+    ['simplified Chinese browser stays on the bundled default', undefined, 'zh-CN', null],
+    ['generic zh browser stays on simplified Chinese', undefined, 'zh', null],
+    ['zh-Hans browser stays on simplified Chinese', undefined, 'zh-Hans', null],
+    ['traditional Chinese browser stays on simplified Chinese', undefined, 'zh-TW', null],
+    ['zh-HK browser stays on simplified Chinese', undefined, 'zh-HK', null],
+    ['explicit zh query is not remapped onto zh-CN', 'zh', 'zh-CN', 'zh'],
+    ['explicit zh-CN query needs no fetch', 'zh-CN', 'de-DE', null],
     ['unknown query and unknown browser yield nothing', 'xx', 'zz-ZZ', null],
     ['both inputs missing yields nothing', undefined, undefined, null],
-  ])('%s', (_name, queryLang, browserLanguage, expected) => {
-    expect(pickLocale(queryLang, browserLanguage)).toBe(expected);
+  ])('%s', (_name, queryLang, _browserLanguage, expected) => {
+    expect(pickLocale(queryLang)).toBe(expected);
   });
 });
 
@@ -98,6 +104,8 @@ describe('AVAILABLE_LOCALES', () => {
   test('offers en and de but deliberately not eu', () => {
     expect(AVAILABLE_LOCALES).toContain('en');
     expect(AVAILABLE_LOCALES).toContain('de');
+    expect(AVAILABLE_LOCALES).toContain('zh');
+    expect(AVAILABLE_LOCALES).toContain('zh-CN');
     expect(AVAILABLE_LOCALES).not.toContain('eu');
   });
 
@@ -114,31 +122,21 @@ describe('AVAILABLE_LOCALES', () => {
 });
 
 describe('loadViewerLocale', () => {
-  test('German browser without ?lang loads the catalog and sets lang once', async () => {
+  test('German browser without ?lang stays on Simplified Chinese', async () => {
     setBrowserLanguage('de-DE');
     const { load, i18n } = freshModules();
     const { router, replace } = makeRouter({ existing: 'param' });
 
     await load(router);
 
-    // The real catalog was fetched and patched into the shared i18n object.
-    const de = i18n.translations.de as {
-      Admin: { AccessTokens: { createNewAccessToken: string } };
-    };
-    expect(typeof de.Admin.AccessTokens.createNewAccessToken).toBe('string');
-
-    // One replace that adds lang while keeping existing query params.
-    expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith({ query: { existing: 'param', lang: 'de' } }, undefined, {
-      shallow: true,
-      scroll: false,
-    });
+    expect(replace).not.toHaveBeenCalled();
+    expect(Object.keys(i18n.translations)).toEqual(['en', 'zh-CN']);
   });
 
   test('loaded catalog retains translated values', async () => {
     setBrowserLanguage('el-GR');
     const { load, i18n } = freshModules();
-    const { router } = makeRouter({});
+    const { router } = makeRouter({ lang: 'el' });
 
     await load(router);
 
@@ -176,18 +174,18 @@ describe('loadViewerLocale', () => {
     await load(router);
 
     expect(replace).not.toHaveBeenCalled();
-    expect(Object.keys(i18n.translations)).toEqual(['en']);
+    expect(Object.keys(i18n.translations)).toEqual(['en', 'zh-CN']);
   });
 
   test('second call is a no-op even with different inputs', async () => {
     setBrowserLanguage('de-DE');
     const { load, i18n } = freshModules();
-    const first = makeRouter({});
+    const first = makeRouter({ lang: 'de' });
     await load(first.router);
-    expect(first.replace).toHaveBeenCalledTimes(1);
+    expect(first.replace).toHaveBeenCalledTimes(2);
 
-    // Different browser language and an explicit ?lang: the once-guard must
-    // still win, so no French catalog and no navigation.
+    // A later explicit ?lang= must not start another load: the once-guard
+    // still wins, so no French catalog and no navigation.
     setBrowserLanguage('fr-FR');
     const second = makeRouter({ lang: 'fr' });
     await load(second.router);
@@ -206,43 +204,29 @@ describe('loadViewerLocale', () => {
     await load(first.router);
 
     expect(first.replace).not.toHaveBeenCalled();
-    expect(Object.keys(i18n.translations)).toEqual(['en']);
+    expect(Object.keys(i18n.translations)).toEqual(['en', 'zh-CN']);
 
-    // Same module instance, now with a loadable browser locale.
+    // Same module instance, now with an explicit loadable ?lang=.
     setBrowserLanguage('de-DE');
-    const second = makeRouter({});
+    const second = makeRouter({ lang: 'de' });
     await load(second.router);
 
     expect(i18n.translations.de).toBeDefined();
-    expect(second.replace).toHaveBeenCalledTimes(1);
-    expect(second.replace).toHaveBeenCalledWith({ query: { lang: 'de' } }, undefined, {
-      shallow: true,
-      scroll: false,
-    });
-    expect(shouldClean('de')).toBe(true);
+    expect(second.replace).toHaveBeenCalledTimes(2);
     expect(shouldClean('de')).toBe(false);
   });
 });
 
 describe('shouldCleanUrlAfterFlip', () => {
-  test('browser-default load registers a consume-once cleanup for its locale', async () => {
+  test('browser-default load does not switch language or register cleanup', async () => {
     setBrowserLanguage('de-DE');
     const { load, shouldClean } = freshModules();
     const { router, replace } = makeRouter({});
 
     await load(router);
 
-    // The loader itself never performs the cleanup: still exactly one
-    // replace, the one that adds ?lang=de.
-    expect(replace).toHaveBeenCalledTimes(1);
-
-    // A non-matching locale neither matches nor consumes the pending cleanup.
-    expect(shouldClean('fr')).toBe(false);
-
-    // The matching locale consumes it exactly once.
-    expect(shouldClean('de')).toBe(true);
+    expect(replace).not.toHaveBeenCalled();
     expect(shouldClean('de')).toBe(false);
-    expect(shouldClean('fr')).toBe(false);
   });
 
   test('explicit ?lang load never registers a cleanup', async () => {

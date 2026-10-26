@@ -22,6 +22,8 @@ import { MessageType, SocketEvent } from '../interfaces/socket-events';
 
 type MockSocket = {
   accessToken: string;
+  host: string;
+  isShutdown: boolean;
   shutdown: jest.Mock;
   handleMessage?: (message: SocketEvent) => void;
   socketConnected?: () => void;
@@ -33,16 +35,25 @@ type MockSocket = {
 const mockSockets: MockSocket[] = [];
 jest.mock('../services/websocket-service', () => ({
   __esModule: true,
-  default: jest.fn().mockImplementation(function fakeSocket(this: MockSocket, accessToken: string) {
+  default: jest.fn().mockImplementation(function fakeSocket(
+    this: MockSocket,
+    accessToken: string,
+    _path: string,
+    host: string,
+  ) {
     this.accessToken = accessToken;
-    this.shutdown = jest.fn();
+    this.host = host;
+    this.isShutdown = false;
+    this.shutdown = jest.fn(() => {
+      this.isShutdown = true;
+    });
     mockSockets.push(this);
   }),
 }));
 
 const hydrationWindow = window as unknown as {
-  configHydration?: string;
-  statusHydration?: string;
+  configHydration?: string | Record<string, unknown>;
+  statusHydration?: string | Record<string, unknown>;
 };
 
 const testConfig = { ...makeEmptyClientConfig(), name: 'test server', summary: 'from api' };
@@ -103,6 +114,7 @@ describe('ClientConfigStore', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
@@ -117,6 +129,21 @@ describe('ClientConfigStore', () => {
     await waitFor(() => expect(store.get(serverStatusState).online).toBe(true));
     // The app state machine must leave "loading" and reflect the live stream.
     await waitFor(() => expect(store.get(appStateAtom).videoAvailable).toBe(true));
+  });
+
+  it('applies object hydration injected by the Go index template without hitting the API', async () => {
+    localStorage.setItem('accessToken', 'saved-token');
+    hydrationWindow.configHydration = { ...testConfig, summary: 'from object hydration' };
+    hydrationWindow.statusHydration = onlineStatus;
+    const services = makeServices();
+    const store = renderStore(services);
+
+    await waitFor(() => expect(store.get(isClientConfigLoadedAtom)).toBe(true));
+    expect(store.get(clientConfigStateAtom).summary).toBe('from object hydration');
+    expect(store.get(serverStatusState).online).toBe(true);
+    await waitFor(() => expect(store.get(appStateAtom).videoAvailable).toBe(true));
+    expect(services.configService.getConfig).not.toHaveBeenCalled();
+    expect(services.statusService.getStatus).not.toHaveBeenCalled();
   });
 
   it('applies server-injected hydration data from the mount effect without hitting the API', async () => {
@@ -144,6 +171,29 @@ describe('ClientConfigStore', () => {
     await waitFor(() => expect(store.get(isClientConfigLoadedAtom)).toBe(true));
     expect(services.configService.getConfig).toHaveBeenCalled();
     expect(store.get(clientConfigStateAtom).summary).toBe('from api');
+  });
+
+  it('holds registration when the entry gate is enabled', async () => {
+    hydrationWindow.configHydration = {
+      ...testConfig,
+      entryGate: {
+        enabled: true,
+        title: '擒龙直播间 实名验证',
+        body: '请填写姓名',
+        placeholder: '姓名',
+        button: '进入',
+        footer: '页脚',
+      },
+    };
+    const services = makeServices();
+    const store = renderStore(services);
+
+    await waitFor(() => expect(store.get(isClientConfigLoadedAtom)).toBe(true));
+    await new Promise(resolve => {
+      window.setTimeout(resolve, 30);
+    });
+    expect(services.chatService.registerUser).not.toHaveBeenCalled();
+    expect(store.get(accessTokenAtom)).toBeNull();
   });
 
   it('registers a new chat user and stores the access token', async () => {
@@ -190,6 +240,29 @@ describe('ClientConfigStore', () => {
 
     await waitFor(() => expect(store.get(accessTokenAtom)).toBe('saved-token'));
     expect(services.chatService.registerUser).not.toHaveBeenCalled();
+  });
+
+  it('moves chat to the socket host override when config gains one', async () => {
+    localStorage.setItem('accessToken', 'saved-token');
+    hydrationWindow.configHydration = { ...testConfig, socketHostOverride: '' };
+    hydrationWindow.statusHydration = onlineStatus;
+    const services = makeServices();
+    const store = renderStore(services);
+
+    await waitFor(() => expect(mockSockets).toHaveLength(1));
+    expect(mockSockets[0].host).toBe(`${window.location.origin}${window.location.pathname}`);
+
+    act(() => {
+      store.set(clientConfigStateAtom, {
+        ...testConfig,
+        socketHostOverride: 'https://live.example.com',
+      });
+    });
+
+    await waitFor(() => expect(mockSockets).toHaveLength(2));
+    expect(mockSockets[0].shutdown).toHaveBeenCalled();
+    expect(mockSockets[1].host).toBe('https://live.example.com');
+    expect(mockSockets[1].accessToken).toBe('saved-token');
   });
 
   it('starts the websocket with the access token once config is loaded', async () => {
@@ -262,6 +335,27 @@ describe('ClientConfigStore', () => {
     await waitFor(() => expect(store.get(accessTokenAtom)).toBe('new-token'));
     expect(localStorage.getItem('accessToken')).toBe('new-token');
     expect(services.chatService.registerUser).toHaveBeenCalled();
+  });
+
+  it('polls config so branding changes show without a refresh', async () => {
+    jest.useFakeTimers();
+    localStorage.setItem('accessToken', 'saved-token');
+    const services = makeServices();
+    services.configService.getConfig
+      .mockResolvedValueOnce(testConfig)
+      .mockResolvedValueOnce({ ...testConfig, summary: 'updated intro', name: '新名称' });
+    const store = renderStore(services);
+
+    await waitFor(() => expect(store.get(isClientConfigLoadedAtom)).toBe(true));
+    expect(store.get(clientConfigStateAtom).summary).toBe('from api');
+
+    await act(async () => {
+      jest.advanceTimersByTime(15000);
+    });
+
+    await waitFor(() => expect(store.get(clientConfigStateAtom).summary).toBe('updated intro'));
+    expect(store.get(clientConfigStateAtom).name).toBe('新名称');
+    jest.useRealTimers();
   });
 
   it('surfaces a fatal error when the server is unreachable', async () => {

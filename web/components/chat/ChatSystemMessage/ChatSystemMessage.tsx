@@ -2,9 +2,11 @@ import { FC } from 'react';
 import cn from 'classnames';
 import { Interweave } from 'interweave';
 import { UrlMatcher } from 'interweave-autolink';
+
 import { ChatMessage } from '../../../interfaces/chat-message.model';
 import styles from './ChatSystemMessage.module.scss';
 import { ChatMessageHighlightMatcher } from '../ChatUserMessage/customMatcher';
+import { localizeChatSystemBody } from '../../../utils/chatSystemCopy';
 
 export type ChatSystemMessageProps = {
   message: ChatMessage;
@@ -17,20 +19,24 @@ export const ChatSystemMessage: FC<ChatSystemMessageProps> = ({
     user: { displayName },
   },
   highlightString,
-}) => (
-  <div className={styles.chatSystemMessagePadding}>
-    <div className={cn([styles.chatSystemMessage, 'chat-message_system'])}>
-      <div className={styles.user}>
-        <span className={styles.userName}>{displayName}</span>
+}) => {
+  const content = localizeChatSystemBody(body);
+
+  return (
+    <div className={styles.chatSystemMessagePadding}>
+      <div className={cn([styles.chatSystemMessage, 'chat-message_system'])}>
+        <div className={styles.user}>
+          <span className={styles.userName}>{displayName}</span>
+        </div>
+        <Interweave
+          className={styles.message}
+          content={content}
+          matchers={[
+            new UrlMatcher('url', { customTLDs: ['online'] }),
+            new ChatMessageHighlightMatcher('highlight', { highlightString }),
+          ]}
+        />
       </div>
-      <Interweave
-        className={styles.message}
-        content={body}
-        matchers={[
-          new UrlMatcher('url', { customTLDs: ['online'] }),
-          new ChatMessageHighlightMatcher('highlight', { highlightString }),
-        ]}
-      />
     </div>
-  </div>
-);
+  );
+};

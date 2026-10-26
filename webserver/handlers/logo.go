@@ -74,6 +74,35 @@ func (h *Handlers) GetCompatibleLogo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetSharePreview serves the admin-uploaded Open Graph / WeChat share image.
+func (h *Handlers) GetSharePreview(w http.ResponseWriter, r *http.Request) {
+	imageFilename := h.configRepository.GetSharePreviewPath()
+	if imageFilename == "" {
+		h.GetCompatibleLogo(w, r)
+		return
+	}
+
+	imagePath := filepath.Join(config.DataDirectory, imageFilename)
+	imageBytes, err := getImage(imagePath)
+	if err != nil {
+		h.GetCompatibleLogo(w, r)
+		return
+	}
+
+	contentType := "image/jpeg"
+	switch filepath.Ext(imageFilename) {
+	case ".png":
+		contentType = "image/png"
+	case ".gif":
+		contentType = "image/gif"
+	case ".svg":
+		contentType = "image/svg+xml"
+	}
+
+	cacheTime := utils.GetCacheDurationSecondsForPath(imagePath)
+	writeBytesAsImage(imageBytes, contentType, w, cacheTime)
+}
+
 func returnDefault(w http.ResponseWriter) {
 	imageBytes := static.GetLogo()
 	cacheTime := utils.GetCacheDurationSecondsForPath("logo.png")

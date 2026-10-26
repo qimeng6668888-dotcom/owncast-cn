@@ -112,14 +112,20 @@ func (h *Handlers) renderIndexHtml(w http.ResponseWriter, r *http.Request, nonce
 	}
 
 	configRepository := h.configRepository
+	scheme, host := requestSchemeAndHost(r, configRepository.GetServerURL())
+	ogImage := h.ogImageAbsoluteURL(scheme, host)
+	requestedURL := fmt.Sprintf("%s://%s/", scheme, host)
+	if siteURL := configRepository.GetServerURL(); siteURL != "" {
+		requestedURL = strings.TrimRight(siteURL, "/") + "/"
+	}
 	content := serverSideContent{
 		Name:             configRepository.GetServerName(),
 		Summary:          configRepository.GetServerSummary(),
-		RequestedURL:     fmt.Sprintf("%s%s", configRepository.GetServerURL(), "/"),
+		RequestedURL:     requestedURL,
 		TagsString:       strings.Join(configRepository.GetServerMetadataTags(), ","),
-		ThumbnailURL:     thumbnailFilename,
-		Thumbnail:        thumbnailFilename,
-		Image:            "logo/external",
+		ThumbnailURL:     ogImage,
+		Thumbnail:        ogImage,
+		Image:            ogImage,
 		StatusJSON:       string(sb),
 		ServerConfigJSON: string(cb),
 		EmbedVideo:       "embed/video",
@@ -159,7 +165,7 @@ type MetadataPage struct {
 // Return a basic HTML page with server-rendered metadata from the config
 // to give to Opengraph clients and web scrapers (bots, web crawlers, etc).
 func (h *Handlers) handleScraperMetadataPage(w http.ResponseWriter, r *http.Request) {
-	cacheKey := "bot-scraper-html"
+	cacheKey := "bot-scraper-html:" + h.configRepository.GetSharePreviewUniquenessString()
 	cacheHtmlExpiration := time.Duration(60) * time.Second
 	c := h.cache.GetOrCreate(cacheKey, cacheHtmlExpiration)
 
@@ -177,46 +183,23 @@ func (h *Handlers) handleScraperMetadataPage(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	scheme := "http"
 	configRepository := h.configRepository
-	if siteURL := configRepository.GetServerURL(); siteURL != "" {
-		if parsed, err := url.Parse(siteURL); err == nil && parsed.Scheme != "" {
-			scheme = parsed.Scheme
-		}
-	}
+	scheme, host := requestSchemeAndHost(r, configRepository.GetServerURL())
 
-	fullURL, err := url.Parse(fmt.Sprintf("%s://%s%s", scheme, r.Host, r.URL.Path))
-	if err != nil {
-		log.Errorln(err)
-	}
-	imageURL, err := url.Parse(fmt.Sprintf("%s://%s%s", scheme, r.Host, "/logo/external"))
+	fullURL, err := url.Parse(fmt.Sprintf("%s://%s%s", scheme, host, r.URL.Path))
 	if err != nil {
 		log.Errorln(err)
 	}
 
-	status := h.stream.GetStatus()
-
-	// If the thumbnail does not exist or we're offline then just use the logo image
-	var thumbnailURL string
-	if status.Online && utils.DoesFileExists(filepath.Join(config.DataDirectory, "tmp", thumbnailFilename)) {
-		thumbnail, err := url.Parse(fmt.Sprintf("%s://%s/%s", scheme, r.Host, thumbnailFilename))
-		if err != nil {
-			log.Errorln(err)
-			thumbnailURL = imageURL.String()
-		} else {
-			thumbnailURL = thumbnail.String()
-		}
-	} else {
-		thumbnailURL = imageURL.String()
-	}
+	ogImage := h.ogImageAbsoluteURL(scheme, host)
 
 	tagsString := strings.Join(configRepository.GetServerMetadataTags(), ",")
 	metadata := MetadataPage{
 		Name:          configRepository.GetServerName(),
 		RequestedURL:  fullURL.String(),
-		Image:         imageURL.String(),
+		Image:         ogImage,
 		Summary:       configRepository.GetServerSummary(),
-		Thumbnail:     thumbnailURL,
+		Thumbnail:     ogImage,
 		TagsString:    tagsString,
 		Tags:          configRepository.GetServerMetadataTags(),
 		SocialHandles: configRepository.GetSocialHandles(),
@@ -236,4 +219,53 @@ func (h *Handlers) handleScraperMetadataPage(w http.ResponseWriter, r *http.Requ
 	if _, err = w.Write(b.Bytes()); err != nil {
 		log.Errorln(err)
 	}
+}
+
+func requestSchemeAndHost(r *http.Request, siteURL string) (string, string) {
+	scheme := "http"
+	host := r.Host
+	if siteURL != "" {
+		if parsed, err := url.Parse(siteURL); err == nil {
+			if parsed.Scheme != "" {
+				scheme = parsed.Scheme
+			}
+			if parsed.Host != "" {
+				host = parsed.Host
+			}
+		}
+	}
+	if r.TLS != nil {
+		scheme = "https"
+	} else if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {
+		scheme = proto
+	}
+
+	return scheme, host
+}
+
+func (h *Handlers) ogImageAbsoluteURL(scheme, host string) string {
+	base := fmt.Sprintf("%s://%s", scheme, host)
+	configRepository := h.configRepository
+	if path := configRepository.GetSharePreviewPath(); path != "" {
+		if utils.DoesFileExists(filepath.Join(config.DataDirectory, path)) {
+			imageURL := base + "/share-preview"
+			if uniqueness := configRepository.GetSharePreviewUniquenessString(); uniqueness != "" {
+				imageURL += "?hash=" + url.QueryEscape(uniqueness)
+			}
+			return imageURL
+		}
+	}
+
+	if h.stream != nil {
+		status := h.stream.GetStatus()
+		thumbPath := filepath.Join(config.DataDirectory, "tmp", thumbnailFilename)
+		if h.cfg != nil && h.cfg.TempDir != "" {
+			thumbPath = filepath.Join(h.cfg.TempDir, thumbnailFilename)
+		}
+		if status.Online && utils.DoesFileExists(thumbPath) {
+			return base + "/" + thumbnailFilename
+		}
+	}
+
+	return base + "/logo/external"
 }

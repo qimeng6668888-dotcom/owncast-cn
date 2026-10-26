@@ -61,7 +61,10 @@ function getFederatedServerErrorMessage(
   return error.message || t(Localization.Admin.FeaturedStreams.failedToFeature);
 }
 
-export function useFederatedServers(isAdmin: boolean = false): UseFederatedServersResult {
+export function useFederatedServers(
+  isAdmin: boolean = false,
+  enabled: boolean = true,
+): UseFederatedServersResult {
   const { t } = useTranslation();
   const [servers, setServers] = useState<FederatedServerResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,10 +157,14 @@ export function useFederatedServers(isAdmin: boolean = false): UseFederatedServe
   // refetch, an infinite loop (the trap that previously hit useFeatureRequests).
   // The mount-time closure is sufficient; it only calls stable state setters.
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return undefined;
+    }
     fetchServers();
     const intervalId = setInterval(fetchServers, FEDERATED_SERVERS_POLL_INTERVAL);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [enabled]);
 
   return {
     servers,

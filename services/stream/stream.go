@@ -191,7 +191,7 @@ func (s *Service) applyStreamOnline() {
 
 	go s.webhooks.SendStreamStatusEvent(models.StreamStarted)
 
-	_ = s.chat.SendSystemAction("Stay tuned, the stream is **starting**!", true)
+	_ = s.chat.SendSystemAction("直播即将开始，请稍候。", true)
 	s.chat.SendAllWelcomeMessage()
 
 	// Send delayed notification messages.
@@ -219,7 +219,7 @@ func (s *Service) StreamDisconnected(_ error) {
 
 // applyStreamOffline handles the always-on cleanup when a live stream ends.
 func (s *Service) applyStreamOffline() {
-	_ = s.chat.SendSystemAction("The stream is ending.", true)
+	_ = s.chat.SendSystemAction("直播已结束。", true)
 
 	now := utils.NullTime{Time: time.Now(), Valid: true}
 	if s.onlineTimerCancelFunc != nil {

@@ -7,6 +7,27 @@ import (
 	"testing"
 )
 
+func TestIsUserAgentABot(t *testing.T) {
+	bots := []string{
+		"Twitterbot/1.0",
+		"facebookexternalhit/1.1",
+		"Slackbot-LinkExpanding 1.0",
+		"TelegramBot (like TwitterBot)",
+		"Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)",
+		"LinkedInBot/1.0",
+		"Mozilla/5.0 wechatdevtools",
+	}
+	for _, ua := range bots {
+		if !IsUserAgentABot(ua) {
+			t.Errorf("expected bot for %q", ua)
+		}
+	}
+
+	if IsUserAgentABot("Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1") {
+		t.Error("regular mobile Safari should not be treated as a crawler")
+	}
+}
+
 func TestGetHashtagsFromText(t *testing.T) {
 	text := `Some text with a #hashtag goes here.\n\n
 	Another #secondhashtag, goes here.\n\n

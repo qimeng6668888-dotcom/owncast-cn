@@ -5,6 +5,7 @@ import { FC } from 'react';
 import dynamic from 'next/dynamic';
 import { User } from '../../types/chat';
 import { BANNED_IP_REMOVE, fetchData } from '../../utils/apis';
+import { useAdminText } from '../../utils/adminText';
 
 // Lazy loaded components
 
@@ -34,19 +35,20 @@ export type UserTableProps = {
 };
 
 export const BannedIPsTable: FC<UserTableProps> = ({ data }) => {
+  const tx = useAdminText();
   const columns = [
     {
-      title: 'IP Address',
+      title: tx('IP Address'),
       dataIndex: 'ipAddress',
       key: 'ipAddress',
     },
     {
-      title: 'Reason',
+      title: tx('Reason'),
       dataIndex: 'notes',
       key: 'notes',
     },
     {
-      title: 'Created',
+      title: tx('Created'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (date: Date) => formatDisplayDate(date),
@@ -59,7 +61,7 @@ export const BannedIPsTable: FC<UserTableProps> = ({ data }) => {
       className: 'actions-col',
       render: (_, ip) => (
         <Button
-          title="Remove IP Address Ban"
+          title={tx('Remove IP Address Ban')}
           onClick={() => removeIPAddressBan(ip.ipAddress)}
           icon={<StopTwoTone twoToneColor="#ff4d4f" />}
           className="block-user-button"

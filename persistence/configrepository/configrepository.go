@@ -138,6 +138,18 @@ type ConfigRepository interface {
 	SetPrivateKey(key string) error
 	GetFaviconPath() string
 	SetFaviconPath(favicon string) error
+	GetSharePreviewPath() string
+	SetSharePreviewPath(path string) error
+	GetSharePreviewUniquenessString() string
+	SetSharePreviewUniquenessString(uniqueness string) error
+	GetEntryGate() models.EntryGate
+	SetEntryGate(gate models.EntryGate) error
+	SetEntryGateCrest(path, uniqueness string) error
+	GetChatMuted() bool
+	SetChatMuted(muted bool) error
+	GetPageFigure() models.PageFigure
+	SetPageFigure(figure models.PageFigure) error
+	SetPageFigureImage(path, uniqueness string) error
 }
 
 // temporaryGlobalInstance is set once during application startup so

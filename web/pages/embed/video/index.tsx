@@ -24,7 +24,7 @@ export default function VideoEmbed() {
   const appState = useAtomValue(appStateAtom);
   const configLoaded = useAtomValue(isClientConfigLoadedAtom);
 
-  const { name, summary, offlineMessage, federation, autoplay } = clientConfig;
+  const { name, summary, offlineMessage, federation, autoplay, logo } = clientConfig;
 
   const { viewerCount, lastConnectTime, lastDisconnectTime, streamTitle } = status;
   const online = useAtomValue(isOnlineSelector);
@@ -64,7 +64,7 @@ export default function VideoEmbed() {
     <OfflineEmbed
       streamName={name}
       subtitle={offlineMessage || summary}
-      image="/logo"
+      image={logo || '/logo'}
       supportsFollows={supportsSocialFollow}
     />
   );

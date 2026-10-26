@@ -54,23 +54,25 @@ export const AVAILABLE_LOCALES = [
   'th',
   'vi',
   'zh',
+  'zh-CN',
 ];
 
+/** Bundled product default. Returning it means "do not fetch". */
+export const DEFAULT_LOCALE = 'zh-CN';
+
 /**
- * Decides which locale catalog to fetch. An explicit, known ?lang= value
- * wins, then the browser's primary language. English needs no fetch, and
- * unknown values fall back to the browser language the same way the
- * library's own detection did when every catalog was bundled.
+ * Decides which locale catalog to fetch. Only an explicit, known ?lang=
+ * value switches away from Simplified Chinese. Browser language is ignored
+ * so Malay, English, and German viewers stay on zh-CN unless they pick
+ * another language in the URL. zh-CN and English are already bundled, so
+ * neither needs a fetch. An explicit ?lang=zh still loads Traditional.
  */
-export const pickLocale = (
-  queryLang: string | undefined,
-  browserLanguage: string | undefined,
-): string | null => {
-  const fromQuery = queryLang && AVAILABLE_LOCALES.includes(queryLang) ? queryLang : null;
-  const short = (browserLanguage || '').split('-')[0].toLowerCase();
-  const fromBrowser = AVAILABLE_LOCALES.includes(short) ? short : null;
-  const locale = fromQuery || fromBrowser;
-  return locale && locale !== 'en' ? locale : null;
+export const pickLocale = (queryLang: string | undefined): string | null => {
+  const locale = queryLang && AVAILABLE_LOCALES.includes(queryLang) ? queryLang : null;
+  if (!locale || locale === DEFAULT_LOCALE || locale === 'en') {
+    return null;
+  }
+  return locale;
 };
 
 let loadStarted = false;
@@ -110,20 +112,19 @@ export const loadViewerLocale = async (router: NextRouter): Promise<void> => {
   }
 
   const queryLang = typeof router.query.lang === 'string' ? router.query.lang : undefined;
-  const browserLanguage = window.navigator.languages?.[0] || window.navigator.language;
-  const locale = pickLocale(queryLang, browserLanguage);
+  const locale = pickLocale(queryLang);
   if (!locale || i18n.translations[locale]) {
     return;
   }
-  // Marked only once real work begins: a no-op evaluation (English browser,
-  // unknown locale, catalog already present) leaves the loader available for
+  // Marked only once real work begins: a no-op evaluation (default zh-CN,
+  // bundled English, unknown locale, catalog already present) leaves the loader available for
   // a later call that does name a loadable locale. Everything before this
   // line is synchronous, so a double invocation (React strict mode) can't
   // start the load twice.
   loadStarted = true;
 
   try {
-    // The locale is only known at runtime (browser language or ?lang=), so a
+    // The locale is only known at runtime from ?lang=, so a
     // static import cannot work here. webpack turns this into one chunk per
     // catalog and loads just the one the viewer needs.
     const importedCatalog = await import(`../i18n/${locale}/translation.json`);
@@ -149,7 +150,7 @@ export const loadViewerLocale = async (router: NextRouter): Promise<void> => {
     });
   } catch (e) {
     // A failed catalog fetch (flaky network, content blocker) just leaves
-    // the page in English rather than surfacing an error.
+    // the page on the default language rather than surfacing an error.
     pendingUrlCleanup = null;
     console.error(`unable to load the '${locale}' translation catalog`, e);
   }

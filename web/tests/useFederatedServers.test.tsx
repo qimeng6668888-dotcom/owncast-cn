@@ -85,6 +85,16 @@ describe('useFederatedServers contract', () => {
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/federation/servers'));
   });
 
+  it('does not fetch featured streams when federation is off', async () => {
+    mockFetchServers();
+    const DisabledHarness = () => {
+      useFederatedServers(false, false);
+      return null;
+    };
+    render(<DisabledHarness />);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
   describe('public StreamsTab rendering', () => {
     it('renders the friendly display name, logo, thumbnail and live status from the API fields', async () => {
       mockFetchServers();

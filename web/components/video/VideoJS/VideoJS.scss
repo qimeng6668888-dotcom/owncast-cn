@@ -113,6 +113,172 @@
   .vjs-control {
     color: var(--theme-color-components-text-on-light);
   }
+
+  // Phone bar. The class is added with the fullscreen decision so layout and
+  // behavior stay on the same devices. The progress slot is an empty flex
+  // grower (seeking is already off) and is what pushed 全屏 off the screen.
+  &.oc-phone-controls {
+    .vjs-control-bar {
+      align-items: center;
+      justify-content: space-evenly;
+      height: calc(48px + env(safe-area-inset-bottom, 0));
+      padding: 0 4px env(safe-area-inset-bottom, 0);
+      column-gap: 0;
+    }
+
+    .vjs-progress-control,
+    .vjs-custom-control-spacer,
+    .vjs-volume-control {
+      display: none !important;
+    }
+
+    .vjs-control-bar > .vjs-control {
+      flex: 0 0 auto;
+      align-self: center;
+      width: 40px;
+      min-width: 40px;
+      max-width: 40px;
+      height: 44px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .vjs-control-bar > .vjs-volume-panel,
+    .vjs-control-bar > .vjs-volume-panel.vjs-volume-panel-horizontal,
+    .vjs-control-bar > .vjs-hover.vjs-volume-panel-horizontal {
+      flex: 0 0 auto;
+      width: 40px !important;
+      min-width: 40px;
+      max-width: 40px;
+    }
+
+    .vjs-volume-panel .vjs-mute-control {
+      width: 40px;
+      min-width: 40px;
+      height: 44px;
+    }
+
+    .vjs-control-bar > .vjs-seek-to-live-control,
+    .vjs-control-bar > .vjs-fullscreen-control.oc-fullscreen-text {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: max-content;
+      max-width: none;
+      padding: 0 2px;
+    }
+
+    .vjs-button > .vjs-icon-placeholder::before {
+      top: 50%;
+      left: 50%;
+      width: auto;
+      height: auto;
+      font-size: 22px;
+      line-height: 1;
+      transform: translate(-50%, -50%);
+    }
+
+    .vjs-seek-to-live-control {
+      line-height: 1;
+
+      .vjs-icon-placeholder {
+        position: relative;
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        margin-right: 4px;
+      }
+
+      .vjs-icon-placeholder::before {
+        position: static;
+        font-size: 10px;
+        line-height: 1;
+        transform: none;
+      }
+
+      .vjs-seek-to-live-text {
+        line-height: 1;
+      }
+    }
+
+    .vjs-fullscreen-control.oc-fullscreen-text {
+      margin: 0;
+
+      .vjs-icon-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+
+      .vjs-icon-placeholder::before {
+        content: none;
+      }
+
+      .oc-fs-label {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1;
+        white-space: nowrap;
+      }
+    }
+
+    .vjs-airplay .vjs-icon-placeholder::before {
+      top: 50% !important;
+      left: 50% !important;
+      width: 22px !important;
+      height: 22px !important;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  .oc-exit-fullscreen {
+    display: none;
+  }
+}
+
+// Same element carries both classes. Exit sits in the top-right of the
+// full-window player and fades with the control bar (video.js user-inactive,
+// 2s after the last tap).
+.vjs-owncast.vjs-fullscreen .oc-exit-fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0));
+  right: calc(12px + env(safe-area-inset-right, 0));
+  z-index: 5;
+  min-width: 96px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(0 0 0 / 62%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.vjs-owncast.vjs-fullscreen.vjs-user-inactive .oc-exit-fullscreen {
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 1s,
+    visibility 1s;
+}
+
+.vjs-owncast.vjs-fullscreen.vjs-user-active .oc-exit-fullscreen {
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+
+body.vjs-full-window .video-js.vjs-fullscreen {
+  height: 100dvh !important;
 }
 
 .vjs-airplay {
@@ -139,4 +305,15 @@
 
 .vjs-seek-to-live-control.vjs-control.vjs-at-live-edge .vjs-icon-placeholder {
   color: var(--theme-color-components-video-live-indicator) !important;
+}
+
+// Chrome paints its own overflow chip on the video. Hide that chip only.
+// AirPlay, Picture-in-Picture, and the iOS system player stay available.
+.vjs-owncast video::-webkit-media-controls-overflow-button,
+.vjs-owncast video::-webkit-media-controls-overlay-enclosure {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }

@@ -5,8 +5,8 @@ describe('autoplayModeForSetting', () => {
     expect(autoplayModeForSetting(AutoplaySetting.Off)).toBe(false);
   });
 
-  test('always maps to the muted-fallback mode', () => {
-    expect(autoplayModeForSetting(AutoplaySetting.Always)).toBe('any');
+  test('always maps to play-with-sound', () => {
+    expect(autoplayModeForSetting(AutoplaySetting.Always)).toBe('play');
   });
 
   test('sound-only maps to the sound-or-paused mode', () => {
@@ -37,7 +37,7 @@ describe('autoplayModeForSetting', () => {
   });
 
   test('an inaudible start does not affect always', () => {
-    expect(autoplayModeForSetting(AutoplaySetting.Always, { startsInaudible: true })).toBe('any');
+    expect(autoplayModeForSetting(AutoplaySetting.Always, { startsInaudible: true })).toBe('play');
   });
 
   test('an audible start keeps sound-only autoplay', () => {
@@ -52,7 +52,7 @@ describe('autoplayModeForSetting', () => {
         prefersReducedMotion: false,
         saveData: false,
       }),
-    ).toBe('any');
+    ).toBe('play');
   });
 });
 

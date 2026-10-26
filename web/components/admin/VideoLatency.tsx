@@ -16,17 +16,10 @@ import {
   STATUS_SUCCESS,
 } from '../../utils/input-statuses';
 import { Localization } from '../../types/localization';
+import { useAdminText } from '../../utils/adminText';
 import { FormStatusIndicator } from './FormStatusIndicator';
 
 const { Title } = Typography;
-
-const SLIDER_MARKS = {
-  0: 'Lowest',
-  1: ' ',
-  2: ' ',
-  3: ' ',
-  4: 'Highest',
-};
 
 const SLIDER_COMMENTS = {
   0: 'Lowest latency, lowest error tolerance (Not recommended, may not work for all content/configurations.)',
@@ -39,6 +32,7 @@ const SLIDER_COMMENTS = {
 // eslint-disable-next-line import/prefer-default-export
 export const VideoLatency: FC = () => {
   const { t } = useTranslation();
+  const tx = useAdminText();
   const [submitStatus, setSubmitStatus] = useState<StatusState>(null);
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -116,7 +110,7 @@ export const VideoLatency: FC = () => {
   return (
     <div className="config-video-latency-container">
       <Title level={3} className="section-title">
-        Latency Buffer
+        {tx('Latency Buffer')}
       </Title>
       <p className="description">
         While it&apos;s natural to want to keep your latency as low as possible, you may experience
@@ -137,15 +131,21 @@ export const VideoLatency: FC = () => {
 
       <div className="segment-slider-container">
         <Slider
-          tooltip={{ formatter: value => SLIDER_COMMENTS[value] }}
+          tooltip={{ formatter: value => tx(SLIDER_COMMENTS[value]) }}
           onChange={handleChange}
           min={0}
           max={4}
-          marks={SLIDER_MARKS}
+          marks={{
+            0: tx('Lowest'),
+            1: ' ',
+            2: ' ',
+            3: ' ',
+            4: tx('Highest'),
+          }}
           defaultValue={selectedOption}
           value={selectedOption}
         />
-        <p className="selected-value-note">{SLIDER_COMMENTS[selectedOption]}</p>
+        <p className="selected-value-note">{tx(SLIDER_COMMENTS[selectedOption])}</p>
         <FormStatusIndicator status={submitStatus} />
       </div>
     </div>

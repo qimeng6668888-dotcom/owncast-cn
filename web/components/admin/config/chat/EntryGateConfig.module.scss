@@ -1,0 +1,39 @@
+.section {
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+
+  h2 {
+    margin-bottom: 8px;
+  }
+}
+
+.tip {
+  max-width: 720px;
+  margin-bottom: 16px;
+  color: var(--theme-color-text, #666);
+}
+
+.switchRow,
+.crestActions,
+.line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.line {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.preview {
+  padding: 28px 16px 16px;
+  border-radius: 12px;
+  background: rgb(5 12 28 / 72%);
+
+  p {
+    margin: 0 0 8px;
+    color: #d5dbe6;
+  }
+}

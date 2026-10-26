@@ -48,8 +48,6 @@ const Template: StoryFn<MobileContentProps> = args => (
 const defaultArgs: MobileContentProps = {
   name: 'Demo stream',
   summary: 'A live community stream with conversation, music, and the occasional guest.',
-  tags: ['live music', 'community', 'weekly show'],
-  socialHandles: [],
   extraPageContent: `
     <h2>Tonight’s broadcast</h2>
     <p>Join us for a relaxed live set, followed by a chat with local artists. New listeners are always welcome.</p>
