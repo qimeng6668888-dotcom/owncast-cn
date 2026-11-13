@@ -92,6 +92,7 @@ const initialServerConfigState: ConfigDetails = {
   chatJoinMessagesEnabled: true,
   chatEstablishedUserMode: false,
   hideViewerCount: false,
+  viewerCountOffset: 0,
   disableSearchIndexing: false,
 };
 

@@ -72,6 +72,7 @@ func (a *Admin) GetServerConfig(w http.ResponseWriter, r *http.Request) {
 		ChatRequireAuthentication: configRepository.GetChatRequireAuthentication(),
 		EntryGate:                 configRepository.GetEntryGate().Public(),
 		HideViewerCount:           configRepository.GetHideViewerCount(),
+		ViewerCountOffset:         configRepository.GetViewerCountOffset(),
 		DisableSearchIndexing:     configRepository.GetDisableSearchIndexing(),
 		VideoSettings: videoSettings{
 			VideoQualityVariants: videoQualityVariants,
@@ -160,6 +161,7 @@ type serverConfigAdminResponse struct {
 	DisableSearchIndexing     bool                        `json:"disableSearchIndexing"`
 	StreamKeyOverridden       bool                        `json:"streamKeyOverridden"`
 	HideViewerCount           bool                        `json:"hideViewerCount"`
+	ViewerCountOffset         int                         `json:"viewerCountOffset"`
 }
 
 type videoSettings struct {

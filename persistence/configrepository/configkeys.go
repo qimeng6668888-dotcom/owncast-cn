@@ -59,6 +59,7 @@ const (
 	browserPushPrivateKeyKey             = "browser_push_private_key"
 	hasConfiguredInitialNotificationsKey = "has_configured_initial_notifications"
 	hideViewerCountKey                   = "hide_viewer_count"
+	viewerCountOffsetKey                 = "viewer_count_offset"
 	customOfflineMessageKey              = "custom_offline_message"
 	customColorVariableValuesKey         = "custom_color_variable_values"
 	streamKeysKey                        = "stream_keys"

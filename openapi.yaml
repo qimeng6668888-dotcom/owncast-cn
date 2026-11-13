@@ -2488,6 +2488,35 @@ paths:
       responses:
         '204':
           $ref: '#/components/responses/204'
+  /admin/config/viewercountoffset:
+    post:
+      summary: Update the public viewer count offset
+      operationId: SetViewerCountOffset
+      tags: ['Internal', 'Admin']
+      security:
+        - BasicAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/AdminConfigValue'
+      responses:
+        '200':
+          description: Viewer count offset updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseAPIResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401BasicAuth'
+        default:
+          $ref: '#/components/responses/Default'
+    options:
+      operationId: SetViewerCountOffsetOptions
+      x-internal: true
+      tags: ['Objects', 'Internal', 'Admin']
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
   /admin/config/hideviewercount:
     post:
       summary: Update hide viewer count
@@ -4903,6 +4932,9 @@ components:
           type: boolean
         hideViewerCount:
           type: boolean
+        viewerCountOffset:
+          type: integer
+          description: Added to the real viewer count on the public page while the stream is live. Does not create viewers.
     AdminWebConfig:
       type: object
       properties:

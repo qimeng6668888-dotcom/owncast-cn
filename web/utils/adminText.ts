@@ -24,6 +24,7 @@ const ZH: Record<string, string> = {
   'NSFW?': '成人内容？',
   'Enable directory': '加入目录',
   'Hide viewer count': '隐藏观众人数',
+  'Viewer count offset': '观看人数加成',
   'Disable search engine indexing': '禁止搜索引擎收录',
   Chat: '聊天',
   'Spam Protection': '防刷屏',
@@ -179,6 +180,8 @@ const ZH: Record<string, string> = {
   'The direct URL of your Owncast server.': '这台服务器的直连地址。',
   'Turn this ON to request to show up in the directory.': '打开后会申请出现在目录里。',
   'Turn this ON to hide the viewer count on the web page.': '打开后网页上不再显示观众人数。',
+  'Added to the real viewer count on the public page while you are live. 50 real viewers and an offset of 500 shows 550. This does not create viewers. 0 leaves the count unchanged. You can change it during a live stream.':
+    '直播时加在真实观看人数上。真实 50 人、这里填 500，页面显示 550。不会制造虚假观众。填 0 则只显示真实人数。直播过程中可以改，保存后下一次刷新就会生效。',
   'Turn this ON to ask search engines to not index this site.': '打开后会请搜索引擎不要收录本站。',
   'Turn the chat functionality on/off on your Owncast server.': '打开或关闭本站聊天。',
   'Limits how quickly messages can be sent to prevent spamming.': '限制发消息的速度，防止刷屏。',

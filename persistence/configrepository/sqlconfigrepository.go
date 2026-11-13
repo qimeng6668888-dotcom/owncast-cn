@@ -1054,6 +1054,20 @@ func (r *SqlConfigRepository) SetHideViewerCount(hide bool) error {
 	return r.datastore.SetBool(hideViewerCountKey, hide)
 }
 
+// GetViewerCountOffset returns the amount added to the public viewer count while live.
+func (r *SqlConfigRepository) GetViewerCountOffset() int {
+	offset, err := r.datastore.GetNumber(viewerCountOffsetKey)
+	if err != nil || offset < 0 {
+		return 0
+	}
+	return int(offset)
+}
+
+// SetViewerCountOffset stores the amount added to the public viewer count while live.
+func (r *SqlConfigRepository) SetViewerCountOffset(offset int) error {
+	return r.datastore.SetNumber(viewerCountOffsetKey, float64(offset))
+}
+
 // GetCustomOfflineMessage will return the custom offline message.
 func (r *SqlConfigRepository) GetCustomOfflineMessage() string {
 	message, _ := r.datastore.GetString(customOfflineMessageKey)
