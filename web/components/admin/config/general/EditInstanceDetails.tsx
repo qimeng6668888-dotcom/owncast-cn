@@ -9,6 +9,7 @@ import {
   TEXTFIELD_TYPE_TEXTAREA,
   TEXTFIELD_TYPE_URL,
 } from '../../TextFieldWithSubmit';
+import { TEXTFIELD_TYPE_NUMBER } from '../../TextField';
 import { ServerStatusContext } from '../../../../utils/server-status-context';
 import {
   postConfigUpdateToAPI,
@@ -20,6 +21,7 @@ import {
   FIELD_PROPS_YP,
   FIELD_PROPS_NSFW,
   FIELD_PROPS_HIDE_VIEWER_COUNT,
+  FIELD_PROPS_VIEWER_COUNT_OFFSET,
   API_SERVER_OFFLINE_MESSAGE,
   FIELD_PROPS_DISABLE_SEARCH_INDEXING,
 } from '../../../../utils/config-constants';
@@ -110,7 +112,8 @@ export default function EditInstanceDetails() {
   const serverStatusData = useContext(ServerStatusContext);
   const { serverConfig } = serverStatusData || {};
 
-  const { instanceDetails, yp, hideViewerCount, disableSearchIndexing } = serverConfig;
+  const { instanceDetails, yp, hideViewerCount, disableSearchIndexing, viewerCountOffset } =
+    serverConfig;
   const { instanceUrl } = yp;
 
   const [offlineMessageSaveStatus, setOfflineMessageSaveStatus] = useState(null);
@@ -122,8 +125,9 @@ export default function EditInstanceDetails() {
       ...yp,
       hideViewerCount,
       disableSearchIndexing,
+      viewerCountOffset: viewerCountOffset ?? 0,
     });
-  }, [instanceDetails, yp]);
+  }, [instanceDetails, yp, viewerCountOffset]);
 
   if (!formDataValues) {
     return null;
@@ -289,6 +293,16 @@ export default function EditInstanceDetails() {
         {...FIELD_PROPS_HIDE_VIEWER_COUNT}
         checked={formDataValues.hideViewerCount}
         onChange={handleHideViewerCountChange}
+      />
+
+      <TextFieldWithSubmit
+        fieldName="viewerCountOffset"
+        {...FIELD_PROPS_VIEWER_COUNT_OFFSET}
+        value={formDataValues.viewerCountOffset ?? 0}
+        initialValue={viewerCountOffset ?? 0}
+        type={TEXTFIELD_TYPE_NUMBER}
+        min={0}
+        onChange={handleFieldChange}
       />
 
       <ToggleSwitch

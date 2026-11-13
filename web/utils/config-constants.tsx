@@ -38,6 +38,7 @@ const API_STREAM_TITLE = '/streamtitle';
 const API_TAGS = '/tags';
 const API_WEB_PORT = '/webserverport';
 const API_HIDE_VIEWER_COUNT = '/hideviewercount';
+const API_VIEWER_COUNT_OFFSET = '/viewercountoffset';
 const API_CHAT_DISABLE = '/chat/disable';
 const API_CHAT_JOIN_MESSAGES_ENABLED = '/chat/joinmessagesenabled';
 const API_CHAT_ESTABLISHED_MODE = '/chat/establishedusermode';
@@ -255,6 +256,14 @@ export const FIELD_PROPS_HIDE_VIEWER_COUNT = {
   configPath: '',
   label: 'Hide viewer count',
   tip: 'Turn this ON to hide the viewer count on the web page.',
+};
+
+export const FIELD_PROPS_VIEWER_COUNT_OFFSET = {
+  apiPath: API_VIEWER_COUNT_OFFSET,
+  configPath: '',
+  label: 'Viewer count offset',
+  tip: 'Added to the real viewer count on the public page while you are live. 50 real viewers and an offset of 500 shows 550. This does not create viewers. 0 leaves the count unchanged. You can change it during a live stream.',
+  maxLength: 7,
 };
 
 export const FIELD_PROPS_DISABLE_SEARCH_INDEXING = {

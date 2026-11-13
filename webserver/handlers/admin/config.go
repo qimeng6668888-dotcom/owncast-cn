@@ -1040,6 +1040,32 @@ func (a *Admin) SetHideViewerCount(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteSimpleResponse(w, true, "hide viewer count setting updated")
 }
 
+// SetViewerCountOffset sets how many viewers are added to the public count while live.
+func (a *Admin) SetViewerCountOffset(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		webutils.WriteSimpleResponse(w, false, "unable to update viewer count offset")
+		return
+	}
+
+	offset, ok := parseViewerCountOffset(configValue.Value)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "viewer count offset must be a whole number from 0 to 1000000")
+		return
+	}
+
+	if err := a.configRepository.SetViewerCountOffset(offset); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	webutils.WriteSimpleResponse(w, true, "viewer count offset updated")
+}
+
 // SetDisableSearchIndexing will set search indexing support.
 func (a *Admin) SetDisableSearchIndexing(w http.ResponseWriter, r *http.Request) {
 	if !requirePOST(w, r) {

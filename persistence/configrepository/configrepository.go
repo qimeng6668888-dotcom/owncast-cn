@@ -120,6 +120,8 @@ type ConfigRepository interface {
 	GetHasPerformedInitialNotificationsConfig() bool
 	GetHideViewerCount() bool
 	SetHideViewerCount(hide bool) error
+	GetViewerCountOffset() int
+	SetViewerCountOffset(offset int) error
 	GetCustomOfflineMessage() string
 	SetCustomOfflineMessage(message string) error
 	SetCustomColorVariableValues(variables map[string]string) error

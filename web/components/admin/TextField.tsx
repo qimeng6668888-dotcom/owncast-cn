@@ -32,6 +32,7 @@ export type TextFieldProps = {
   useTrim?: boolean;
   useTrimLead?: boolean;
   value?: string | number;
+  min?: number;
   hasComplexityRequirements?: boolean;
   onBlur?: FieldUpdaterFunc;
   onChange?: FieldUpdaterFunc;
@@ -55,6 +56,7 @@ export const TextField: FC<TextFieldProps> = ({
   type = TEXTFIELD_TYPE_TEXT,
   useTrim = false,
   value = '',
+  min,
   hasComplexityRequirements = false,
 }) => {
   const tx = useAdminText();
@@ -116,8 +118,10 @@ export const TextField: FC<TextFieldProps> = ({
     Field = InputNumber;
     fieldProps = {
       type: 'number',
-      min: 1,
+      min: min ?? 1,
       max: 10 ** maxLength - 1,
+      step: 1,
+      precision: 0,
     };
   } else if (type === TEXTFIELD_TYPE_URL) {
     fieldProps = {

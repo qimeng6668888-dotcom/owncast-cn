@@ -33,7 +33,7 @@ func (h *Handlers) getStatusResponse() webStatusResponse {
 		StreamTitle:        status.StreamTitle,
 	}
 	if !h.configRepository.GetHideViewerCount() {
-		response.ViewerCount = status.ViewerCount
+		response.ViewerCount = publicViewerCount(status.ViewerCount, status.Online, h.configRepository.GetViewerCountOffset())
 	}
 	return response
 }

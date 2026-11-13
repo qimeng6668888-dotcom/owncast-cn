@@ -239,32 +239,41 @@ type AdminNotificationsConfig struct {
 
 // AdminServerConfig defines model for AdminServerConfig.
 type AdminServerConfig struct {
-	AdminPassword           *string                   `json:"adminPassword,omitempty"`
-	ChatDisabled            *bool                     `json:"chatDisabled,omitempty"`
-	ChatEstablishedUserMode *bool                     `json:"chatEstablishedUserMode,omitempty"`
-	ChatJoinMessagesEnabled *bool                     `json:"chatJoinMessagesEnabled,omitempty"`
-	DisableSearchIndexing   *bool                     `json:"disableSearchIndexing,omitempty"`
-	ExternalActions         *[]ExternalAction         `json:"externalActions,omitempty"`
-	Federation              *AdminFederationConfig    `json:"federation,omitempty"`
-	FfmpegPath              *string                   `json:"ffmpegPath,omitempty"`
-	ForbiddenUsernames      *[]string                 `json:"forbiddenUsernames,omitempty"`
-	HideViewerCount         *bool                     `json:"hideViewerCount,omitempty"`
-	InstanceDetails         *AdminWebConfig           `json:"instanceDetails,omitempty"`
-	Notifications           *AdminNotificationsConfig `json:"notifications,omitempty"`
-	RtmpServerAddress       *string                   `json:"rtmpServerAddress,omitempty"`
-	RtmpServerPort          *int                      `json:"rtmpServerPort,omitempty"`
-	S3                      *S3Info                   `json:"s3,omitempty"`
-	SocketHostOverride      *string                   `json:"socketHostOverride,omitempty"`
-	StreamKeyOverridden     *bool                     `json:"streamKeyOverridden,omitempty"`
-	StreamKeys              *[]StreamKey              `json:"streamKeys,omitempty"`
-	SuggestedUsernames      *[]string                 `json:"suggestedUsernames,omitempty"`
-	SupportedCodecs         *[]string                 `json:"supportedCodecs,omitempty"`
-	VideoCodec              *string                   `json:"videoCodec,omitempty"`
-	VideoServingEndpoint    *string                   `json:"videoServingEndpoint,omitempty"`
-	VideoSettings           *AdminVideoSettings       `json:"videoSettings,omitempty"`
-	WebServerIP             *string                   `json:"webServerIP,omitempty"`
-	WebServerPort           *int                      `json:"webServerPort,omitempty"`
-	Yp                      *AdminYPInfo              `json:"yp,omitempty"`
+	AdminPassword           *string `json:"adminPassword,omitempty"`
+	ChatDisabled            *bool   `json:"chatDisabled,omitempty"`
+	ChatEstablishedUserMode *bool   `json:"chatEstablishedUserMode,omitempty"`
+	ChatJoinMessagesEnabled *bool   `json:"chatJoinMessagesEnabled,omitempty"`
+
+	// ChatMuted When true, viewers cannot send chat. Moderators still can.
+	ChatMuted             *bool `json:"chatMuted,omitempty"`
+	DisableSearchIndexing *bool `json:"disableSearchIndexing,omitempty"`
+
+	// EntryGate Card shown to a new viewer. The typed name becomes the chat display name. The player keeps loading behind the card.
+	EntryGate            *EntryGate                `json:"entryGate,omitempty"`
+	ExternalActions      *[]ExternalAction         `json:"externalActions,omitempty"`
+	Federation           *AdminFederationConfig    `json:"federation,omitempty"`
+	FfmpegPath           *string                   `json:"ffmpegPath,omitempty"`
+	ForbiddenUsernames   *[]string                 `json:"forbiddenUsernames,omitempty"`
+	HideViewerCount      *bool                     `json:"hideViewerCount,omitempty"`
+	InstanceDetails      *AdminWebConfig           `json:"instanceDetails,omitempty"`
+	Notifications        *AdminNotificationsConfig `json:"notifications,omitempty"`
+	RtmpServerAddress    *string                   `json:"rtmpServerAddress,omitempty"`
+	RtmpServerPort       *int                      `json:"rtmpServerPort,omitempty"`
+	S3                   *S3Info                   `json:"s3,omitempty"`
+	SocketHostOverride   *string                   `json:"socketHostOverride,omitempty"`
+	StreamKeyOverridden  *bool                     `json:"streamKeyOverridden,omitempty"`
+	StreamKeys           *[]StreamKey              `json:"streamKeys,omitempty"`
+	SuggestedUsernames   *[]string                 `json:"suggestedUsernames,omitempty"`
+	SupportedCodecs      *[]string                 `json:"supportedCodecs,omitempty"`
+	VideoCodec           *string                   `json:"videoCodec,omitempty"`
+	VideoServingEndpoint *string                   `json:"videoServingEndpoint,omitempty"`
+	VideoSettings        *AdminVideoSettings       `json:"videoSettings,omitempty"`
+
+	// ViewerCountOffset Added to the real viewer count on the public page while the stream is live. Does not create viewers.
+	ViewerCountOffset *int         `json:"viewerCountOffset,omitempty"`
+	WebServerIP       *string      `json:"webServerIP,omitempty"`
+	WebServerPort     *int         `json:"webServerPort,omitempty"`
+	Yp                *AdminYPInfo `json:"yp,omitempty"`
 }
 
 // AdminStatus defines model for AdminStatus.
@@ -449,6 +458,17 @@ type Emoji struct {
 
 // Emojis defines model for Emojis.
 type Emojis = []Emoji
+
+// EntryGate Card shown to a new viewer. The typed name becomes the chat display name. The player keeps loading behind the card.
+type EntryGate struct {
+	Body        *string `json:"body,omitempty"`
+	Button      *string `json:"button,omitempty"`
+	Crest       *string `json:"crest,omitempty"`
+	Enabled     *bool   `json:"enabled,omitempty"`
+	Footer      *string `json:"footer,omitempty"`
+	Placeholder *string `json:"placeholder,omitempty"`
+	Title       *string `json:"title,omitempty"`
+}
 
 // Error Structure for an error response
 type Error struct {
@@ -670,6 +690,13 @@ type ModerationUserDetails struct {
 // NotificationConfig defines model for NotificationConfig.
 type NotificationConfig struct {
 	Browser *BrowserConfig `json:"browser,omitempty"`
+}
+
+// PageFigure Title, description, and image shown under the page body.
+type PageFigure struct {
+	Body  *string `json:"body,omitempty"`
+	Image *string `json:"image,omitempty"`
+	Title *string `json:"title,omitempty"`
 }
 
 // PaginatedFederatedActivity defines model for PaginatedFederatedActivity.
@@ -921,25 +948,34 @@ type WebConfig struct {
 	Autoplay     *AutoplayMode `json:"autoplay,omitempty"`
 	ChatDisabled *bool         `json:"chatDisabled,omitempty"`
 
+	// ChatMuted When true, viewers cannot send chat. Moderators still can.
+	ChatMuted *bool `json:"chatMuted,omitempty"`
+
 	// ChatRequireAuthentication Whether users must authenticate before sending chat messages
-	ChatRequireAuthentication *bool               `json:"chatRequireAuthentication,omitempty"`
-	CustomStyles              *string             `json:"customStyles,omitempty"`
-	ExternalActions           *[]ExternalAction   `json:"externalActions,omitempty"`
-	ExtraPageContent          *string             `json:"extraPageContent,omitempty"`
-	Federation                *FederationConfig   `json:"federation,omitempty"`
-	HideViewerCount           *bool               `json:"hideViewerCount,omitempty"`
-	Logo                      *string             `json:"logo,omitempty"`
-	MaxSocketPayloadSize      *int                `json:"maxSocketPayloadSize,omitempty"`
-	Name                      *string             `json:"name,omitempty"`
-	Notifications             *NotificationConfig `json:"notifications,omitempty"`
-	Nsfw                      *bool               `json:"nsfw,omitempty"`
-	OfflineMessage            *string             `json:"offlineMessage,omitempty"`
-	SocialHandles             *[]SocialHandle     `json:"socialHandles,omitempty"`
-	SocketHostOverride        *string             `json:"socketHostOverride,omitempty"`
-	StreamTitle               *string             `json:"streamTitle,omitempty"`
-	Summary                   *string             `json:"summary,omitempty"`
-	Tags                      *[]string           `json:"tags,omitempty"`
-	Version                   *string             `json:"version,omitempty"`
+	ChatRequireAuthentication *bool   `json:"chatRequireAuthentication,omitempty"`
+	CustomStyles              *string `json:"customStyles,omitempty"`
+
+	// EntryGate Card shown to a new viewer. The typed name becomes the chat display name. The player keeps loading behind the card.
+	EntryGate            *EntryGate          `json:"entryGate,omitempty"`
+	ExternalActions      *[]ExternalAction   `json:"externalActions,omitempty"`
+	ExtraPageContent     *string             `json:"extraPageContent,omitempty"`
+	Federation           *FederationConfig   `json:"federation,omitempty"`
+	HideViewerCount      *bool               `json:"hideViewerCount,omitempty"`
+	Logo                 *string             `json:"logo,omitempty"`
+	MaxSocketPayloadSize *int                `json:"maxSocketPayloadSize,omitempty"`
+	Name                 *string             `json:"name,omitempty"`
+	Notifications        *NotificationConfig `json:"notifications,omitempty"`
+	Nsfw                 *bool               `json:"nsfw,omitempty"`
+	OfflineMessage       *string             `json:"offlineMessage,omitempty"`
+
+	// PageFigure Title, description, and image shown under the page body.
+	PageFigure         *PageFigure     `json:"pageFigure,omitempty"`
+	SocialHandles      *[]SocialHandle `json:"socialHandles,omitempty"`
+	SocketHostOverride *string         `json:"socketHostOverride,omitempty"`
+	StreamTitle        *string         `json:"streamTitle,omitempty"`
+	Summary            *string         `json:"summary,omitempty"`
+	Tags               *[]string       `json:"tags,omitempty"`
+	Version            *string         `json:"version,omitempty"`
 }
 
 // Webhook defines model for Webhook.
@@ -1444,6 +1480,9 @@ type SetStreamOutputVariantsJSONRequestBody SetStreamOutputVariantsJSONBody
 
 // SetVideoServingEndpointJSONRequestBody defines body for SetVideoServingEndpoint for application/json ContentType.
 type SetVideoServingEndpointJSONRequestBody = AdminConfigValue
+
+// SetViewerCountOffsetJSONRequestBody defines body for SetViewerCountOffset for application/json ContentType.
+type SetViewerCountOffsetJSONRequestBody = AdminConfigValue
 
 // SetWebServerIPJSONRequestBody defines body for SetWebServerIP for application/json ContentType.
 type SetWebServerIPJSONRequestBody = AdminConfigValue

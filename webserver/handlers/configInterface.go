@@ -320,6 +320,14 @@ func (s *ServerInterfaceImpl) SetCustomJavascriptOptions(w http.ResponseWriter, 
 	s.h.middleware.RequireAdminAuth(s.h.admin.SetCustomJavascript)(w, r)
 }
 
+func (s *ServerInterfaceImpl) SetViewerCountOffset(w http.ResponseWriter, r *http.Request) {
+	s.h.middleware.RequireAdminAuth(s.h.admin.SetViewerCountOffset)(w, r)
+}
+
+func (s *ServerInterfaceImpl) SetViewerCountOffsetOptions(w http.ResponseWriter, r *http.Request) {
+	s.h.middleware.RequireAdminAuth(s.h.admin.SetViewerCountOffset)(w, r)
+}
+
 func (s *ServerInterfaceImpl) SetHideViewerCount(w http.ResponseWriter, r *http.Request) {
 	s.h.middleware.RequireAdminAuth(s.h.admin.SetHideViewerCount)(w, r)
 }
